@@ -1,0 +1,16 @@
+{
+  "name": "MathGame.EditModeTests",
+  "rootNamespace": "MathGame.Tests",
+  "references": [
+    "MathGame.Core",
+    "MathGame.Stage",
+    "MathGame.Save"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": false
+}

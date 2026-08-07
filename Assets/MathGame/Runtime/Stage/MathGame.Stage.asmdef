@@ -1,0 +1,8 @@
+{
+  "name": "MathGame.Stage",
+  "rootNamespace": "MathGame",
+  "references": [
+    "MathGame.Core"
+  ],
+  "autoReferenced": true
+}

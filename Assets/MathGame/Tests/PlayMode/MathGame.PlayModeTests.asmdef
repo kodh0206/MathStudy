@@ -1,0 +1,13 @@
+{
+  "name": "MathGame.PlayModeTests",
+  "rootNamespace": "MathGame.Tests",
+  "references": [
+    "MathGame.App",
+    "MathGame.Core",
+    "MathGame.Stage"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false
+}

@@ -1,0 +1,6 @@
+{
+  "name": "MathGame.Core",
+  "rootNamespace": "MathGame",
+  "references": [],
+  "autoReferenced": true
+}

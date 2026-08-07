@@ -1,0 +1,10 @@
+{
+  "name": "MathGame.App",
+  "rootNamespace": "MathGame",
+  "references": [
+    "MathGame.Core",
+    "MathGame.Stage",
+    "MathGame.Save"
+  ],
+  "autoReferenced": true
+}
