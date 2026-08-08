@@ -34,13 +34,13 @@ namespace MathGame.Tests.Connection
             });
             var board = new DomainBoard(topology);
             board.TryPlaceBlock(new BoardPosition(3, 0), Block(1, 4));
-            board.TrySetAccess(new BoardPosition(3, 0), CellAccess.Blocked);
+            board.TryRemoveBlock(new BoardPosition(3, 0), out _);
             var path = new ConnectionPath(board);
 
             Assert.That(path.TrySelect(new BoardPosition(-1, 0)), Is.EqualTo(ConnectionStepResult.OutOfBounds));
             Assert.That(path.TrySelect(new BoardPosition(1, 0)), Is.EqualTo(ConnectionStepResult.InactivePosition));
             Assert.That(path.TrySelect(new BoardPosition(2, 0)), Is.EqualTo(ConnectionStepResult.Empty));
-            Assert.That(path.TrySelect(new BoardPosition(3, 0)), Is.EqualTo(ConnectionStepResult.Blocked));
+            Assert.That(path.TrySelect(new BoardPosition(3, 0)), Is.EqualTo(ConnectionStepResult.Empty));
             Assert.That(path.IsEmpty, Is.True);
             Assert.That(path.Sum, Is.Zero);
         }

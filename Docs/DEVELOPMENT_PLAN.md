@@ -1,7 +1,7 @@
 # MathGame Development Plan
 
 Last updated: 2026-08-08  
-Status: **GDD-backed.** STEPs 1-8 are complete for their approved scopes; later STEPs require their own GDD reconciliation.
+Status: **GDD-backed.** STEPs 1-9 are complete for their approved scopes; later STEPs require their own GDD reconciliation.
 
 ## Planning basis
 
@@ -24,7 +24,9 @@ The repository contains an application/lifecycle foundation but no gameplay. `Do
 | 6 | Board Resolution: Removal, Gravity, Refill | Complete — Edit Mode 117/117, Play Mode 19/19, no P0/P1/P2 |
 | 7 | Solvable Target Selection and Deadlock Recovery | Complete — Edit Mode 150/150, Play Mode 20/20, no P0/P1/P2 |
 | 8 | Stage Objectives, Rewards, and Completion | Complete for supported objectives - Edit Mode 172/172, Play Mode 20/20, no P0/P1/P2 |
-| 9-16 | Prototype/MVP development | Planned; design required per STEP |
+| 9 | Fever Core | Complete with semantic downstream effects - Edit Mode 208/208, Play Mode 22/22, no P0/P1/P2 |
+| 10 | Obstacles and Fever Destruction | Designed; Dust/Box and all resolver/end-effect rules approved, ready for implementation |
+| 11-16 | Prototype/MVP development | Planned; design required per STEP |
 
 ## Dependency path
 
@@ -227,4 +229,10 @@ After `Implement STEP N`, report: Goal; Requirements Implemented; Architecture; 
 
 ## Immediate next action
 
-Stop and wait for the user's next command. The next dependency-safe command is `Design STEP 9`; do not begin it automatically.
+STEP 10 is structurally accepted with no P0/P1 findings. Preserve its P2 Fever coordinator coverage debt and the Unity Edit/Play verification block caused by licensing initialization.
+
+STEP 11 product rules are approved: base 10, exact length factors, Fever ×2 without combo, one final floor, Large-end +50, rational 25/50/75/100 milestones, clamped/discarded excess, stage-local provisional lifecycle, and Success-only world commit. Concrete assets remain a STEP 12 presentation concern.
+
+The additional STEP 11 product addendum resolves FailedPendingDecision/Continue/Retry/Abandon behavior, additive clamped world commits, separate stage/world capacities, world-owned milestones, stable idempotent WorldCommitId, and omitted non-Large end evidence.
+
+Design STEP 11 is ready for independent review. After a PASS, the next dependency-safe command is `Implement STEP 11`. Do not begin STEP 12.

@@ -158,14 +158,44 @@
 **Decision:** Stage definitions supply nonnegative base/grade/length score values; the domain has no guessed default. Exact GDD Fever contribution values and semantic special intents are calculated separately without applying a gauge or special.
 **Rationale:** The GDD specifies relative rewards and Fever contributions but omits production score/restoration/economy formulas.
 
+### ADR-027: Fever attempts use one atomic controller boundary
+
+**Status:** Implemented and verified in STEP 9
+**Decision:** FeverController prospectively derives closed Fever rules, applies the owned StageSession command, and only then commits the nonthrowing Fever snapshot update. Callers cannot commit the two domains separately.
+**Rationale:** Separate public commits could diverge combo, score, objectives, and attempt sequence after a partial failure.
+
+### ADR-028: Fever duration counts exact FeverInput time
+
+**Status:** Implemented and verified in STEP 9
+**Decision:** A dedicated injected-time clock accumulates only while Stage is exactly FeverInput. All resolution, presentation, pause, inactivity, entry/end, and terminal intervals are excluded; invalid time faults safely.
+**Rationale:** GDD defines eight seconds of actual Fever manipulation, not wall-clock duration.
+
+### ADR-029: STEP 9 emits downstream Fever effect intents
+
+**Status:** Implemented and verified in STEP 9
+**Decision:** Core Fever supplies zero-move/combo score rules, expanded-removal request, obstacle/restoration multipliers, and exact natural-end tiers without mutating Board, obstacles, restoration, or presentation.
+**Rationale:** Those concrete systems do not yet exist and their spatial/formula rules belong to STEPs 10-12.
+
+### ADR-030: Restoration uses fixed exact arithmetic and provisional stage ownership
+
+**Status:** Approved for STEP 11 implementation
+**Decision:** Each committed Correct awards `floor(10 × submitted-length factor × Fever factor)` with length factors 1.0/1.2/1.5/2.0, Fever factor 2, no combo factor, and one final floor using exact rational arithmetic. Large Fever-end awards fixed +50; other end tiers award zero directly. Progress is stage-local, clamped to capacity, discards excess, emits typed 25/50/75/100 milestones, is discarded on Failure/Abandon/Retry, preserved on Continue, and commits to world progress only on Success.
+**Rationale:** Product-approved values resolve the GDD's symbolic formula, provisional lifecycle, additive world application, and presentation boundary.
+
+Use the acyclic direction `Restoration.Contracts <- StageSession` and `Restoration.Contracts <- Restoration -> StageSession`. A sole restoration transaction coordinator binds prospective evidence into the correlated StageSession attempt/system-effect terminal decision and permits a world commit only from the accepted Success snapshot. Concrete art bindings remain STEP 12.
+
+Detected failure enters FailedPendingDecision and preserves restoration. Continue resumes the same run; Retry/Abandon discard it. Success applies `min(WorldCapacity, WorldCurrent + StageCommittedRestoration)` once per stable WorldCommitId. World milestones alone use 25/50/75/100 thresholds. Non-Large Fever-end tiers omit restoration evidence.
+
 ## Tracked ambiguities for later STEP designs
 
 - Precise touch tolerance for backtracking/cancellation.
 - Target weighting and the numerical limit on consecutive identical targets.
 - Weighted number-generation probabilities and stage-specific distribution data.
 - Production seed persistence/replay guarantees and session-long block-ID allocation.
-- Exact score and base restoration-energy formulas where the GDD specifies relative multipliers only.
+- Exact score values remain content-configured; the STEP 11 restoration formula is resolved by ADR-030.
 - Which two obstacle types form the first prototype set and their detailed gravity interaction.
+- STEP 10 additionally requires the selected pair's spatial layers, hit aggregation, Fever expansion/end geometry, refill behavior, and objective-count policy; do not infer these from the current coarse Blocked state.
+- STEP 10 product addendum now selects Dust and Box and resolves their layers, HP, damage aggregation, Fever potency, Box-to-refill conversion, orthogonal expansion, all end-tier Manhattan geometries, objective evidence, and shuffle preservation. Area centers are explicit resolver inputs; their gameplay selection policy remains an orchestration/presentation decision.
 - Exact stage data/content, objective quantities, move limits, and progression gates.
 - Save-on-background, interrupted-stage restoration, and corruption/migration policies.
 - Analytics payload schemas and once-only delivery rules.

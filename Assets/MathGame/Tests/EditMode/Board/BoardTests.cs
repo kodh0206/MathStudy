@@ -64,26 +64,22 @@ namespace MathGame.Tests.Board
             var block = Block(1);
             board.TryPlaceBlock(source, block);
             Assert.That(board.TryRelocateBlock(source, source), Is.EqualTo(BoardMutationResult.SourceEqualsDestination));
-            board.TrySetAccess(destination, CellAccess.Blocked);
+            board.TryRemoveBlock(destination, out _);
             Assert.That(board.TryRelocateBlock(source, destination), Is.EqualTo(BoardMutationResult.Blocked));
             Assert.That(board.TryFindBlock(block.Id, out var found), Is.True);
             Assert.That(found, Is.EqualTo(source));
             Assert.That(board.BlockCount, Is.EqualTo(1));
         }
-        [Test] public void AccessIsIdempotentIndependentOfOccupancyAndBlocksNormalMutation()
+        [Test] public void AccessIsDerivedFromLayerRole()
         {
             var board = new DomainBoard(BoardTopology.CreateRectangular(1, 1));
             var position = default(BoardPosition);
             var block = Block(1);
-            Assert.That(board.TrySetAccess(position, CellAccess.Open), Is.EqualTo(BoardMutationResult.AlreadyInRequestedState));
             board.TryPlaceBlock(position, block);
-            Assert.That(board.TrySetAccess(position, CellAccess.Blocked), Is.EqualTo(BoardMutationResult.Succeeded));
-            Assert.That(board.TrySetAccess(position, CellAccess.Blocked), Is.EqualTo(BoardMutationResult.AlreadyInRequestedState));
-            Assert.That(board.TryRemoveBlock(position, out _), Is.EqualTo(BoardMutationResult.Blocked));
             board.TryGetCell(position, out var cell);
             Assert.That(cell.Block.Value, Is.EqualTo(block));
-            Assert.That(cell.IsNormallyAccessible, Is.False);
-            Assert.That(board.TrySetAccess(position, (CellAccess)99), Is.EqualTo(BoardMutationResult.InvalidAccess));
+            Assert.That(cell.IsNormallyAccessible, Is.True);
+            Assert.That(cell.Access, Is.EqualTo(CellAccess.Open));
         }
     }
 }

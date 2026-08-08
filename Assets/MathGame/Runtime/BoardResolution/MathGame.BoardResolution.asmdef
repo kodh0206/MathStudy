@@ -1,7 +1,7 @@
 {
   "name": "MathGame.BoardResolution",
   "rootNamespace": "MathGame.BoardResolution",
-  "references": ["MathGame.Board", "MathGame.Answer", "MathGame.Connection", "MathGame.Core"],
+  "references": ["MathGame.Board", "MathGame.Answer", "MathGame.Connection", "MathGame.Core", "MathGame.Obstacles"],
   "autoReferenced": false,
   "noEngineReferences": true
 }

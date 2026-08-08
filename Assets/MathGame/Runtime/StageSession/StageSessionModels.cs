@@ -26,8 +26,10 @@ namespace MathGame.StageSession
     public sealed class StageObjectiveDefinition
     {
         public StageObjectiveDefinition(StageObjectiveKind kind, int requiredCount, TargetNumber target, int minimumConnectionLength)
-        { Kind = kind; RequiredCount = requiredCount; Target = target; MinimumConnectionLength = minimumConnectionLength; }
-        public StageObjectiveKind Kind { get; } public int RequiredCount { get; } public TargetNumber Target { get; } public int MinimumConnectionLength { get; }
+            : this(kind, requiredCount, target, minimumConnectionLength, null) { }
+        public StageObjectiveDefinition(StageObjectiveKind kind, int requiredCount, TargetNumber target, int minimumConnectionLength, MathGame.Board.ObstacleKind? obstacleKind)
+        { Kind = kind; RequiredCount = requiredCount; Target = target; MinimumConnectionLength = minimumConnectionLength; ObstacleKind = obstacleKind; }
+        public StageObjectiveKind Kind { get; } public int RequiredCount { get; } public TargetNumber Target { get; } public int MinimumConnectionLength { get; } public MathGame.Board.ObstacleKind? ObstacleKind { get; }
     }
     public readonly struct ConnectionLengthScoreRule
     {
@@ -50,8 +52,30 @@ namespace MathGame.StageSession
     public sealed class StageAttemptCommand
     {
         public StageAttemptCommand(StageAttemptId id, AnswerResult answer, BoardResolutionResult resolution)
-        { Id = id; Answer = answer; Resolution = resolution; }
+            : this(id, answer, resolution, StageAttemptRules.Normal) { }
+        public StageAttemptCommand(StageAttemptId id, AnswerResult answer, BoardResolutionResult resolution, StageAttemptRules rules)
+        { Id = id; Answer = answer; Resolution = resolution; Rules = rules ?? throw new ArgumentNullException(nameof(rules)); }
+        public StageAttemptCommand(StageAttemptId id, AnswerResult answer, ObstacleResolutionResult resolution, StageAttemptRules rules)
+        { Id = id; Answer = answer; ObstacleResolution = resolution; Rules = rules ?? throw new ArgumentNullException(nameof(rules)); }
         public StageAttemptId Id { get; } public AnswerResult Answer { get; } public BoardResolutionResult Resolution { get; }
+        public ObstacleResolutionResult ObstacleResolution { get; }
+        public StageAttemptRules Rules { get; }
+    }
+    public enum StageAttemptMode { Normal, Fever }
+    public sealed class StageAttemptRules
+    {
+        private StageAttemptRules(StageAttemptMode mode, int correctMoveCost, int scoreMultiplier)
+        { Mode = mode; CorrectMoveCost = correctMoveCost; ScoreMultiplier = scoreMultiplier; }
+        public StageAttemptMode Mode { get; }
+        public int CorrectMoveCost { get; }
+        public int ScoreMultiplier { get; }
+        public static StageAttemptRules Normal { get; } = new StageAttemptRules(StageAttemptMode.Normal, 1, 1);
+        public static StageAttemptRules CreateFever(int comboMultiplier)
+        {
+            if (comboMultiplier != 1 && comboMultiplier != 2 && comboMultiplier != 3 && comboMultiplier != 5)
+                throw new ArgumentOutOfRangeException(nameof(comboMultiplier));
+            return new StageAttemptRules(StageAttemptMode.Fever, 0, comboMultiplier);
+        }
     }
     public enum StageSessionCreateStatus { MissingDefinition, InvalidDefinitionId, InvalidMoves, MissingObjectives, InvalidObjectiveCount, MissingObjective, UnsupportedObjective, InvalidObjective, DuplicateObjective, MissingScoreConfig, InvalidScoreConfig, Succeeded }
     public enum StageSessionStatus { Active, Success, Failure }

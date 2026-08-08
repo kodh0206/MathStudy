@@ -24,7 +24,7 @@ namespace MathGame.Tests.Board
         {
             var board = CreateMaskedBoard();
             var valid = new BoardPosition(0, 0);
-            Assert.That(board.TrySetAccess(valid, CellAccess.Blocked), Is.EqualTo(BoardMutationResult.Succeeded));
+            Assert.That(board.TryRemoveBlock(valid, out _), Is.EqualTo(BoardMutationResult.Empty));
             Assert.That(board.TryPlaceBlock(valid, Block(1)), Is.EqualTo(BoardMutationResult.Blocked));
             Assert.That(board.TryPlaceBlock(new BoardPosition(1, 0), Block(1)), Is.EqualTo(BoardMutationResult.InactivePosition));
             Assert.That(board.TryPlaceBlock(new BoardPosition(3, 0), Block(1)), Is.EqualTo(BoardMutationResult.OutOfBounds));
@@ -60,11 +60,9 @@ namespace MathGame.Tests.Board
             Assert.That(board.TryRelocateBlock(source, destination), Is.EqualTo(BoardMutationResult.Occupied));
             AssertPreserved(board, source, first, destination, second);
 
-            board.TrySetAccess(source, CellAccess.Blocked);
-            Assert.That(board.TryRelocateBlock(source, new BoardPosition(3, 0)), Is.EqualTo(BoardMutationResult.Blocked));
-            board.TrySetAccess(source, CellAccess.Open);
-            board.TrySetAccess(new BoardPosition(3, 0), CellAccess.Blocked);
-            Assert.That(board.TryRelocateBlock(source, new BoardPosition(3, 0)), Is.EqualTo(BoardMutationResult.Blocked));
+            board.TryRemoveBlock(source, out _);
+            Assert.That(board.TryRelocateBlock(source, new BoardPosition(3, 0)), Is.EqualTo(BoardMutationResult.Empty));
+            board.TryPlaceBlock(source, first);
             Assert.That(board.TryRelocateBlock(new BoardPosition(2, 0), destination), Is.EqualTo(BoardMutationResult.InactivePosition));
             Assert.That(board.TryRelocateBlock(source, new BoardPosition(2, 0)), Is.EqualTo(BoardMutationResult.InactivePosition));
             Assert.That(board.TryRelocateBlock(new BoardPosition(-1, 0), destination), Is.EqualTo(BoardMutationResult.OutOfBounds));
@@ -92,21 +90,16 @@ namespace MathGame.Tests.Board
         }
 
         [Test]
-        public void AccessTransitionsForEmptyAndOccupiedCellsAndReopenRestoresMutation()
+        public void NumberSlotsRemainDerivedOpenAcrossOccupancyChanges()
         {
             var board = new DomainBoard(BoardTopology.CreateRectangular(2, 1));
             var empty = new BoardPosition(0, 0);
             var occupied = new BoardPosition(1, 0);
             var block = Block(1);
-            Assert.That(board.TrySetAccess(empty, CellAccess.Blocked), Is.EqualTo(BoardMutationResult.Succeeded));
-            Assert.That(board.TrySetAccess(empty, CellAccess.Open), Is.EqualTo(BoardMutationResult.Succeeded));
             Assert.That(board.TryPlaceBlock(occupied, block), Is.EqualTo(BoardMutationResult.Succeeded));
-            Assert.That(board.TrySetAccess(occupied, CellAccess.Blocked), Is.EqualTo(BoardMutationResult.Succeeded));
-            Assert.That(board.TrySetAccess(occupied, (CellAccess)99), Is.EqualTo(BoardMutationResult.InvalidAccess));
             board.TryGetCell(occupied, out var unchanged);
-            Assert.That(unchanged.Access, Is.EqualTo(CellAccess.Blocked));
+            Assert.That(unchanged.Access, Is.EqualTo(CellAccess.Open));
             Assert.That(unchanged.Block.Value, Is.EqualTo(block));
-            Assert.That(board.TrySetAccess(occupied, CellAccess.Open), Is.EqualTo(BoardMutationResult.Succeeded));
             Assert.That(board.TryRemoveBlock(occupied, out var removed), Is.EqualTo(BoardMutationResult.Succeeded));
             Assert.That(removed, Is.EqualTo(block));
         }

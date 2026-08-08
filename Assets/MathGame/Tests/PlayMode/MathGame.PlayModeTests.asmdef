@@ -5,7 +5,9 @@
     "MathGame.App",
     "MathGame.Core",
     "MathGame.Stage",
-    "MathGame.Answer"
+    "MathGame.Answer",
+    "MathGame.StageSession",
+    "MathGame.Fever"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

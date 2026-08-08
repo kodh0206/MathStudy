@@ -11,7 +11,10 @@
     "MathGame.Answer",
     "MathGame.BoardResolution",
     "MathGame.Targets",
-    "MathGame.StageSession"
+    "MathGame.StageSession",
+    "MathGame.Fever",
+    "MathGame.Obstacles",
+    "MathGame.ObstacleFlow"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

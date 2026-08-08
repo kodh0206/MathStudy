@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.Obstacles",
+  "rootNamespace": "MathGame.Obstacles",
+  "references": ["MathGame.Board"],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

@@ -155,13 +155,13 @@ namespace MathGame.Tests.BoardResolution
             }
             Assert.Throws<NotSupportedException>(() => ((IList<MovedBlockDelta>)result.Moved).Add(default));
 
-            source.TrySetAccess(new BoardPosition(0, 2), CellAccess.Blocked);
+            source.TryRemoveBlock(new BoardPosition(0, 2), out _);
             result.Board.TryRemoveBlock(new BoardPosition(0, 0), out _);
             Assert.That(source.BlockCount, Is.EqualTo(3));
             Assert.That(result.Board.BlockCount, Is.EqualTo(2));
             source.TryGetCell(new BoardPosition(0, 2), out var sourceCell);
             result.Board.TryGetCell(new BoardPosition(0, 2), out var replacementCell);
-            Assert.That(sourceCell.Access, Is.EqualTo(CellAccess.Blocked));
+            Assert.That(sourceCell.HasBlock, Is.False);
             Assert.That(replacementCell.Access, Is.EqualTo(CellAccess.Open));
         }
 

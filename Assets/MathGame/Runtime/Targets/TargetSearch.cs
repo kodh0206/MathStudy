@@ -44,7 +44,7 @@ namespace MathGame.Targets
                 var step = steps[i];
                 if (!positions.Add(step.Position)) return TargetSolutionValidation.DuplicatePosition;
                 if (!ids.Add(step.Block.Id)) return TargetSolutionValidation.DuplicateBlockId;
-                if (board.TryGetCell(step.Position, out var cell) != CellLookupResult.Succeeded || cell.Access != CellAccess.Open || !cell.Block.HasValue)
+                if (board.TryGetCell(step.Position, out var cell) != CellLookupResult.Succeeded || !cell.IsSelectable)
                     return TargetSolutionValidation.InvalidCell;
                 if (cell.Block.Value != step.Block) return TargetSolutionValidation.BlockMismatch;
                 if (i > 0)
@@ -82,7 +82,7 @@ namespace MathGame.Targets
             foreach (var position in source.EnumerateActivePositions())
             {
                 source.TryGetCell(position, out var cell);
-                if (cell.Access != CellAccess.Open || !cell.Block.HasValue)
+                if (cell.Role == CellRole.NumberSlot && !cell.Block.HasValue)
                     return new TargetSearchResult(TargetSearchStatus.UnsupportedBoardState, Array.Empty<TargetSolution>(), 0);
             }
             board = source; config = searchConfig; expansions = 0; limitExceeded = false; found.Clear();
@@ -99,7 +99,7 @@ namespace MathGame.Targets
         private void Visit(BoardPosition position, long sum, List<TargetSolutionStep> path, HashSet<BoardPosition> positions, HashSet<BlockId> ids)
         {
             if (limitExceeded) return;
-            board.TryGetCell(position, out var cell); var block = cell.Block.Value;
+            board.TryGetCell(position, out var cell); if (!cell.IsSelectable) return; var block = cell.Block.Value;
             if (positions.Contains(position) || ids.Contains(block.Id)) return;
             if (expansions == config.MaxNodeExpansions) { limitExceeded = true; return; }
             expansions++; long nextSum;

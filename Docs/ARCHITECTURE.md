@@ -9,7 +9,7 @@ This file describes only code present in the repository. Proposed gameplay archi
 - Unity 6000.3.6f1, Universal Render Pipeline 17.3.0, Input System 1.18.0, and Unity Test Framework 1.6.0.
 - The only enabled build scene is `Assets/Scenes/SampleScene.unity`.
 - Runtime code is under `Assets/MathGame/Runtime`; tests are under `Assets/MathGame/Tests`.
-- Logical board, generation, connection, answer timing, board resolution, safe-target recovery, and stage-session domains exist. No playable board view/input adapter, composed gameplay loop, Fever, obstacle behavior, restoration, gameplay UI, analytics adapter, ad adapter, or concrete save repository exists.
+- Logical board, generation, connection, answer timing, board resolution, safe-target recovery, stage-session, and Fever-core domains exist. No playable board view/input adapter, composed gameplay loop, concrete Fever board effects, obstacle behavior, restoration, gameplay UI, analytics adapter, ad adapter, or concrete save repository exists.
 
 ## Assembly boundaries
 
@@ -23,6 +23,7 @@ MathGame.Answer      ---> MathGame.Connection, MathGame.Core, MathGame.Stage (no
 MathGame.BoardResolution ---> MathGame.Board, MathGame.Answer, MathGame.Connection, MathGame.Core (no UnityEngine reference)
 MathGame.Targets     ---> MathGame.Board, MathGame.Answer, MathGame.Core (no UnityEngine reference)
 MathGame.StageSession ---> MathGame.Answer, MathGame.BoardResolution, MathGame.Connection, MathGame.Board (no UnityEngine reference)
+MathGame.Fever       ---> MathGame.Core, MathGame.Stage, MathGame.Answer, MathGame.StageSession, MathGame.BoardResolution and exposed model dependencies (no UnityEngine reference)
 MathGame.Stage  ---> MathGame.Core
 MathGame.App    ---> MathGame.Core, MathGame.Stage, MathGame.Save
 
@@ -124,6 +125,16 @@ The domain feature assemblies and test assemblies are not auto-referenced. Unity
 - Score values are explicit stage configuration because the GDD supplies no formula. Exact grade/length/FAST-streak Fever contributions and 4/5+ special intents are immutable semantic facts only; STEP 8 does not apply Fever or create specials.
 - Results expose immutable historical snapshots and ordered semantic events. StageController remains a lifecycle state machine; orchestration maps session Success/Failure from ResolvingAnswer to its existing terminal commands.
 
+### Fever core
+
+- `FeverChargeTracker` consumes applied normal StageSession attempts exactly once, permits global attempt-ID gaps across Fever attempts, caps the live gauge at configured maximum, and does not bank excess charge.
+- `FeverController` owns the cross-domain Fever attempt command. It prospectively derives combo/rules, applies the owned StageSession attempt, and commits Fever state only after StageSession accepts, preventing split accounting.
+- Fever-aware StageSession rules form a closed Normal/Fever policy. Fever Correct costs zero moves and multiplies checked configured score by the approved 1/2/3/5 combo multiplier; normal accounting remains unchanged.
+- `InteractiveFeverClock` counts only exact `FeverInput` intervals using injected monotonic time. Resolution, target presentation, entry/end phases, nested pause reasons, focus/background loss, and ads are excluded. Faults force the controller into a safe noninteractive state.
+- Stage exposes explicit EnteringFever, FeverInput, Fever-origin resolution/miss return, and EndingFever transitions while retaining resolution origin across pause.
+- Natural expiry emits immutable end-effect tiers based on total Fever Correct answers and resets only after effect acknowledgement. Terminal Stage outcomes abort Fever and suppress gameplay end effects.
+- Expanded removal, obstacle damage execution, restoration calculation, random/area end effects, and spectacle remain semantic requests for STEPs 10-12.
+
 ## Current runtime flow
 
 ```text
@@ -142,10 +153,10 @@ The stage is currently called “blank” because `Ready` has no board, target, 
 
 ## Verification already represented by tests
 
-- Edit Mode (172 tests): foundation through StageSession coverage, including target recovery plus objective configuration, attempt correlation/idempotence, score/reward facts, move/terminal ordering, overflow atomicity, immutable histories, and all earlier regressions.
-- Play Mode (20 tests): bootstrap/lifecycle and answer-clock regressions plus focus/pause exclusion while RecoveringBoard is noninteractive.
+- Edit Mode (208 tests): foundation through Fever Core coverage, including charge/idempotence, atomic Fever attempts, zero-move score multipliers, combo/reset, exact-input clock exclusions/faults, Stage Fever graph, end tiers/acknowledgement, terminal abort, and all earlier regressions.
+- Play Mode (22 tests): bootstrap/lifecycle and answer-clock regressions plus deterministic Fever resolution, focus/background pause nesting, expiry exclusion, and disposal behavior.
 
-Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 8: Edit Mode 172/172 and Play Mode 20/20 passed with valid result XML. StageSession and affected assemblies compiled with no C# errors.
+Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 9: Edit Mode 208/208 and Play Mode 22/22 passed with valid result XML. Fever, StageSession, Stage, and affected assemblies compiled with no C# errors.
 
 ## Known architectural risks
 
@@ -156,3 +167,4 @@ Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 8: Edit Mode 172/172 and
 - Board access is intentionally a minimal Open/Blocked fact. STEP 10 must derive or replace it from approved layered obstacle state so independent flags do not become competing rule authorities.
 - Exact gravity traversal through masked shapes and content connectivity rules remain deferred to their owning designs.
 - Initial population remains unverified until the implemented STEP 7 search supplies a current-board witness. Bounded `SearchLimitExceeded` or `UnrecoverableDeadlock` results intentionally keep input disabled and require content/configuration handling rather than unsafe target exposure.
+- Fever Core currently emits semantic expanded-removal, obstacle, restoration, and end-effect intents only. The full playable Fever promise remains incomplete until STEPs 10-12 implement and present those effects.

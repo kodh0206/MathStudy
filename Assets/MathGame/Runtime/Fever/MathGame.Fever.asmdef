@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.Fever",
+  "rootNamespace": "MathGame.Fever",
+  "references": ["MathGame.Core", "MathGame.Stage", "MathGame.Answer", "MathGame.StageSession", "MathGame.BoardResolution", "MathGame.Connection", "MathGame.Board"],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

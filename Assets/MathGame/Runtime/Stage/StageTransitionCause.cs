@@ -13,6 +13,12 @@ namespace MathGame.Stage
         PlayerInputEnabled = 8,
         AnswerResolutionBegan = 9,
         MissResolutionFinished = 10,
-        DeadlockRecoveryBegan = 11
+        DeadlockRecoveryBegan = 11,
+        FeverEntryBegan = 12,
+        FeverEntryCompleted = 13,
+        FeverInputEnabled = 14,
+        FeverMissResolutionFinished = 15,
+        FeverEndingBegan = 16,
+        FeverEndingFinished = 17
     }
 }

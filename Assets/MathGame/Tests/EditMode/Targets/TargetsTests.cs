@@ -45,7 +45,7 @@ namespace MathGame.Tests.Targets
             Assert.That(searcher.Search(null, null).Status, Is.EqualTo(TargetSearchStatus.MissingBoard));
             var board = Board(1, 2);
             Assert.That(searcher.Search(board, null).Status, Is.EqualTo(TargetSearchStatus.InvalidConfiguration));
-            board.TrySetAccess(default, CellAccess.Blocked);
+            board.TryRemoveBlock(default, out _);
             Assert.That(searcher.Search(board, new TargetSearchConfig(1, 9, 2, 2, 10)).Status,
                 Is.EqualTo(TargetSearchStatus.UnsupportedBoardState));
         }
@@ -157,7 +157,7 @@ namespace MathGame.Tests.Targets
             var shuffler = new BoardShuffler(random);
             Assert.That(shuffler.Shuffle(Board(1)).Status, Is.EqualTo(BoardShuffleStatus.InsufficientMovableBlocks));
             var blocked = Board(1, 2);
-            blocked.TrySetAccess(default, CellAccess.Blocked);
+            blocked.TryRemoveBlock(default, out _);
             Assert.That(shuffler.Shuffle(blocked).Status, Is.EqualTo(BoardShuffleStatus.UnsupportedBoardState));
             Assert.That(random.Calls, Is.Empty);
         }
@@ -221,7 +221,7 @@ namespace MathGame.Tests.Targets
         {
             var shuffler = new BoardShuffler(new ScriptedRandom());
             var blocked = Board(1);
-            blocked.TrySetAccess(default, CellAccess.Blocked);
+            blocked.TryRemoveBlock(default, out _);
             Assert.That(shuffler.Shuffle(blocked).Status, Is.EqualTo(BoardShuffleStatus.UnsupportedBoardState));
 
             var empty = new DomainBoard(BoardTopology.CreateRectangular(1, 1));

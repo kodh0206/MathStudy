@@ -17,4 +17,11 @@ namespace MathGame.Stage
         Ready = 12,
         RecoveringBoard = 13
     }
+
+    public enum AnswerResolutionOrigin
+    {
+        None,
+        Normal,
+        Fever
+    }
 }

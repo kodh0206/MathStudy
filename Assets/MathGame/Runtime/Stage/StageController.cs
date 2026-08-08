@@ -26,6 +26,7 @@ namespace MathGame.Stage
         public bool IsTerminal => State is StageState.Success or StageState.Failure or StageState.Exited;
 
         public bool AcceptsPlayerInput => State is StageState.PlayerInput or StageState.FeverInput;
+        public AnswerResolutionOrigin ResolutionOrigin { get; private set; }
 
         public int ActivePauseReasonCount => _activePauseReasons.Count;
 
@@ -78,6 +79,7 @@ namespace MathGame.Stage
                 return InvalidTransition(StageState.PresentingTarget);
             }
 
+            ResolutionOrigin = AnswerResolutionOrigin.None;
             return TransitionTo(StageState.PresentingTarget, StageTransitionCause.TargetPresentationBegan);
         }
 
@@ -103,11 +105,12 @@ namespace MathGame.Stage
                 return TransitionResult.StageAlreadyTerminated;
             }
 
-            if (State != StageState.PlayerInput)
+            if (State is not (StageState.PlayerInput or StageState.FeverInput))
             {
                 return InvalidTransition(StageState.ResolvingAnswer);
             }
 
+            ResolutionOrigin = State == StageState.FeverInput ? AnswerResolutionOrigin.Fever : AnswerResolutionOrigin.Normal;
             return TransitionTo(StageState.ResolvingAnswer, StageTransitionCause.AnswerResolutionBegan);
         }
 
@@ -118,12 +121,40 @@ namespace MathGame.Stage
                 return TransitionResult.StageAlreadyTerminated;
             }
 
-            if (State != StageState.ResolvingAnswer)
+            if (State != StageState.ResolvingAnswer || ResolutionOrigin != AnswerResolutionOrigin.Normal)
             {
                 return InvalidTransition(StageState.PlayerInput);
             }
 
+            ResolutionOrigin = AnswerResolutionOrigin.None;
             return TransitionTo(StageState.PlayerInput, StageTransitionCause.MissResolutionFinished);
+        }
+
+        public TransitionResult BeginFeverEntry() => GuardedTransition(StageState.PresentingTarget, StageState.EnteringFever, StageTransitionCause.FeverEntryBegan);
+        public TransitionResult CompleteFeverEntry() => GuardedTransition(StageState.EnteringFever, StageState.FeverInput, StageTransitionCause.FeverEntryCompleted);
+        public TransitionResult EnableFeverInput() => GuardedTransition(StageState.PresentingTarget, StageState.FeverInput, StageTransitionCause.FeverInputEnabled);
+
+        public TransitionResult FinishFeverMissResolution()
+        {
+            if (IsTerminal) return TransitionResult.StageAlreadyTerminated;
+            if (State != StageState.ResolvingAnswer || ResolutionOrigin != AnswerResolutionOrigin.Fever)
+                return InvalidTransition(StageState.FeverInput);
+            ResolutionOrigin = AnswerResolutionOrigin.None;
+            return TransitionTo(StageState.FeverInput, StageTransitionCause.FeverMissResolutionFinished);
+        }
+
+        public TransitionResult BeginFeverEnding()
+        {
+            var result = GuardedTransition(StageState.FeverInput, StageState.EndingFever, StageTransitionCause.FeverEndingBegan);
+            if (result == TransitionResult.Succeeded) ResolutionOrigin = AnswerResolutionOrigin.None;
+            return result;
+        }
+
+        public TransitionResult FinishFeverEnding()
+        {
+            var result = GuardedTransition(StageState.EndingFever, StageState.ResolvingAnswer, StageTransitionCause.FeverEndingFinished);
+            if (result == TransitionResult.Succeeded) ResolutionOrigin = AnswerResolutionOrigin.None;
+            return result;
         }
 
         public TransitionResult BeginDeadlockRecovery()
@@ -208,6 +239,7 @@ namespace MathGame.Stage
 
             _activePauseReasons.Clear();
             _stateBeforePause = null;
+            ResolutionOrigin = AnswerResolutionOrigin.None;
             _logger?.Info(LogCategory, $"Exit requested: {reason}.");
             return TransitionTo(StageState.Exited, StageTransitionCause.ExitRequested);
         }
@@ -226,6 +258,14 @@ namespace MathGame.Stage
 
             _activePauseReasons.Clear();
             _stateBeforePause = null;
+            ResolutionOrigin = AnswerResolutionOrigin.None;
+            return TransitionTo(target, cause);
+        }
+
+        private TransitionResult GuardedTransition(StageState source, StageState target, StageTransitionCause cause)
+        {
+            if (IsTerminal) return TransitionResult.StageAlreadyTerminated;
+            if (State != source) return InvalidTransition(target);
             return TransitionTo(target, cause);
         }
 

@@ -90,7 +90,7 @@ namespace MathGame.Tests.BoardResolution
         {
             var board = Filled(BoardTopology.CreateRectangular(1, 2));
             var answer = Correct(board, new BoardPosition(0, 0), new BoardPosition(0, 1));
-            board.TrySetAccess(new BoardPosition(0, 1), CellAccess.Blocked);
+            board.TryRemoveBlock(new BoardPosition(0, 1), out _);
             var random = new RecordingRandom();
             AssertFailure(new BoardResolver(random).Resolve(new BoardResolutionRequest(board, answer, new RefillValueRange(1, 9), 3)), BoardResolutionFailure.UnsupportedBoardState, random);
         }

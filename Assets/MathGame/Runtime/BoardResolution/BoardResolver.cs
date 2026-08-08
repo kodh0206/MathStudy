@@ -97,7 +97,7 @@ namespace MathGame.BoardResolution
             foreach (var position in source.EnumerateActivePositions())
             {
                 source.TryGetCell(position, out var cell);
-                if (cell.Access != CellAccess.Open || !cell.Block.HasValue) return BoardResolutionFailure.UnsupportedBoardState;
+                if (!cell.IsSelectable) return BoardResolutionFailure.UnsupportedBoardState;
                 liveIds.Add(cell.Block.Value.Id); if (cell.Block.Value.Id.Value > maxId) maxId = cell.Block.Value.Id.Value;
             }
             spawnCount = request.Answer.Snapshot.Count;
@@ -108,7 +108,7 @@ namespace MathGame.BoardResolution
                 if (!selectedIds.Add(entry.Block.Id)) return BoardResolutionFailure.DuplicateSelectionBlockId;
                 if (source.TryGetCell(entry.Position, out var cell) != CellLookupResult.Succeeded)
                     return BoardResolutionFailure.SelectedPositionMissing;
-                if (cell.Access != CellAccess.Open || !cell.Block.HasValue || cell.Block.Value != entry.Block)
+                if (!cell.IsSelectable || cell.Block.Value != entry.Block)
                     return BoardResolutionFailure.SelectedBlockMismatch;
                 removed.Add(new RemovedBlockDelta(entry.Position, entry.Block));
             }

@@ -53,7 +53,7 @@ namespace MathGame.Connection
                 return ConnectionStepResult.InactivePosition;
             }
 
-            if (cell.Access == CellAccess.Blocked)
+            if (cell.Role == CellRole.BoxSlot)
             {
                 return ConnectionStepResult.Blocked;
             }

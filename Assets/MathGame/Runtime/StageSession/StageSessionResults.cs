@@ -28,23 +28,27 @@ namespace MathGame.StageSession
         {
             DefinitionId = session.Definition.Id; Status = session.Status; InitialMoves = session.Definition.InitialMoves;
             RemainingMoves = session.RemainingMoves; SpentMoves = session.SpentMoves; Score = session.Score;
-            NextExpectedAttemptId = new StageAttemptId(session.NextId); Objectives = Array.AsReadOnly(objectives);
+            NextExpectedAttemptId = new StageAttemptId(session.NextId); NextExpectedSystemEffectId = new MathGame.BoardResolution.BoardSystemEffectId(session.NextEffectId); Objectives = Array.AsReadOnly(objectives);
             CorrectCount = session.CorrectCount; MissCount = session.MissCount; PerfectCount = session.PerfectCount;
             FastCount = session.FastCount; NormalCount = session.NormalCount; CurrentFastStreak = session.CurrentFastStreak;
             MaximumFastStreak = session.MaximumFastStreak; TotalRemovedNumberBlocks = session.TotalRemoved;
+            TotalDestroyedDust = session.TotalDestroyedDust; TotalDestroyedBoxes = session.TotalDestroyedBoxes;
             TotalLongConnections = session.TotalLong; TotalFeverContribution = session.TotalFever;
         }
         public StageDefinitionId DefinitionId { get; } public StageSessionStatus Status { get; } public int InitialMoves { get; }
         public int RemainingMoves { get; } public int SpentMoves { get; } public long Score { get; } public StageAttemptId NextExpectedAttemptId { get; }
+        public MathGame.BoardResolution.BoardSystemEffectId NextExpectedSystemEffectId { get; }
         public IReadOnlyList<ObjectiveProgressSnapshot> Objectives { get; } public long CorrectCount { get; } public long MissCount { get; }
         public long PerfectCount { get; } public long FastCount { get; } public long NormalCount { get; } public int CurrentFastStreak { get; }
         public int MaximumFastStreak { get; } public long TotalRemovedNumberBlocks { get; } public long TotalLongConnections { get; } public long TotalFeverContribution { get; }
+        public long TotalDestroyedDust { get; } public long TotalDestroyedBoxes { get; }
     }
     public sealed class StageAttemptResult
     {
-        internal StageAttemptResult(StageAttemptApplyStatus status, StageSessionSnapshot before, StageSessionSnapshot after, int moveCost, StageRewardBreakdown reward, StageSessionEvent[] events)
-        { Status = status; Before = before; After = after; MoveCost = moveCost; Reward = reward; Events = Array.AsReadOnly(events); }
+        internal StageAttemptResult(StageAttemptApplyStatus status, StageSessionSnapshot before, StageSessionSnapshot after, int moveCost, StageRewardBreakdown reward, StageSessionEvent[] events, StageAttemptId attemptId = default, StageAttemptMode mode = StageAttemptMode.Normal, int scoreMultiplier = 1)
+        { Status = status; Before = before; After = after; MoveCost = moveCost; Reward = reward; Events = Array.AsReadOnly(events); AttemptId = attemptId; Mode = mode; ScoreMultiplier = scoreMultiplier; }
         public StageAttemptApplyStatus Status { get; } public StageSessionSnapshot Before { get; } public StageSessionSnapshot After { get; }
         public int MoveCost { get; } public StageRewardBreakdown Reward { get; } public IReadOnlyList<StageSessionEvent> Events { get; }
+        public StageAttemptId AttemptId { get; } public StageAttemptMode Mode { get; } public int ScoreMultiplier { get; }
     }
 }
