@@ -59,10 +59,19 @@ namespace MathGame.Tests.Restoration
         [Test]
         public void Milestones_HandleLongCapacityWithoutMultiplicationOverflow()
         {
-            var capacity = long.MaxValue - 7;
-            var world = new WorldRestorationProgress(new WorldRestorationId(4), capacity, capacity / 2);
-            Assert.That(world.Snapshot.ReachedMilestones, Does.Contain(WorldRestorationMilestone.Quarter));
-            Assert.That(world.Snapshot.ReachedMilestones, Does.Not.Contain(WorldRestorationMilestone.ThreeQuarters));
+   var capacity = long.MaxValue - 7;
+    var world = new WorldRestorationProgress(
+        new WorldRestorationId(4),
+        capacity,
+        capacity / 2);
+
+    Assert.That(
+        world.Snapshot.ReachedMilestones,
+        Does.Contain(WorldRestorationMilestone.Quarter.ToString()));
+
+    Assert.That(
+        world.Snapshot.ReachedMilestones,
+        Does.Not.Contain(WorldRestorationMilestone.ThreeQuarters.ToString()));
         }
     }
 }

@@ -2,13 +2,15 @@
   "name": "MathGame.Presentation.Contracts",
   "rootNamespace": "MathGame.Presentation",
   "references": [
+    "MathGame.Answer",
     "MathGame.Board",
     "MathGame.BoardResolution",
     "MathGame.Fever",
     "MathGame.ObstacleFlow",
     "MathGame.Restoration",
     "MathGame.Restoration.Contracts",
-    "MathGame.StageSession"
+    "MathGame.StageSession",
+    "MathGame.Targets"
   ],
   "autoReferenced": false,
   "noEngineReferences": true
