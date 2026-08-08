@@ -62,10 +62,30 @@
 **Decision:** One mutable Board owns dense cell state and a unique live-ID index. Place, remove, relocate, and access changes return deterministic result values; failures leave cells, count, and identity index unchanged. No force flag or arbitrary mutable cell reference is exposed.
 **Rationale:** Later generation, resolution, shuffle, search, and presentation need stable identity and safe state transitions, but their policies do not belong in STEP 2.
 
+### ADR-011: Isolate deterministic initial board generation
+
+**Status:** Implemented and verified in STEP 3
+**Decision:** Add a Unity-free `MathGame.BoardGeneration` assembly depending only on `MathGame.Board` and `MathGame.Core`. It creates a fresh Board, consumes active positions in row-major order, and uses only an injected `IRandomSource`.
+**Rationale:** Generation needs the random seam but the Board model should remain dependency-free and policy-neutral. A separate assembly keeps ownership and future consumers explicit.
+
+### ADR-012: Use uniform prototype sampling and sequential board-local IDs
+
+**Status:** Implemented and verified in STEP 3
+**Decision:** Prototype population draws once per active cell from the inclusive configured range 1–9 and assigns sequential positive IDs in row-major order. Holes consume neither draws nor IDs. Success returns the next unused ID.
+**Rationale:** The GDD specifies the initial range and allows duplicates but provides no weighting table. Uniform integer sampling is the smallest explicit prototype policy; difficulty weights and session-long ID ownership remain deferred.
+
+### ADR-013: Population success is not a solvability claim
+
+**Status:** Implemented and verified in STEP 3
+**Decision:** STEP 3 reports only complete, invariant-safe population. It does not retry, search paths, select targets, shuffle, enable input, or label a board playable. STEP 7 must verify a legal target path before exposure.
+**Rationale:** Deterministic random population cannot satisfy the GDD's verified-target requirement without the connection and search rules owned by STEPs 4 and 7.
+
 ## Tracked ambiguities for later STEP designs
 
 - Whether a one-block path is valid and the precise touch tolerance for backtracking/cancellation.
 - Target weighting and the numerical limit on consecutive identical targets.
+- Weighted number-generation probabilities and stage-specific distribution data.
+- Production seed persistence/replay guarantees and session-long block-ID allocation.
 - Exact score and base restoration-energy formulas where the GDD specifies relative multipliers only.
 - Which two obstacle types form the first prototype set and their detailed gravity interaction.
 - Exact stage data/content, objective quantities, move limits, and progression gates.
@@ -75,7 +95,7 @@
 
 ## Deferred decisions
 
-- Board generation policy, path rules, gravity, and obstacle layering remain deferred to their owning STEP designs.
+- Path rules, gravity, and obstacle layering remain deferred to their owning STEP designs.
 - Scene/view architecture is deferred until domain rules are approved.
 - A save backend, analytics provider, ad provider, and purchasing provider are deferred to their own STEPs.
 - Post-MVP arithmetic modes, social systems, seasons, broad boosters, and multiple Fever variants are explicitly out of scope.

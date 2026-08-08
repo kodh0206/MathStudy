@@ -9,7 +9,7 @@ This file describes only code present in the repository. Proposed gameplay archi
 - Unity 6000.3.6f1, Universal Render Pipeline 17.3.0, Input System 1.18.0, and Unity Test Framework 1.6.0.
 - The only enabled build scene is `Assets/Scenes/SampleScene.unity`.
 - Runtime code is under `Assets/MathGame/Runtime`; tests are under `Assets/MathGame/Tests`.
-- The logical board and number-block domain exists. No board generation, playable board instance/view, selection, target, objective, Fever, obstacle behavior, restoration, gameplay UI, analytics adapter, ad adapter, or concrete save repository exists.
+- The logical board, number-block domain, and deterministic initial population service exist. No playable board instance/view, selection, target, objective, Fever, obstacle behavior, restoration, gameplay UI, analytics adapter, ad adapter, or concrete save repository exists.
 
 ## Assembly boundaries
 
@@ -17,14 +17,15 @@ This file describes only code present in the repository. Proposed gameplay archi
 MathGame.Core        (no custom assembly dependency)
 MathGame.Save        (no custom assembly dependency)
 MathGame.Board       (no custom assembly dependency; no UnityEngine reference)
+MathGame.BoardGeneration ---> MathGame.Board, MathGame.Core (no UnityEngine reference)
 MathGame.Stage  ---> MathGame.Core
 MathGame.App    ---> MathGame.Core, MathGame.Stage, MathGame.Save
 
-EditModeTests   ---> MathGame.Core, MathGame.Stage, MathGame.Save, MathGame.Board
+EditModeTests   ---> MathGame.Core, MathGame.Stage, MathGame.Save, MathGame.Board, MathGame.BoardGeneration
 PlayModeTests   ---> MathGame.App, MathGame.Core, MathGame.Stage
 ```
 
-The Board and test assemblies are not auto-referenced; Board also sets `noEngineReferences` to enforce its Unity-free boundary. Other runtime assemblies remain auto-referenced. Edit Mode tests are Editor-only.
+The Board, BoardGeneration, and test assemblies are not auto-referenced. Board and BoardGeneration set `noEngineReferences` to enforce their Unity-free boundaries. Other runtime assemblies remain auto-referenced. Edit Mode tests are Editor-only.
 
 ## Existing systems
 
@@ -65,7 +66,16 @@ The Board and test assemblies are not auto-referenced; Board also sets `noEngine
 - `Board` owns dense mutable cell state plus a unique live-ID index. Each active cell has independent optional number occupancy and Open/Blocked access.
 - Immutable cell snapshots expose state without leaking mutable arrays or cells.
 - Place, remove, relocate, and access changes return explicit results. Failed mutations leave cells, block count, and ID index unchanged.
-- The board contains no generation, selection, target, gravity, obstacle behavior, events, presentation, time, randomness, or persistence logic.
+- The board contains no generation policy, selection, target, gravity, obstacle behavior, events, presentation, time, randomness, or persistence logic.
+
+### Initial board generation
+
+- `BoardGenerationConfig` is immutable request data containing topology, inclusive number bounds, and the first board-local block ID. Validation is centralized in the generator so expected invalid content produces stable failure results.
+- `BoardGenerator` is a stateless plain C# service with an injected `IRandomSource`. It never creates or owns a seed and never uses Unity randomness.
+- Generation validates the entire request before consuming randomness, creates a fresh Board, then fills active positions in topology row-major order.
+- Each active position consumes exactly one integer draw and one sequential ID. Inactive holes consume neither. Prototype callers use 5×5 and values 1–9; the generator itself accepts other valid configured topology/ranges.
+- `BoardGenerationResult` exposes either a complete Board plus the next unused ID or a stable failure with no partial Board. ID-capacity arithmetic and inclusive-to-exclusive range conversion are checked before generation.
+- Population success is not a solution guarantee. No target, path search, retry, shuffle, refill, Stage transition, or input enabling exists in BoardGeneration; STEP 7 must verify a target path before gameplay exposure.
 
 ## Current runtime flow
 
@@ -85,10 +95,10 @@ The stage is currently called “blank” because `Ready` has no board, target, 
 
 ## Verification already represented by tests
 
-- Edit Mode (48 tests): the 16 STEP 1 foundation tests plus coordinate/value invariants, rectangular/masked topology, boundary shapes, deterministic enumeration/neighbors, hole/empty distinction, block identity/indexing, access state, and atomic placement/removal/relocation result contracts.
+- Edit Mode (66 tests): the 16 STEP 1 foundation tests, STEP 2 board coverage, and STEP 3 configuration/generation coverage including deterministic seeds, exact random calls, masked topology, sequential IDs, validation/overflow failures, result independence, and faulty random sources.
 - Play Mode (10 tests): automatic `Ready` initialization, early background/focus reconciliation, both callback orders, stale-fact clearing, duplicate callback idempotence, nested reason clearing, duplicate ownership, and destruction/recreation.
 
-Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 2: Edit Mode 48/48 passed and Play Mode regression 10/10 passed with valid result XML. The Unity-free Board and affected test assemblies compiled with no C# errors.
+Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 3: Edit Mode 66/66 passed and Play Mode regression 10/10 passed with valid result XML. The Unity-free BoardGeneration, Board, Core, and affected test assemblies compiled with no C# errors.
 
 ## Known architectural risks
 
@@ -99,3 +109,4 @@ Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 2: Edit Mode 48/48 passe
 - Save-on-background, interrupted-stage restoration, and platform-specific lifecycle sequences still require their owning later STEP designs and device verification.
 - Board access is intentionally a minimal Open/Blocked fact. STEP 10 must derive or replace it from approved layered obstacle state so independent flags do not become competing rule authorities.
 - Exact gravity traversal through masked shapes and content connectivity rules remain deferred to their owning designs.
+- Initial population is deliberately not a playability guarantee. Available-path search, target safety, and deadlock recovery remain mandatory in STEP 7 before input can be enabled.

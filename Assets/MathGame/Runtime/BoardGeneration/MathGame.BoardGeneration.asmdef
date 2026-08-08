@@ -1,0 +1,10 @@
+{
+  "name": "MathGame.BoardGeneration",
+  "rootNamespace": "MathGame.BoardGeneration",
+  "references": [
+    "MathGame.Board",
+    "MathGame.Core"
+  ],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}
