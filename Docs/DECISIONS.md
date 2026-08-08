@@ -80,9 +80,33 @@
 **Decision:** STEP 3 reports only complete, invariant-safe population. It does not retry, search paths, select targets, shuffle, enable input, or label a board playable. STEP 7 must verify a legal target path before exposure.
 **Rationale:** Deterministic random population cannot satisfy the GDD's verified-target requirement without the connection and search rules owned by STEPs 4 and 7.
 
+### ADR-014: Connection paths are Unity-free ordered domain state
+
+**Status:** Implemented and verified in STEP 4
+**Decision:** Add `MathGame.Connection`, depending only on Board. One mutable ConnectionPath owns ordered captured entries, selected-position membership, and checked live sum while exposing immutable snapshots.
+**Rationale:** Player path legality, identity, and addition must be deterministic and shared later by answer and search systems without depending on touch sampling or views.
+
+### ADR-015: Backtrack only through the immediate predecessor
+
+**Status:** Implemented and verified in STEP 4
+**Decision:** Entering the immediate predecessor removes exactly the tail. Current-tail and other earlier duplicates are rejected; explicit Cancel clears the entire path. A one-entry path is valid working data, but its answer eligibility remains STEP 5.
+**Rationale:** This is the narrow rule consistent with GDD §4.3, prevents loops and multi-cell teleport undo, and avoids pointer jitter clearing the start cell.
+
+### ADR-016: Correct MVP answers require two connected blocks
+
+**Status:** Implemented and verified in STEP 5
+**Decision:** Exact equality is Correct only when a snapshot contains at least two entries. One-block equality is Miss/InsufficientConnectionLength; STEP 7 must share this rule.
+**Rationale:** GDD solution, reward, and tutorial rules consistently begin at two blocks; permitting target-value taps would bypass the connection mechanic.
+
+### ADR-017: Answer grades use Stage-gated interactive time
+
+**Status:** Implemented and verified in STEP 5
+**Decision:** A Stage-driven clock accumulates raw provider deltas only while effective player input is enabled. Misses do not reset the current target timer; correct completion freezes it. Prototype thresholds are inclusive 2/4 seconds.
+**Rationale:** GDD excludes every noninteractive phase, pause, app deactivation, and ad interval and treats speed only as optional reward.
+
 ## Tracked ambiguities for later STEP designs
 
-- Whether a one-block path is valid and the precise touch tolerance for backtracking/cancellation.
+- Precise touch tolerance for backtracking/cancellation.
 - Target weighting and the numerical limit on consecutive identical targets.
 - Weighted number-generation probabilities and stage-specific distribution data.
 - Production seed persistence/replay guarantees and session-long block-ID allocation.

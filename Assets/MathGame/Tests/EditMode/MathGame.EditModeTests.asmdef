@@ -6,7 +6,9 @@
     "MathGame.Stage",
     "MathGame.Save",
     "MathGame.Board",
-    "MathGame.BoardGeneration"
+    "MathGame.BoardGeneration",
+    "MathGame.Connection",
+    "MathGame.Answer"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

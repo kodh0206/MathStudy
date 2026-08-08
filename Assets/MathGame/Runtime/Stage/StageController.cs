@@ -66,6 +66,66 @@ namespace MathGame.Stage
             return TransitionTo(StageState.Ready, StageTransitionCause.InitializationCompleted);
         }
 
+        public TransitionResult BeginTargetPresentation()
+        {
+            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            {
+                return TransitionResult.StageAlreadyTerminated;
+            }
+
+            if (State is not (StageState.Ready or StageState.ResolvingAnswer))
+            {
+                return InvalidTransition(StageState.PresentingTarget);
+            }
+
+            return TransitionTo(StageState.PresentingTarget, StageTransitionCause.TargetPresentationBegan);
+        }
+
+        public TransitionResult EnablePlayerInput()
+        {
+            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            {
+                return TransitionResult.StageAlreadyTerminated;
+            }
+
+            if (State != StageState.PresentingTarget)
+            {
+                return InvalidTransition(StageState.PlayerInput);
+            }
+
+            return TransitionTo(StageState.PlayerInput, StageTransitionCause.PlayerInputEnabled);
+        }
+
+        public TransitionResult BeginAnswerResolution()
+        {
+            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            {
+                return TransitionResult.StageAlreadyTerminated;
+            }
+
+            if (State != StageState.PlayerInput)
+            {
+                return InvalidTransition(StageState.ResolvingAnswer);
+            }
+
+            return TransitionTo(StageState.ResolvingAnswer, StageTransitionCause.AnswerResolutionBegan);
+        }
+
+        public TransitionResult FinishMissResolution()
+        {
+            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            {
+                return TransitionResult.StageAlreadyTerminated;
+            }
+
+            if (State != StageState.ResolvingAnswer)
+            {
+                return InvalidTransition(StageState.PlayerInput);
+            }
+
+            return TransitionTo(StageState.PlayerInput, StageTransitionCause.MissResolutionFinished);
+        }
+
         public TransitionResult Pause(PauseReason reason)
         {
             if (State == StageState.Exited || State is StageState.Success or StageState.Failure)

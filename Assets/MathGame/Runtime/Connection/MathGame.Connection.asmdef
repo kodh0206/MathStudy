@@ -1,0 +1,9 @@
+{
+  "name": "MathGame.Connection",
+  "rootNamespace": "MathGame.Connection",
+  "references": [
+    "MathGame.Board"
+  ],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

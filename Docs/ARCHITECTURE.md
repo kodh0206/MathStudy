@@ -9,7 +9,7 @@ This file describes only code present in the repository. Proposed gameplay archi
 - Unity 6000.3.6f1, Universal Render Pipeline 17.3.0, Input System 1.18.0, and Unity Test Framework 1.6.0.
 - The only enabled build scene is `Assets/Scenes/SampleScene.unity`.
 - Runtime code is under `Assets/MathGame/Runtime`; tests are under `Assets/MathGame/Tests`.
-- The logical board, number-block domain, and deterministic initial population service exist. No playable board instance/view, selection, target, objective, Fever, obstacle behavior, restoration, gameplay UI, analytics adapter, ad adapter, or concrete save repository exists.
+- The logical board, deterministic initial population, and orthogonal connection-path domains exist. No playable board view/input adapter, target, answer resolution, objective, Fever, obstacle behavior, restoration, gameplay UI, analytics adapter, ad adapter, or concrete save repository exists.
 
 ## Assembly boundaries
 
@@ -18,14 +18,16 @@ MathGame.Core        (no custom assembly dependency)
 MathGame.Save        (no custom assembly dependency)
 MathGame.Board       (no custom assembly dependency; no UnityEngine reference)
 MathGame.BoardGeneration ---> MathGame.Board, MathGame.Core (no UnityEngine reference)
+MathGame.Connection  ---> MathGame.Board (no UnityEngine reference)
+MathGame.Answer      ---> MathGame.Connection, MathGame.Core, MathGame.Stage (no UnityEngine reference)
 MathGame.Stage  ---> MathGame.Core
 MathGame.App    ---> MathGame.Core, MathGame.Stage, MathGame.Save
 
-EditModeTests   ---> MathGame.Core, MathGame.Stage, MathGame.Save, MathGame.Board, MathGame.BoardGeneration
+EditModeTests   ---> MathGame.Core, MathGame.Stage, MathGame.Save, MathGame.Board, MathGame.BoardGeneration, MathGame.Connection
 PlayModeTests   ---> MathGame.App, MathGame.Core, MathGame.Stage
 ```
 
-The Board, BoardGeneration, and test assemblies are not auto-referenced. Board and BoardGeneration set `noEngineReferences` to enforce their Unity-free boundaries. Other runtime assemblies remain auto-referenced. Edit Mode tests are Editor-only.
+The Board, BoardGeneration, Connection, and test assemblies are not auto-referenced. All three domain assemblies set `noEngineReferences` to enforce their Unity-free boundaries. Other runtime assemblies remain auto-referenced. Edit Mode tests are Editor-only.
 
 ## Existing systems
 
@@ -77,6 +79,22 @@ The Board, BoardGeneration, and test assemblies are not auto-referenced. Board a
 - `BoardGenerationResult` exposes either a complete Board plus the next unused ID or a stable failure with no partial Board. ID-capacity arithmetic and inclusive-to-exclusive range conversion are checked before generation.
 - Population success is not a solution guarantee. No target, path search, retry, shuffle, refill, Stage transition, or input enabling exists in BoardGeneration; STEP 7 must verify a target path before gameplay exposure.
 
+### Connection path
+
+- `ConnectionPath` is a mutable plain C# owner bound to one Board. It reads cell snapshots but never mutates Board state.
+- It captures ordered positions and immutable block identities/values, tracks selected membership, and maintains a checked `long` live sum.
+- First selection requires an active Open occupied cell. Later additions require Manhattan distance one; diagonals, gaps, holes, empty/blocked cells, and duplicate positions are rejected atomically.
+- Entering the immediate predecessor removes only the tail. Other selected positions are rejected. Explicit Cancel clears the complete path and is idempotent.
+- `ConnectionPathSnapshot` copies entries into read-only historical data that is stable after later path or Board mutations.
+- Connection contains no target comparison, answer submission, timing, Board resolution, Unity input, or presentation behavior.
+
+### Answer validation and interactive timing
+
+- `AnswerValidator` purely classifies immutable connection snapshots against positive targets. Correct requires exact sum and at least two blocks; under, over, and one-block equality are Miss outcomes. Correct grades use inclusive 2/4-second thresholds.
+- `InteractiveAnswerClock` subscribes to Stage state, samples injected unscaled time, and accumulates only while Stage accepts player input. Presentation, resolution, every pause reason, and app inactivity are excluded.
+- Clock state/command/fault results are explicit. Nonfinite or backward time faults rather than silently changing a grade; disposal unsubscribes safely.
+- Stage now exposes the authoritative phase graph `Ready/ResolvingAnswer -> PresentingTarget -> PlayerInput -> ResolvingAnswer`, plus same-target miss return `ResolvingAnswer -> PlayerInput`. These commands add no Board resolution or target selection.
+
 ## Current runtime flow
 
 ```text
@@ -95,10 +113,10 @@ The stage is currently called “blank” because `Ready` has no board, target, 
 
 ## Verification already represented by tests
 
-- Edit Mode (66 tests): the 16 STEP 1 foundation tests, STEP 2 board coverage, and STEP 3 configuration/generation coverage including deterministic seeds, exact random calls, masked topology, sequential IDs, validation/overflow failures, result independence, and faulty random sources.
-- Play Mode (10 tests): automatic `Ready` initialization, early background/focus reconciliation, both callback orders, stale-fact clearing, duplicate callback idempotence, nested reason clearing, duplicate ownership, and destruction/recreation.
+- Edit Mode (99 tests): foundation through Answer coverage, including validation outcomes, minimum length, exact grade thresholds, Stage phase graph, clock command/fault behavior, and all earlier domain regressions.
+- Play Mode (19 tests): bootstrap/lifecycle regressions plus Stage-driven interactive timing, same-target miss continuation, nested pause exclusions, stopping, reset, faults, and disposal.
 
-Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 3: Edit Mode 66/66 passed and Play Mode regression 10/10 passed with valid result XML. The Unity-free BoardGeneration, Board, Core, and affected test assemblies compiled with no C# errors.
+Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 5: Edit Mode 99/99 and Play Mode 19/19 passed with valid result XML. Answer, Stage, and affected assemblies compiled with no C# errors.
 
 ## Known architectural risks
 
