@@ -1,23 +1,24 @@
 # MathGame Development Plan
 
 Last updated: 2026-08-08  
-Status: **Provisional and gameplay-blocked** because `Docs/GAME_DESIGN.md` is absent.
+Status: **GDD-backed.** STEPs 1-2 are complete; later STEPs require their own GDD reconciliation before implementation.
 
 ## Planning basis
 
-The repository contains an application/lifecycle foundation but no gameplay. The attached development brief establishes process rules and a high-level loop (target -> orthogonal connection -> addition validation -> removal -> gravity/refill -> Fever -> obstacles -> restoration). It does not define the full game. Consequently:
+The repository contains an application/lifecycle foundation but no gameplay. `Docs/GAME_DESIGN.md` v1.0 now defines the product and MVP. Consequently:
 
 - STEP 1 reflects verified existing code.
-- STEPs 2-16 are dependency-safe planning slices, not approved gameplay specifications.
-- Before any `Design STEP N` or `Implement STEP N`, add/read `Docs/GAME_DESIGN.md`, map its requirement IDs or sections into that STEP, and revise acceptance criteria where necessary.
+- STEPs 2-16 are dependency-safe planning slices and require a dedicated design pass before implementation.
+- Before any `Design STEP N` or `Implement STEP N`, read the relevant `Docs/GAME_DESIGN.md` sections, map them into that STEP, and revise acceptance criteria where necessary.
 - Ambiguous rules must remain open; they must not be invented during implementation.
 
 ## Current status
 
 | STEP | Slice | State |
 |---:|---|---|
-| 1 | Project Foundation and Stage Lifecycle | Implemented with unresolved P1; not fully verified |
-| 2-16 | Prototype/MVP development | Planned, blocked by missing design |
+| 1 | Project Foundation and Stage Lifecycle | Complete — Edit Mode 16/16, Play Mode 10/10, no P0 |
+| 2 | Board Domain Model | Complete — Edit Mode 48/48 total, Play Mode regression 10/10, no P0/P1/P2 |
+| 3-16 | Prototype/MVP development | Planned; design required per STEP |
 
 ## Dependency path
 
@@ -39,13 +40,13 @@ Presentation work may be prototyped alongside domain STEPs only when explicitly 
 ## STEP 1 — Project Foundation and Stage Lifecycle
 
 **Goal:** Establish a testable application composition root, deterministic service seams, and lifecycle state/pause handling.  
-**Requirements:** Start a blank stage; expose controllable time/randomness seams; reject invalid state transitions; disable input outside input states; preserve nested pause reasons; exit and clean up safely.  
+**Requirements:** Initialize a blank stage into non-interactive `Ready`; expose controllable time/randomness seams; reject invalid state transitions; disable input outside input states; preserve nested pause reasons and early lifecycle intent; exit and clean up safely.
 **Systems:** Core time/random/logging abstractions, `StageController`, application bootstrap, Unity lifecycle relay, persistence interface/schema shell.  
 **Expected files:** Existing `Assets/MathGame/Runtime/{Core,Stage,App,Save}` assemblies and their Edit/Play Mode tests; architecture docs.  
 **Dependencies:** None.  
 **Implementation scope:** Reconcile existing lifecycle with the design; fill only confirmed foundation gaps. Do not add board/gameplay.  
-**Tests:** State transitions and repeated calls; nested/unknown/duplicate pause reasons; focus/background combinations including callbacks before/during initialization; teardown/recreation; assembly compilation.  
-**Completion criteria:** The initialization/pause race is resolved, design reconciliation is complete, all foundation tests pass in this checkout, no P0 review findings, and architecture reflects actual behavior.
+**Tests:** `None -> Initializing -> Ready`; no blank-stage input; repeated/invalid commands; nested/unknown/duplicate pause reasons; early focus/background callback ordering and clearing; teardown/recreation; assembly compilation.
+**Completion criteria:** Early lifecycle intent is retained/reconciled, blank startup is non-interactive, all foundation tests pass in this checkout, no P0 review findings remain, and architecture reflects actual behavior.
 
 ## STEP 2 — Board Domain Model
 
@@ -220,4 +221,4 @@ After `Implement STEP N`, report: Goal; Requirements Implemented; Architecture; 
 
 ## Immediate next action
 
-Add the complete authoritative specification as `Docs/GAME_DESIGN.md`. Then run `Design STEP 1` to reconcile and verify the existing foundation before any gameplay STEP begins.
+Stop and wait for the user's next command. The next dependency-safe command is `Design STEP 3`; do not begin it automatically.

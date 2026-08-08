@@ -16,6 +16,7 @@ namespace MathGame.App
 
         private ApplicationLifecycleRelay _lifecycleRelay;
         private IGameLogger _logger;
+        private bool _isStageInitialized;
 
         public StageController StageController { get; private set; }
 
@@ -53,8 +54,20 @@ namespace MathGame.App
                 return;
             }
 
-            StageController.Start();
-            StageController.FinishInitialization();
+            if (StageController.Start() != TransitionResult.Succeeded)
+            {
+                _logger.Error(LogCategory, "Stage failed to start initialization.");
+                return;
+            }
+
+            if (StageController.FinishInitialization() != TransitionResult.Succeeded)
+            {
+                _logger.Error(LogCategory, "Stage failed to finish initialization.");
+                return;
+            }
+
+            _isStageInitialized = true;
+            ReconcileLifecycleState();
         }
 
         private void OnDestroy()
@@ -74,25 +87,51 @@ namespace MathGame.App
 
         private void HandleApplicationPauseChanged(bool isPaused)
         {
-            if (isPaused)
+            if (!_isStageInitialized)
             {
-                StageController.Pause(PauseReason.ApplicationBackground);
+                return;
             }
-            else
-            {
-                StageController.Resume(PauseReason.ApplicationBackground);
-            }
+
+            SynchronizePauseReason(PauseReason.ApplicationBackground, isPaused);
         }
 
         private void HandleApplicationFocusChanged(bool hasFocus)
         {
-            if (hasFocus)
+            if (!_isStageInitialized)
             {
-                StageController.Resume(PauseReason.ApplicationFocusLost);
+                return;
             }
-            else
+
+            SynchronizePauseReason(PauseReason.ApplicationFocusLost, !hasFocus);
+        }
+
+        private void ReconcileLifecycleState()
+        {
+            if (_lifecycleRelay.IsApplicationPaused.HasValue)
             {
-                StageController.Pause(PauseReason.ApplicationFocusLost);
+                SynchronizePauseReason(
+                    PauseReason.ApplicationBackground,
+                    _lifecycleRelay.IsApplicationPaused.Value);
+            }
+
+            if (_lifecycleRelay.HasApplicationFocus.HasValue)
+            {
+                SynchronizePauseReason(
+                    PauseReason.ApplicationFocusLost,
+                    !_lifecycleRelay.HasApplicationFocus.Value);
+            }
+        }
+
+        private void SynchronizePauseReason(PauseReason reason, bool shouldBePaused)
+        {
+            bool isPausedForReason = StageController.HasPauseReason(reason);
+            if (shouldBePaused && !isPausedForReason)
+            {
+                StageController.Pause(reason);
+            }
+            else if (!shouldBePaused && isPausedForReason)
+            {
+                StageController.Resume(reason);
             }
         }
     }

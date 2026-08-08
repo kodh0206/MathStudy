@@ -60,10 +60,10 @@ namespace MathGame.Stage
 
             if (State != StageState.Initializing)
             {
-                return InvalidTransition(StageState.PlayerInput);
+                return InvalidTransition(StageState.Ready);
             }
 
-            return TransitionTo(StageState.PlayerInput, StageTransitionCause.InitializationCompleted);
+            return TransitionTo(StageState.Ready, StageTransitionCause.InitializationCompleted);
         }
 
         public TransitionResult Pause(PauseReason reason)
@@ -181,6 +181,7 @@ namespace MathGame.Stage
         private static bool CanPause(StageState state)
         {
             return state is StageState.Initializing
+                or StageState.Ready
                 or StageState.PresentingTarget
                 or StageState.PlayerInput
                 or StageState.ResolvingAnswer
@@ -191,8 +192,7 @@ namespace MathGame.Stage
 
         private static bool CanFinish(StageState state)
         {
-            return state is StageState.Initializing
-                or StageState.PresentingTarget
+            return state is StageState.PresentingTarget
                 or StageState.PlayerInput
                 or StageState.ResolvingAnswer
                 or StageState.EnteringFever

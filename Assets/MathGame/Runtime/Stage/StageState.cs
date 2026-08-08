@@ -13,6 +13,7 @@ namespace MathGame.Stage
         Paused = 8,
         Success = 9,
         Failure = 10,
-        Exited = 11
+        Exited = 11,
+        Ready = 12
     }
 }

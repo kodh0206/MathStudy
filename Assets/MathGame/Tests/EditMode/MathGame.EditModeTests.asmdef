@@ -4,7 +4,8 @@
   "references": [
     "MathGame.Core",
     "MathGame.Stage",
-    "MathGame.Save"
+    "MathGame.Save",
+    "MathGame.Board"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"
