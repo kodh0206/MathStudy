@@ -21,6 +21,7 @@ MathGame.BoardGeneration ---> MathGame.Board, MathGame.Core (no UnityEngine refe
 MathGame.Connection  ---> MathGame.Board (no UnityEngine reference)
 MathGame.Answer      ---> MathGame.Connection, MathGame.Core, MathGame.Stage (no UnityEngine reference)
 MathGame.BoardResolution ---> MathGame.Board, MathGame.Answer, MathGame.Connection, MathGame.Core (no UnityEngine reference)
+MathGame.Targets     ---> MathGame.Board, MathGame.Answer, MathGame.Core (no UnityEngine reference)
 MathGame.Stage  ---> MathGame.Core
 MathGame.App    ---> MathGame.Core, MathGame.Stage, MathGame.Save
 
@@ -104,6 +105,14 @@ The Board, BoardGeneration, Connection, and test assemblies are not auto-referen
 - Results contain copied read-only removed, moved, and spawned deltas plus the next unused ID. Expected failures expose no Board/deltas and consume no randomness during preflight.
 - Basic resolution requires every active source cell to be Open and occupied. Generic blocked/obstacle states remain unsupported until STEP 10 defines their distinct semantics.
 
+### Verified targets and recovery
+
+- `TargetPathSearcher` performs bounded deterministic DFS over Open occupied cells, using row-major starts and fixed orthogonal neighbor order. It returns sorted distinct targets with canonical current-Board witnesses; a search-limit result discards partial candidates.
+- `SafeTargetSelector` chooses uniformly across proven distinct values with explicit immutable repetition policy/history. A capped previous value is excluded when alternatives exist and marked as a fallback when it is the sole safe value.
+- `BoardShuffler` performs identity-preserving Fisher–Yates on a fresh Board. `TargetRecoveryCoordinator` shares one injected random stream across shuffle and selection, regenerates a target before shuffling, bounds attempts, and re-searches after every attempt.
+- Successful recovery returns an exact witness, Board/history, zero move cost, and immutable original-to-final shuffle deltas. Failure never advertises a safe target or enables input.
+- Stage includes noninteractive pausable `RecoveringBoard`; deadlock recovery enters it from PlayerInput and only verified success may proceed to PresentingTarget.
+
 ## Current runtime flow
 
 ```text
@@ -122,10 +131,10 @@ The stage is currently called “blank” because `Ready` has no board, target, 
 
 ## Verification already represented by tests
 
-- Edit Mode (117 tests): foundation through BoardResolution coverage, including identity-safe atomic failure, rectangular/masked multi-segment gravity, deterministic refill/IDs/deltas, capacity and random-fault boundaries, source independence, delta/index coherence, stale repeat rejection, and all earlier regressions.
-- Play Mode (19 tests): bootstrap/lifecycle regressions plus Stage-driven interactive timing, same-target miss continuation, nested pause exclusions, stopping, reset, faults, and disposal.
+- Edit Mode (150 tests): foundation through Targets coverage, including complete orthogonal/masked search contracts, expansion/pruning boundaries, selector validation and random faults, shuffle preservation/immutability, deterministic shared-RNG recovery, final delta coherence, RecoveringBoard transitions, and all earlier regressions.
+- Play Mode (20 tests): bootstrap/lifecycle and answer-clock regressions plus focus/pause exclusion while RecoveringBoard is noninteractive.
 
-Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 6: Edit Mode 117/117 and Play Mode 19/19 passed with valid result XML. BoardResolution and affected assemblies compiled with no C# errors.
+Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 7: Edit Mode 150/150 and Play Mode 20/20 passed with valid result XML. Targets, Stage, and affected assemblies compiled with no C# errors.
 
 ## Known architectural risks
 
@@ -136,4 +145,4 @@ Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 6: Edit Mode 117/117 and
 - Save-on-background, interrupted-stage restoration, and platform-specific lifecycle sequences still require their owning later STEP designs and device verification.
 - Board access is intentionally a minimal Open/Blocked fact. STEP 10 must derive or replace it from approved layered obstacle state so independent flags do not become competing rule authorities.
 - Exact gravity traversal through masked shapes and content connectivity rules remain deferred to their owning designs.
-- Initial population is deliberately not a playability guarantee. Available-path search, target safety, and deadlock recovery remain mandatory in STEP 7 before input can be enabled.
+- Initial population remains unverified until the implemented STEP 7 search supplies a current-board witness. Bounded `SearchLimitExceeded` or `UnrecoverableDeadlock` results intentionally keep input disabled and require content/configuration handling rather than unsafe target exposure.

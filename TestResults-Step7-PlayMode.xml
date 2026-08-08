@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="20" result="Passed" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.0747682">
+  <test-suite type="TestSuite" id="1032" name="MathGame" fullname="MathGame" runstate="Runnable" testcasecount="20" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.074768" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="PlayMode" />
+    </properties>
+    <test-suite type="Assembly" id="1025" name="MathGame.PlayModeTests.dll" fullname="C:/Users/USER/Documents/GitHub/MathStudy/Library/ScriptAssemblies/MathGame.PlayModeTests.dll" runstate="Runnable" testcasecount="20" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.068753" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="11084" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="PlayMode" />
+        <property name="EditorOnly" value="False" />
+      </properties>
+      <test-suite type="TestSuite" id="1026" name="MathGame" fullname="MathGame" runstate="Runnable" testcasecount="20" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.068051" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1027" name="Tests" fullname="MathGame.Tests" runstate="Runnable" testcasecount="20" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.067559" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1028" name="PlayMode" fullname="MathGame.Tests.PlayMode" runstate="Runnable" testcasecount="20" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.067079" total="20" passed="20" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1001" name="InteractiveAnswerClockTests" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.022590" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1011" name="ArmedStopAndDisposeFollowContract" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.ArmedStopAndDisposeFollowContract" methodname="ArmedStopAndDisposeFollowContract" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" seed="1735918232" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.009652" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1002" name="ArmWaitsForInputAndMissResolutionContinuesSameElapsedTime" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.ArmWaitsForInputAndMissResolutionContinuesSameElapsedTime" methodname="ArmWaitsForInputAndMissResolutionContinuesSameElapsedTime" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" seed="52827347" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.001104" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1008" name="EveryExternalPauseExcludesTime" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.EveryExternalPauseExcludesTime" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.002437" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1004" name="EveryExternalPauseExcludesTime(ApplicationBackground)" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.EveryExternalPauseExcludesTime(ApplicationBackground)" methodname="EveryExternalPauseExcludesTime" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" seed="694277228" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.000534" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1005" name="EveryExternalPauseExcludesTime(ApplicationFocusLost)" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.EveryExternalPauseExcludesTime(ApplicationFocusLost)" methodname="EveryExternalPauseExcludesTime" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" seed="1279925097" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.000068" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1006" name="EveryExternalPauseExcludesTime(Advertisement)" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.EveryExternalPauseExcludesTime(Advertisement)" methodname="EveryExternalPauseExcludesTime" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" seed="1585242750" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.000038" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1007" name="EveryExternalPauseExcludesTime(SystemInterruption)" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.EveryExternalPauseExcludesTime(SystemInterruption)" methodname="EveryExternalPauseExcludesTime" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" seed="518262307" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.000043" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1010" name="InvalidTimeSamplesFaultAtomicallyAndResetClearsFault" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.InvalidTimeSamplesFaultAtomicallyAndResetClearsFault" methodname="InvalidTimeSamplesFaultAtomicallyAndResetClearsFault" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" seed="995813343" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.000359" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1003" name="NestedPauseReasonsDoNotResumeUntilFinalReasonClears" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.NestedPauseReasonsDoNotResumeUntilFinalReasonClears" methodname="NestedPauseReasonsDoNotResumeUntilFinalReasonClears" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" seed="1144141113" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.000148" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1009" name="StopFreezesAndResetCommandTableIsDeterministic" fullname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests.StopFreezesAndResetCommandTableIsDeterministic" methodname="StopFreezesAndResetCommandTableIsDeterministic" classname="MathGame.Tests.PlayMode.InteractiveAnswerClockTests" runstate="Runnable" seed="1530112914" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.000232" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1012" name="MathGameBootstrapTests" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.042310" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1013" name="Bootstrap_InitializesBlankStage" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.Bootstrap_InitializesBlankStage" methodname="Bootstrap_InitializesBlankStage" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="763541896" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.008941" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Paused -> Exited (ExitRequested)
+[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Ready -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+              <test-case id="1021" name="DestroyingBootstrap_ExitsStageAndReleasesSingletonGuard" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.DestroyingBootstrap_ExitsStageAndReleasesSingletonGuard" methodname="DestroyingBootstrap_ExitsStageAndReleasesSingletonGuard" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="1869482850" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.004833" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Ready -> Exited (ExitRequested)
+[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Ready -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+              <test-case id="1022" name="DuplicateBootstrap_DoesNotStealLifecycleOwnership" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.DuplicateBootstrap_DoesNotStealLifecycleOwnership" methodname="DuplicateBootstrap_DoesNotStealLifecycleOwnership" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="2142854548" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.005266" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Ready -> Paused (PauseRequested)
+[MathGame][Stage] Paused -> Ready (AllPauseReasonsCleared)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Ready -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+              <test-case id="1020" name="LifecycleRelay_DuplicateActiveCallbacks_DoNotPublishTransitions" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.LifecycleRelay_DuplicateActiveCallbacks_DoNotPublishTransitions" methodname="LifecycleRelay_DuplicateActiveCallbacks_DoNotPublishTransitions" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="876747170" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.003227" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Ready -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+              <test-case id="1015" name="LifecycleRelay_EarlyBackgroundPause_IsReconciledAfterInitialization" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.LifecycleRelay_EarlyBackgroundPause_IsReconciledAfterInitialization" methodname="LifecycleRelay_EarlyBackgroundPause_IsReconciledAfterInitialization" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="1628638569" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.003308" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Ready -> Paused (PauseRequested)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Paused -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+              <test-case id="1017" name="LifecycleRelay_EarlyFocusLoss_IsReconciledAfterInitialization" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.LifecycleRelay_EarlyFocusLoss_IsReconciledAfterInitialization" methodname="LifecycleRelay_EarlyFocusLoss_IsReconciledAfterInitialization" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="1644349723" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.002626" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Ready -> Paused (PauseRequested)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Paused -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+              <test-case id="1016" name="LifecycleRelay_EarlyInactiveThenActive_DoesNotApplyStaleReason" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.LifecycleRelay_EarlyInactiveThenActive_DoesNotApplyStaleReason" methodname="LifecycleRelay_EarlyInactiveThenActive_DoesNotApplyStaleReason" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="1131907614" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.002883" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Ready -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+              <test-case id="1018" name="LifecycleRelay_EarlyNestedReasons_ClearIndependently" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.LifecycleRelay_EarlyNestedReasons_ClearIndependently" methodname="LifecycleRelay_EarlyNestedReasons_ClearIndependently" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="1063636410" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.002922" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Ready -> Paused (PauseRequested)
+[MathGame][Stage] Paused -> Ready (AllPauseReasonsCleared)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Ready -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+              <test-case id="1019" name="LifecycleRelay_EarlyNestedReasons_ReverseOrderTransitionsOnceToPaused" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.LifecycleRelay_EarlyNestedReasons_ReverseOrderTransitionsOnceToPaused" methodname="LifecycleRelay_EarlyNestedReasons_ReverseOrderTransitionsOnceToPaused" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="1486696066" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.002766" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Ready -> Paused (PauseRequested)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Paused -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+              <test-case id="1014" name="LifecycleRelay_PreservesNestedPauseReasons" fullname="MathGame.Tests.PlayMode.MathGameBootstrapTests.LifecycleRelay_PreservesNestedPauseReasons" methodname="LifecycleRelay_PreservesNestedPauseReasons" classname="MathGame.Tests.PlayMode.MathGameBootstrapTests" runstate="Runnable" seed="1406127264" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.003320" asserts="0">
+                <properties>
+                  <property name="_JOINTYPE" value="UnityCombinatorial" />
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[MathGame][App] Bootstrap initialized.
+[MathGame][Stage] None -> Initializing (StartRequested)
+[MathGame][Stage] Initializing -> Ready (InitializationCompleted)
+[MathGame][Stage] Ready -> Paused (PauseRequested)
+[MathGame][Stage] Paused -> Ready (AllPauseReasonsCleared)
+[MathGame][Stage] Exit requested: ApplicationShutdown.
+[MathGame][Stage] Ready -> Exited (ExitRequested)
+]]></output>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1023" name="StageRecoveryTests" fullname="MathGame.Tests.PlayMode.StageRecoveryTests" classname="MathGame.Tests.PlayMode.StageRecoveryTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.001187" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1024" name="RecoveryPhaseRejectsInputPausesAndSuspendsClock" fullname="MathGame.Tests.PlayMode.StageRecoveryTests.RecoveryPhaseRejectsInputPausesAndSuspendsClock" methodname="RecoveryPhaseRejectsInputPausesAndSuspendsClock" classname="MathGame.Tests.PlayMode.StageRecoveryTests" runstate="Runnable" seed="1772883699" result="Passed" start-time="2026-08-08 03:23:14Z" end-time="2026-08-08 03:23:14Z" duration="0.000602" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: C:/Users/USER/AppData/LocalLow/DefaultCompany/MathGame\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

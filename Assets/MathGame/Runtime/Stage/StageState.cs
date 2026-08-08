@@ -14,6 +14,7 @@ namespace MathGame.Stage
         Success = 9,
         Failure = 10,
         Exited = 11,
-        Ready = 12
+        Ready = 12,
+        RecoveringBoard = 13
     }
 }

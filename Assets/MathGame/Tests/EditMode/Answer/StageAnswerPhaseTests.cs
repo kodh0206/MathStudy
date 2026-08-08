@@ -54,6 +54,21 @@ namespace MathGame.Tests.Answer
             Assert.That(stage.EnablePlayerInput(), Is.EqualTo(TransitionResult.StageAlreadyTerminated));
             Assert.That(stage.BeginAnswerResolution(), Is.EqualTo(TransitionResult.StageAlreadyTerminated));
             Assert.That(stage.FinishMissResolution(), Is.EqualTo(TransitionResult.StageAlreadyTerminated));
+            Assert.That(stage.BeginDeadlockRecovery(), Is.EqualTo(TransitionResult.StageAlreadyTerminated));
+            Assert.That(count, Is.Zero);
+        }
+
+        [Test]
+        public void DeadlockRecoveryRejectsWrongAndPausedPhasesWithoutEvent()
+        {
+            var stage = Ready();
+            var count = 0;
+            stage.StateChanged += _ => count++;
+            Assert.That(stage.BeginDeadlockRecovery(), Is.EqualTo(TransitionResult.InvalidFromCurrentState));
+            Assert.That(count, Is.Zero);
+            stage.Pause(PauseReason.User);
+            count = 0;
+            Assert.That(stage.BeginDeadlockRecovery(), Is.EqualTo(TransitionResult.InvalidFromCurrentState));
             Assert.That(count, Is.Zero);
         }
 

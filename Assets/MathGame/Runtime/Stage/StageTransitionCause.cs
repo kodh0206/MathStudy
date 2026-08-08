@@ -12,6 +12,7 @@ namespace MathGame.Stage
         TargetPresentationBegan = 7,
         PlayerInputEnabled = 8,
         AnswerResolutionBegan = 9,
-        MissResolutionFinished = 10
+        MissResolutionFinished = 10,
+        DeadlockRecoveryBegan = 11
     }
 }

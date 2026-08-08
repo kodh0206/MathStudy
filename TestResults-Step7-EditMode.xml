@@ -1,0 +1,1035 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="150" result="Passed" total="150" passed="150" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.2082608">
+  <test-suite type="TestSuite" id="1000" name="MathGame" fullname="MathGame" runstate="Runnable" testcasecount="150" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.208261" total="150" passed="150" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1181" name="MathGame.EditModeTests.dll" fullname="C:/Users/USER/Documents/GitHub/MathStudy/Library/ScriptAssemblies/MathGame.EditModeTests.dll" runstate="Runnable" testcasecount="150" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.198657" total="150" passed="150" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="10444" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1182" name="MathGame" fullname="MathGame" runstate="Runnable" testcasecount="150" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.196737" total="150" passed="150" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1183" name="Tests" fullname="MathGame.Tests" runstate="Runnable" testcasecount="150" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.194329" total="150" passed="150" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestSuite" id="1190" name="Answer" fullname="MathGame.Tests.Answer" runstate="Runnable" testcasecount="18" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.054677" total="18" passed="18" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1158" name="AnswerValidatorTests" fullname="MathGame.Tests.Answer.AnswerValidatorTests" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" testcasecount="14" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.048214" total="14" passed="14" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1163" name="EmptySnapshotIsNoSelection" fullname="MathGame.Tests.Answer.AnswerValidatorTests.EmptySnapshotIsNoSelection" methodname="EmptySnapshotIsNoSelection" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="1799639956" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.015170" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1174" name="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries" fullname="MathGame.Tests.Answer.AnswerValidatorTests.ExactMultiBlockAnswersUseInclusiveSpeedBoundaries" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.009870" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1168" name="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(0,Perfect)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(0,Perfect)" methodname="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="862673405" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.005418" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1169" name="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(2,Perfect)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(2,Perfect)" methodname="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="999228981" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000294" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1170" name="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(2.0001d,Fast)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(2.0001d,Fast)" methodname="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="170863929" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000147" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1171" name="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(4,Fast)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(4,Fast)" methodname="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="440603034" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000056" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1172" name="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(4.0001d,Normal)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(4.0001d,Normal)" methodname="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="1540740923" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000054" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1173" name="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(1000,Normal)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.ExactMultiBlockAnswersUseInclusiveSpeedBoundaries(1000,Normal)" methodname="ExactMultiBlockAnswersUseInclusiveSpeedBoundaries" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="183349965" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000053" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1175" name="InvalidInputsThrow" fullname="MathGame.Tests.Answer.AnswerValidatorTests.InvalidInputsThrow" methodname="InvalidInputsThrow" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="1887846481" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002916" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1167" name="OneBlockExactIsInsufficientMiss" fullname="MathGame.Tests.Answer.AnswerValidatorTests.OneBlockExactIsInsufficientMiss" methodname="OneBlockExactIsInsufficientMiss" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="404447411" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001209" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1162" name="PreviewClassifiesWithoutSubmission" fullname="MathGame.Tests.Answer.AnswerValidatorTests.PreviewClassifiesWithoutSubmission" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001470" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1159" name="PreviewClassifiesWithoutSubmission(4,BelowTarget)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.PreviewClassifiesWithoutSubmission(4,BelowTarget)" methodname="PreviewClassifiesWithoutSubmission" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="340082983" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000325" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1160" name="PreviewClassifiesWithoutSubmission(5,MatchesTarget)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.PreviewClassifiesWithoutSubmission(5,MatchesTarget)" methodname="PreviewClassifiesWithoutSubmission" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="1993517400" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000099" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1161" name="PreviewClassifiesWithoutSubmission(6,AboveTarget)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.PreviewClassifiesWithoutSubmission(6,AboveTarget)" methodname="PreviewClassifiesWithoutSubmission" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="1531739294" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000042" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-suite type="ParameterizedMethod" id="1166" name="UnderAndOverAreDistinctMisses" fullname="MathGame.Tests.Answer.AnswerValidatorTests.UnderAndOverAreDistinctMisses" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001130" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1164" name="UnderAndOverAreDistinctMisses(2,3,UnderTarget)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.UnderAndOverAreDistinctMisses(2,3,UnderTarget)" methodname="UnderAndOverAreDistinctMisses" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="813320713" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000364" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1165" name="UnderAndOverAreDistinctMisses(2,7,OverTarget)" fullname="MathGame.Tests.Answer.AnswerValidatorTests.UnderAndOverAreDistinctMisses(2,7,OverTarget)" methodname="UnderAndOverAreDistinctMisses" classname="MathGame.Tests.Answer.AnswerValidatorTests" runstate="Runnable" seed="1778294567" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000083" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+            </test-suite>
+            <test-suite type="TestFixture" id="1176" name="StageAnswerPhaseTests" fullname="MathGame.Tests.Answer.StageAnswerPhaseTests" classname="MathGame.Tests.Answer.StageAnswerPhaseTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.004909" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1177" name="AnswerPhasesFollowApprovedGraphAndCauses" fullname="MathGame.Tests.Answer.StageAnswerPhaseTests.AnswerPhasesFollowApprovedGraphAndCauses" methodname="AnswerPhasesFollowApprovedGraphAndCauses" classname="MathGame.Tests.Answer.StageAnswerPhaseTests" runstate="Runnable" seed="238205843" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002128" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1180" name="DeadlockRecoveryRejectsWrongAndPausedPhasesWithoutEvent" fullname="MathGame.Tests.Answer.StageAnswerPhaseTests.DeadlockRecoveryRejectsWrongAndPausedPhasesWithoutEvent" methodname="DeadlockRecoveryRejectsWrongAndPausedPhasesWithoutEvent" classname="MathGame.Tests.Answer.StageAnswerPhaseTests" runstate="Runnable" seed="1927795011" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000868" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1179" name="TerminalStageRejectsEveryAnswerPhaseCommandWithoutEvent" fullname="MathGame.Tests.Answer.StageAnswerPhaseTests.TerminalStageRejectsEveryAnswerPhaseCommandWithoutEvent" methodname="TerminalStageRejectsEveryAnswerPhaseCommandWithoutEvent" classname="MathGame.Tests.Answer.StageAnswerPhaseTests" runstate="Runnable" seed="1131594801" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000426" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1178" name="WrongPhaseAndPausedCommandsPublishNoEvent" fullname="MathGame.Tests.Answer.StageAnswerPhaseTests.WrongPhaseAndPausedCommandsPublishNoEvent" methodname="WrongPhaseAndPausedCommandsPublishNoEvent" classname="MathGame.Tests.Answer.StageAnswerPhaseTests" runstate="Runnable" seed="1240296394" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000316" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestSuite" id="1189" name="Board" fullname="MathGame.Tests.Board" runstate="Runnable" testcasecount="32" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.027365" total="32" passed="32" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1116" name="BoardBoundaryAndSequenceTests" fullname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests" classname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.006153" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1121" name="AccessTransitionsForEmptyAndOccupiedCellsAndReopenRestoresMutation" fullname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests.AccessTransitionsForEmptyAndOccupiedCellsAndReopenRestoresMutation" methodname="AccessTransitionsForEmptyAndOccupiedCellsAndReopenRestoresMutation" classname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests" runstate="Runnable" seed="2066598815" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001838" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1120" name="MixedSequenceMaintainsUniqueIndexAndAllowsRemovedIdReuse" fullname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests.MixedSequenceMaintainsUniqueIndexAndAllowsRemovedIdReuse" methodname="MixedSequenceMaintainsUniqueIndexAndAllowsRemovedIdReuse" classname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests" runstate="Runnable" seed="757743723" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001043" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1117" name="PlacementBoundaryFailuresPreserveState" fullname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests.PlacementBoundaryFailuresPreserveState" methodname="PlacementBoundaryFailuresPreserveState" classname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests" runstate="Runnable" seed="577318871" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001125" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1119" name="RelocationFailuresReturnExactResultsAndPreserveBothEndpoints" fullname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests.RelocationFailuresReturnExactResultsAndPreserveBothEndpoints" methodname="RelocationFailuresReturnExactResultsAndPreserveBothEndpoints" classname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests" runstate="Runnable" seed="1215075102" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000810" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1118" name="RemovalBoundaryFailuresPreserveState" fullname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests.RemovalBoundaryFailuresPreserveState" methodname="RemovalBoundaryFailuresPreserveState" classname="MathGame.Tests.Board.BoardBoundaryAndSequenceTests" runstate="Runnable" seed="1452271566" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000253" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1122" name="BoardPositionTests" fullname="MathGame.Tests.Board.BoardPositionTests" classname="MathGame.Tests.Board.BoardPositionTests" runstate="Runnable" testcasecount="1" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002513" total="1" passed="1" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1123" name="EqualityHashAndDiagnosticAreValueBased" fullname="MathGame.Tests.Board.BoardPositionTests.EqualityHashAndDiagnosticAreValueBased" methodname="EqualityHashAndDiagnosticAreValueBased" classname="MathGame.Tests.Board.BoardPositionTests" runstate="Runnable" seed="851672349" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001361" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1124" name="BoardTests" fullname="MathGame.Tests.Board.BoardTests" classname="MathGame.Tests.Board.BoardTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.003433" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1130" name="AccessIsIdempotentIndependentOfOccupancyAndBlocksNormalMutation" fullname="MathGame.Tests.Board.BoardTests.AccessIsIdempotentIndependentOfOccupancyAndBlocksNormalMutation" methodname="AccessIsIdempotentIndependentOfOccupancyAndBlocksNormalMutation" classname="MathGame.Tests.Board.BoardTests" runstate="Runnable" seed="953094156" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000432" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1125" name="CellsBeginOpenEmptyAndHolesAreExplicit" fullname="MathGame.Tests.Board.BoardTests.CellsBeginOpenEmptyAndHolesAreExplicit" methodname="CellsBeginOpenEmptyAndHolesAreExplicit" classname="MathGame.Tests.Board.BoardTests" runstate="Runnable" seed="1962633618" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000399" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1126" name="PlaceAndRemoveMaintainCountAndIndex" fullname="MathGame.Tests.Board.BoardTests.PlaceAndRemoveMaintainCountAndIndex" methodname="PlaceAndRemoveMaintainCountAndIndex" classname="MathGame.Tests.Board.BoardTests" runstate="Runnable" seed="1320874703" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000301" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1127" name="PlacementFailuresAreAtomicAndDeterministic" fullname="MathGame.Tests.Board.BoardTests.PlacementFailuresAreAtomicAndDeterministic" methodname="PlacementFailuresAreAtomicAndDeterministic" classname="MathGame.Tests.Board.BoardTests" runstate="Runnable" seed="984964171" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000341" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1129" name="RelocationFailuresPreserveEndpoints" fullname="MathGame.Tests.Board.BoardTests.RelocationFailuresPreserveEndpoints" methodname="RelocationFailuresPreserveEndpoints" classname="MathGame.Tests.Board.BoardTests" runstate="Runnable" seed="480846673" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000302" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1128" name="RelocationPreservesIdentityValueCountAndIndex" fullname="MathGame.Tests.Board.BoardTests.RelocationPreservesIdentityValueCountAndIndex" methodname="RelocationPreservesIdentityValueCountAndIndex" classname="MathGame.Tests.Board.BoardTests" runstate="Runnable" seed="939137112" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000350" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1131" name="BoardTopologyTests" fullname="MathGame.Tests.Board.BoardTopologyTests" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" testcasecount="14" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.010949" total="14" passed="14" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-suite type="ParameterizedMethod" id="1145" name="ArbitraryPositiveRectanglesAreRepresentable" fullname="MathGame.Tests.Board.BoardTopologyTests.ArbitraryPositiveRectanglesAreRepresentable" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001757" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1141" name="ArbitraryPositiveRectanglesAreRepresentable(1,1)" fullname="MathGame.Tests.Board.BoardTopologyTests.ArbitraryPositiveRectanglesAreRepresentable(1,1)" methodname="ArbitraryPositiveRectanglesAreRepresentable" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="910793548" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000784" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1142" name="ArbitraryPositiveRectanglesAreRepresentable(1,4)" fullname="MathGame.Tests.Board.BoardTopologyTests.ArbitraryPositiveRectanglesAreRepresentable(1,4)" methodname="ArbitraryPositiveRectanglesAreRepresentable" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="1384471023" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000061" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1143" name="ArbitraryPositiveRectanglesAreRepresentable(4,1)" fullname="MathGame.Tests.Board.BoardTopologyTests.ArbitraryPositiveRectanglesAreRepresentable(4,1)" methodname="ArbitraryPositiveRectanglesAreRepresentable" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="1858690651" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000028" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1144" name="ArbitraryPositiveRectanglesAreRepresentable(3,7)" fullname="MathGame.Tests.Board.BoardTopologyTests.ArbitraryPositiveRectanglesAreRepresentable(3,7)" methodname="ArbitraryPositiveRectanglesAreRepresentable" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="641593417" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000024" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1146" name="ConcaveMaskAndCornerEdgeNeighborsRemainOrdered" fullname="MathGame.Tests.Board.BoardTopologyTests.ConcaveMaskAndCornerEdgeNeighborsRemainOrdered" methodname="ConcaveMaskAndCornerEdgeNeighborsRemainOrdered" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="869797607" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001029" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1137" name="DimensionsMustBePositive" fullname="MathGame.Tests.Board.BoardTopologyTests.DimensionsMustBePositive" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000765" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1135" name="DimensionsMustBePositive(0,1)" fullname="MathGame.Tests.Board.BoardTopologyTests.DimensionsMustBePositive(0,1)" methodname="DimensionsMustBePositive" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="1200414393" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000184" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1136" name="DimensionsMustBePositive(1,0)" fullname="MathGame.Tests.Board.BoardTopologyTests.DimensionsMustBePositive(1,0)" methodname="DimensionsMustBePositive" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="724777012" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000060" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1133" name="MaskIsCopiedAndSupportsDisconnectedHoles" fullname="MathGame.Tests.Board.BoardTopologyTests.MaskIsCopiedAndSupportsDisconnectedHoles" methodname="MaskIsCopiedAndSupportsDisconnectedHoles" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="1412183848" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000829" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1148" name="MaskRejectsNullEmptyDuplicatesAndOutOfBounds" fullname="MathGame.Tests.Board.BoardTopologyTests.MaskRejectsNullEmptyDuplicatesAndOutOfBounds" methodname="MaskRejectsNullEmptyDuplicatesAndOutOfBounds" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="389941662" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000583" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1140" name="NegativeDimensionsAreRejected" fullname="MathGame.Tests.Board.BoardTopologyTests.NegativeDimensionsAreRejected" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000922" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1138" name="NegativeDimensionsAreRejected(-1,1)" fullname="MathGame.Tests.Board.BoardTopologyTests.NegativeDimensionsAreRejected(-1,1)" methodname="NegativeDimensionsAreRejected" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="1677847642" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000220" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1139" name="NegativeDimensionsAreRejected(1,-1)" fullname="MathGame.Tests.Board.BoardTopologyTests.NegativeDimensionsAreRejected(1,-1)" methodname="NegativeDimensionsAreRejected" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="547454502" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000070" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1147" name="NegativeMaskCoordinatesAreRejected" fullname="MathGame.Tests.Board.BoardTopologyTests.NegativeMaskCoordinatesAreRejected" methodname="NegativeMaskCoordinatesAreRejected" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="229265582" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000409" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1134" name="NeighborsUseUpRightDownLeftAndOmitHole" fullname="MathGame.Tests.Board.BoardTopologyTests.NeighborsUseUpRightDownLeftAndOmitHole" methodname="NeighborsUseUpRightDownLeftAndOmitHole" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="1437456864" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000725" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1132" name="RectangleEnumeratesRowMajor" fullname="MathGame.Tests.Board.BoardTopologyTests.RectangleEnumeratesRowMajor" methodname="RectangleEnumeratesRowMajor" classname="MathGame.Tests.Board.BoardTopologyTests" runstate="Runnable" seed="261294180" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001938" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1149" name="NumberBlockTests" fullname="MathGame.Tests.Board.NumberBlockTests" classname="MathGame.Tests.Board.NumberBlockTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.003229" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-suite type="ParameterizedMethod" id="1152" name="BlockIdRejectsNonPositiveValues" fullname="MathGame.Tests.Board.NumberBlockTests.BlockIdRejectsNonPositiveValues" classname="MathGame.Tests.Board.NumberBlockTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000816" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1150" name="BlockIdRejectsNonPositiveValues(0)" fullname="MathGame.Tests.Board.NumberBlockTests.BlockIdRejectsNonPositiveValues(0)" methodname="BlockIdRejectsNonPositiveValues" classname="MathGame.Tests.Board.NumberBlockTests" runstate="Runnable" seed="2082802488" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000311" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1151" name="BlockIdRejectsNonPositiveValues(-1)" fullname="MathGame.Tests.Board.NumberBlockTests.BlockIdRejectsNonPositiveValues(-1)" methodname="BlockIdRejectsNonPositiveValues" classname="MathGame.Tests.Board.NumberBlockTests" runstate="Runnable" seed="385412131" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000056" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1157" name="EqualValuesWithDifferentIdsAreDistinctValidBlocks" fullname="MathGame.Tests.Board.NumberBlockTests.EqualValuesWithDifferentIdsAreDistinctValidBlocks" methodname="EqualValuesWithDifferentIdsAreDistinctValidBlocks" classname="MathGame.Tests.Board.NumberBlockTests" runstate="Runnable" seed="1945873457" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000289" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1153" name="NumberBlockRejectsInvalidId" fullname="MathGame.Tests.Board.NumberBlockTests.NumberBlockRejectsInvalidId" methodname="NumberBlockRejectsInvalidId" classname="MathGame.Tests.Board.NumberBlockTests" runstate="Runnable" seed="171899087" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000316" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1156" name="NumberBlockRejectsNonPositiveValues" fullname="MathGame.Tests.Board.NumberBlockTests.NumberBlockRejectsNonPositiveValues" classname="MathGame.Tests.Board.NumberBlockTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000810" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1154" name="NumberBlockRejectsNonPositiveValues(0)" fullname="MathGame.Tests.Board.NumberBlockTests.NumberBlockRejectsNonPositiveValues(0)" methodname="NumberBlockRejectsNonPositiveValues" classname="MathGame.Tests.Board.NumberBlockTests" runstate="Runnable" seed="969207410" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000210" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1155" name="NumberBlockRejectsNonPositiveValues(-1)" fullname="MathGame.Tests.Board.NumberBlockTests.NumberBlockRejectsNonPositiveValues(-1)" methodname="NumberBlockRejectsNonPositiveValues" classname="MathGame.Tests.Board.NumberBlockTests" runstate="Runnable" seed="124252185" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000058" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestSuite" id="1188" name="BoardGeneration" fullname="MathGame.Tests.BoardGeneration" runstate="Runnable" testcasecount="18" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.016416" total="18" passed="18" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1094" name="BoardGenerationConfigTests" fullname="MathGame.Tests.BoardGeneration.BoardGenerationConfigTests" classname="MathGame.Tests.BoardGeneration.BoardGenerationConfigTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001388" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1095" name="ConstructorRecordsRawInputsWithoutValidation" fullname="MathGame.Tests.BoardGeneration.BoardGenerationConfigTests.ConstructorRecordsRawInputsWithoutValidation" methodname="ConstructorRecordsRawInputsWithoutValidation" classname="MathGame.Tests.BoardGeneration.BoardGenerationConfigTests" runstate="Runnable" seed="1050593132" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000387" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1096" name="ConstructorRecordsValidTopologyByReference" fullname="MathGame.Tests.BoardGeneration.BoardGenerationConfigTests.ConstructorRecordsValidTopologyByReference" methodname="ConstructorRecordsValidTopologyByReference" classname="MathGame.Tests.BoardGeneration.BoardGenerationConfigTests" runstate="Runnable" seed="984909824" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000195" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1097" name="BoardGeneratorTests" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.014301" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1109" name="BlockIdCapacityBoundariesDoNotOverflow" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.BlockIdCapacityBoundariesDoNotOverflow" methodname="BlockIdCapacityBoundariesDoNotOverflow" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="511844070" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001991" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1115" name="ConstructorRejectsMissingRandomSource" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.ConstructorRejectsMissingRandomSource" methodname="ConstructorRejectsMissingRandomSource" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="1518042254" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000297" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1110" name="EqualMinimumMaximumStillConsumesOneDrawPerCell" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.EqualMinimumMaximumStillConsumesOneDrawPerCell" methodname="EqualMinimumMaximumStillConsumesOneDrawPerCell" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="1826730156" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002041" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1101" name="EquivalentSeedsProduceEquivalentMappings" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.EquivalentSeedsProduceEquivalentMappings" methodname="EquivalentSeedsProduceEquivalentMappings" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="522146848" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001367" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1099" name="InclusiveBoundariesUseOneExclusiveRangeCallPerCell" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.InclusiveBoundariesUseOneExclusiveRangeCallPerCell" methodname="InclusiveBoundariesUseOneExclusiveRangeCallPerCell" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="1370932214" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000301" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1107" name="InvalidRangesFailBeforeRandomConsumption" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.InvalidRangesFailBeforeRandomConsumption" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001194" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1103" name="InvalidRangesFailBeforeRandomConsumption(0,9,InvalidValueRange)" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.InvalidRangesFailBeforeRandomConsumption(0,9,InvalidValueRange)" methodname="InvalidRangesFailBeforeRandomConsumption" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="811467250" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000167" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1104" name="InvalidRangesFailBeforeRandomConsumption(-1,9,InvalidValueRange)" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.InvalidRangesFailBeforeRandomConsumption(-1,9,InvalidValueRange)" methodname="InvalidRangesFailBeforeRandomConsumption" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="1723802295" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000075" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1105" name="InvalidRangesFailBeforeRandomConsumption(5,4,InvalidValueRange)" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.InvalidRangesFailBeforeRandomConsumption(5,4,InvalidValueRange)" methodname="InvalidRangesFailBeforeRandomConsumption" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="167753503" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000051" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1106" name="InvalidRangesFailBeforeRandomConsumption(1,int.MaxValue,InvalidValueRange)" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.InvalidRangesFailBeforeRandomConsumption(1,int.MaxValue,InvalidValueRange)" methodname="InvalidRangesFailBeforeRandomConsumption" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="463328055" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000049" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1100" name="MaskFillsOnlyActivePositionsWithoutConsumingHoleDrawsOrIds" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.MaskFillsOnlyActivePositionsWithoutConsumingHoleDrawsOrIds" methodname="MaskFillsOnlyActivePositionsWithoutConsumingHoleDrawsOrIds" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="1676699447" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000963" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1108" name="MissingInputsAndInvalidIdReturnStableFailures" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.MissingInputsAndInvalidIdReturnStableFailures" methodname="MissingInputsAndInvalidIdReturnStableFailures" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="446881940" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000131" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1113" name="OutOfContractRandomValueThrowsWithoutPublishingResult" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.OutOfContractRandomValueThrowsWithoutPublishingResult" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000892" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1111" name="OutOfContractRandomValueThrowsWithoutPublishingResult(0)" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.OutOfContractRandomValueThrowsWithoutPublishingResult(0)" methodname="OutOfContractRandomValueThrowsWithoutPublishingResult" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="986824508" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000259" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1112" name="OutOfContractRandomValueThrowsWithoutPublishingResult(10)" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.OutOfContractRandomValueThrowsWithoutPublishingResult(10)" methodname="OutOfContractRandomValueThrowsWithoutPublishingResult" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="1908854129" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000059" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1098" name="PrototypeConfigurationFillsFiveByFiveInRowMajorOrder" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.PrototypeConfigurationFillsFiveByFiveInRowMajorOrder" methodname="PrototypeConfigurationFillsFiveByFiveInRowMajorOrder" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="632042813" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001677" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1114" name="RandomExceptionPropagates" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.RandomExceptionPropagates" methodname="RandomExceptionPropagates" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="145463745" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001170" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1102" name="RepeatedGenerationReturnsIndependentBoards" fullname="MathGame.Tests.BoardGeneration.BoardGeneratorTests.RepeatedGenerationReturnsIndependentBoards" methodname="RepeatedGenerationReturnsIndependentBoards" classname="MathGame.Tests.BoardGeneration.BoardGeneratorTests" runstate="Runnable" seed="1892130186" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000380" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestSuite" id="1187" name="BoardResolution" fullname="MathGame.Tests.BoardResolution" runstate="Runnable" testcasecount="18" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.029099" total="18" passed="18" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1074" name="BoardResolverReviewCoverageTests" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.020572" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1078" name="ActiveEmptyCellIsUnsupportedBeforeRandomness" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests.ActiveEmptyCellIsUnsupportedBeforeRandomness" methodname="ActiveEmptyCellIsUnsupportedBeforeRandomness" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" seed="1054221062" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.004521" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1076" name="EmptySelectionGuardIsDefensiveAndUnreachableThroughPublicAnswerApi" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests.EmptySelectionGuardIsDefensiveAndUnreachableThroughPublicAnswerApi" methodname="EmptySelectionGuardIsDefensiveAndUnreachableThroughPublicAnswerApi" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" seed="2066859254" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000287" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1075" name="MissAndNoSelectionReturnAnswerNotCorrectWithoutRandomDraws" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests.MissAndNoSelectionReturnAnswerNotCorrectWithoutRandomDraws" methodname="MissAndNoSelectionReturnAnswerNotCorrectWithoutRandomDraws" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" seed="1192934839" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000209" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1079" name="MovedAndReplacedSelectedEvidenceReturnsExactMismatch" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests.MovedAndReplacedSelectedEvidenceReturnsExactMismatch" methodname="MovedAndReplacedSelectedEvidenceReturnsExactMismatch" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" seed="1958989363" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001179" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1080" name="MultiColumnMiddleRemovalMovesInColumnThenDestinationOrder" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests.MultiColumnMiddleRemovalMovesInColumnThenDestinationOrder" methodname="MultiColumnMiddleRemovalMovesInColumnThenDestinationOrder" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" seed="163002335" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.007244" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1081" name="MultipleMaskedSegmentsAndColumnsUseExactRefillDrawAndIdOrder" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests.MultipleMaskedSegmentsAndColumnsUseExactRefillDrawAndIdOrder" methodname="MultipleMaskedSegmentsAndColumnsUseExactRefillDrawAndIdOrder" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" seed="639743162" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002607" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1077" name="NearIntegerIdCapacityHasExactValidAndExhaustedBoundaries" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests.NearIntegerIdCapacityHasExactValidAndExhaustedBoundaries" methodname="NearIntegerIdCapacityHasExactValidAndExhaustedBoundaries" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" seed="990766577" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000485" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1082" name="RandomExceptionPropagatesWithoutMutatingSource" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests.RandomExceptionPropagatesWithoutMutatingSource" methodname="RandomExceptionPropagatesWithoutMutatingSource" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" seed="1614243803" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000514" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1083" name="SuccessfulBoardsAreIndependentAndFinalStateMatchesEveryDeltaAndIndex" fullname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests.SuccessfulBoardsAreIndependentAndFinalStateMatchesEveryDeltaAndIndex" methodname="SuccessfulBoardsAreIndependentAndFinalStateMatchesEveryDeltaAndIndex" classname="MathGame.Tests.BoardResolution.BoardResolverReviewCoverageTests" runstate="Runnable" seed="1105802542" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001578" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1084" name="BoardResolverTests" fullname="MathGame.Tests.BoardResolution.BoardResolverTests" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" testcasecount="9" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.007741" total="9" passed="9" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1089" name="BlockedOrEmptySourceIsUnsupportedWithoutDraws" fullname="MathGame.Tests.BoardResolution.BoardResolverTests.BlockedOrEmptySourceIsUnsupportedWithoutDraws" methodname="BlockedOrEmptySourceIsUnsupportedWithoutDraws" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" seed="934953065" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001107" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1085" name="BottomRemovalCompactsAndRefillsWithExactDeltas" fullname="MathGame.Tests.BoardResolution.BoardResolverTests.BottomRemovalCompactsAndRefillsWithExactDeltas" methodname="BottomRemovalCompactsAndRefillsWithExactDeltas" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" seed="504339605" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002410" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1093" name="ConstructorRejectsNullRandomSource" fullname="MathGame.Tests.BoardResolution.BoardResolverTests.ConstructorRejectsNullRandomSource" methodname="ConstructorRejectsNullRandomSource" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" seed="1007348143" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000283" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1087" name="EntireSegmentRemovalSpawnsInColumnThenRowOrder" fullname="MathGame.Tests.BoardResolution.BoardResolverTests.EntireSegmentRemovalSpawnsInColumnThenRowOrder" methodname="EntireSegmentRemovalSpawnsInColumnThenRowOrder" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" seed="481716735" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000460" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1088" name="ExpectedPreflightFailuresConsumeNoRandomnessAndExposeNothing" fullname="MathGame.Tests.BoardResolution.BoardResolverTests.ExpectedPreflightFailuresConsumeNoRandomnessAndExposeNothing" methodname="ExpectedPreflightFailuresConsumeNoRandomnessAndExposeNothing" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" seed="1740493527" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000327" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1086" name="HoleSeparatesGravitySegments" fullname="MathGame.Tests.BoardResolution.BoardResolverTests.HoleSeparatesGravitySegments" methodname="HoleSeparatesGravitySegments" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" seed="2025836725" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000373" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1091" name="OutOfContractRandomThrowsAndSourceRemainsUnchanged" fullname="MathGame.Tests.BoardResolution.BoardResolverTests.OutOfContractRandomThrowsAndSourceRemainsUnchanged" methodname="OutOfContractRandomThrowsAndSourceRemainsUnchanged" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" seed="524935795" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000297" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1092" name="ResultDeltaCollectionsAreReadOnly" fullname="MathGame.Tests.BoardResolution.BoardResolverTests.ResultDeltaCollectionsAreReadOnly" methodname="ResultDeltaCollectionsAreReadOnly" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" seed="62357985" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000466" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1090" name="StaleCapturedIdentityAndRepeatedResolutionFailAtomically" fullname="MathGame.Tests.BoardResolution.BoardResolverTests.StaleCapturedIdentityAndRepeatedResolutionFailAtomically" methodname="StaleCapturedIdentityAndRepeatedResolutionFailAtomically" classname="MathGame.Tests.BoardResolution.BoardResolverTests" runstate="Runnable" seed="886969581" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000234" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestSuite" id="1186" name="Connection" fullname="MathGame.Tests.Connection" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.009056" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1056" name="ConnectionPathTests" fullname="MathGame.Tests.Connection.ConnectionPathTests" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.008157" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1059" name="AllFourOrthogonalDirectionsCanAppend" fullname="MathGame.Tests.Connection.ConnectionPathTests.AllFourOrthogonalDirectionsCanAppend" methodname="AllFourOrthogonalDirectionsCanAppend" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="159605122" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000550" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1068" name="BacktrackingUsesCapturedEntryEvenIfBoardChanged" fullname="MathGame.Tests.Connection.ConnectionPathTests.BacktrackingUsesCapturedEntryEvenIfBoardChanged" methodname="BacktrackingUsesCapturedEntryEvenIfBoardChanged" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="290014326" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000508" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1070" name="CancelIsIdempotentClearsMembershipAndAllowsReuse" fullname="MathGame.Tests.Connection.ConnectionPathTests.CancelIsIdempotentClearsMembershipAndAllowsReuse" methodname="CancelIsIdempotentClearsMembershipAndAllowsReuse" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="205204013" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000501" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1073" name="ConstructorRejectsMissingBoard" fullname="MathGame.Tests.Connection.ConnectionPathTests.ConstructorRejectsMissingBoard" methodname="ConstructorRejectsMissingBoard" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="156439203" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000283" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1063" name="DiagonalGapAndNonAdjacentSelectionsAreRejected" fullname="MathGame.Tests.Connection.ConnectionPathTests.DiagonalGapAndNonAdjacentSelectionsAreRejected" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001051" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1060" name="DiagonalGapAndNonAdjacentSelectionsAreRejected(1,2)" fullname="MathGame.Tests.Connection.ConnectionPathTests.DiagonalGapAndNonAdjacentSelectionsAreRejected(1,2)" methodname="DiagonalGapAndNonAdjacentSelectionsAreRejected" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="2070021608" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000255" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1061" name="DiagonalGapAndNonAdjacentSelectionsAreRejected(2,2)" fullname="MathGame.Tests.Connection.ConnectionPathTests.DiagonalGapAndNonAdjacentSelectionsAreRejected(2,2)" methodname="DiagonalGapAndNonAdjacentSelectionsAreRejected" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="1784679290" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000058" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1062" name="DiagonalGapAndNonAdjacentSelectionsAreRejected(2,1)" fullname="MathGame.Tests.Connection.ConnectionPathTests.DiagonalGapAndNonAdjacentSelectionsAreRejected(2,1)" methodname="DiagonalGapAndNonAdjacentSelectionsAreRejected" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="2132081501" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000042" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1065" name="DuplicateValuesWithDistinctIdsAreAllowedAndSummed" fullname="MathGame.Tests.Connection.ConnectionPathTests.DuplicateValuesWithDistinctIdsAreAllowedAndSummed" methodname="DuplicateValuesWithDistinctIdsAreAllowedAndSummed" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="183533839" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000623" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1069" name="EntryRetainsCapturedIdentityAfterBoardCellIsReplaced" fullname="MathGame.Tests.Connection.ConnectionPathTests.EntryRetainsCapturedIdentityAfterBoardCellIsReplaced" methodname="EntryRetainsCapturedIdentityAfterBoardCellIsReplaced" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="1948448138" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000349" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1057" name="FirstSelectionCapturesPositionBlockAndSum" fullname="MathGame.Tests.Connection.ConnectionPathTests.FirstSelectionCapturesPositionBlockAndSum" methodname="FirstSelectionCapturesPositionBlockAndSum" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="1184794186" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000310" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1064" name="HoleReasonPrecedesAdjacency" fullname="MathGame.Tests.Connection.ConnectionPathTests.HoleReasonPrecedesAdjacency" methodname="HoleReasonPrecedesAdjacency" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="186522324" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000243" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1066" name="ImmediatePredecessorBacktracksOneEntryAtATimeAndTailCanBeReselected" fullname="MathGame.Tests.Connection.ConnectionPathTests.ImmediatePredecessorBacktracksOneEntryAtATimeAndTailCanBeReselected" methodname="ImmediatePredecessorBacktracksOneEntryAtATimeAndTailCanBeReselected" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="1240003917" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000344" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1058" name="InvalidFirstSelectionsReturnStructuralReasonsAndRemainEmpty" fullname="MathGame.Tests.Connection.ConnectionPathTests.InvalidFirstSelectionsReturnStructuralReasonsAndRemainEmpty" methodname="InvalidFirstSelectionsReturnStructuralReasonsAndRemainEmpty" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="2138868019" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000325" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1071" name="SnapshotsAreCopiedReadOnlyHistoricalValues" fullname="MathGame.Tests.Connection.ConnectionPathTests.SnapshotsAreCopiedReadOnlyHistoricalValues" methodname="SnapshotsAreCopiedReadOnlyHistoricalValues" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="1568557703" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000388" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1072" name="SumUsesLongBeyondIntegerRangeAndBoardIsNotMutated" fullname="MathGame.Tests.Connection.ConnectionPathTests.SumUsesLongBeyondIntegerRangeAndBoardIsNotMutated" methodname="SumUsesLongBeyondIntegerRangeAndBoardIsNotMutated" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="882697553" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000296" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1067" name="TailAndNonPredecessorDuplicatesAreRejectedWithoutMutation" fullname="MathGame.Tests.Connection.ConnectionPathTests.TailAndNonPredecessorDuplicatesAreRejectedWithoutMutation" methodname="TailAndNonPredecessorDuplicatesAreRejectedWithoutMutation" classname="MathGame.Tests.Connection.ConnectionPathTests" runstate="Runnable" seed="681527045" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000256" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestSuite" id="1185" name="EditMode" fullname="MathGame.Tests.EditMode" runstate="Runnable" testcasecount="16" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.011525" total="16" passed="16" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1036" name="CoreServiceTests" fullname="MathGame.Tests.EditMode.CoreServiceTests" classname="MathGame.Tests.EditMode.CoreServiceTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001153" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1038" name="NewSaveData_UsesCurrentSchemaVersion" fullname="MathGame.Tests.EditMode.CoreServiceTests.NewSaveData_UsesCurrentSchemaVersion" methodname="NewSaveData_UsesCurrentSchemaVersion" classname="MathGame.Tests.EditMode.CoreServiceTests" runstate="Runnable" seed="1752984417" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000190" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1037" name="SeededRandomSources_ProduceSameSequence" fullname="MathGame.Tests.EditMode.CoreServiceTests.SeededRandomSources_ProduceSameSequence" methodname="SeededRandomSources_ProduceSameSequence" classname="MathGame.Tests.EditMode.CoreServiceTests" runstate="Runnable" seed="2051887536" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000198" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1039" name="StageControllerTests" fullname="MathGame.Tests.EditMode.StageControllerTests" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" testcasecount="14" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.009573" total="14" passed="14" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1043" name="DuplicatePauseReason_DoesNotCreateAnotherTransition" fullname="MathGame.Tests.EditMode.StageControllerTests.DuplicatePauseReason_DoesNotCreateAnotherTransition" methodname="DuplicatePauseReason_DoesNotCreateAnotherTransition" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="719309513" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001527" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1049" name="EveryPauseReason_IsIndependentAndIdempotent" fullname="MathGame.Tests.EditMode.StageControllerTests.EveryPauseReason_IsIndependentAndIdempotent" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002173" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1044" name="EveryPauseReason_IsIndependentAndIdempotent(User)" fullname="MathGame.Tests.EditMode.StageControllerTests.EveryPauseReason_IsIndependentAndIdempotent(User)" methodname="EveryPauseReason_IsIndependentAndIdempotent" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1915252414" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000909" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1045" name="EveryPauseReason_IsIndependentAndIdempotent(ApplicationBackground)" fullname="MathGame.Tests.EditMode.StageControllerTests.EveryPauseReason_IsIndependentAndIdempotent(ApplicationBackground)" methodname="EveryPauseReason_IsIndependentAndIdempotent" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1180498462" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000135" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1046" name="EveryPauseReason_IsIndependentAndIdempotent(ApplicationFocusLost)" fullname="MathGame.Tests.EditMode.StageControllerTests.EveryPauseReason_IsIndependentAndIdempotent(ApplicationFocusLost)" methodname="EveryPauseReason_IsIndependentAndIdempotent" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="2115555846" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000097" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1047" name="EveryPauseReason_IsIndependentAndIdempotent(Advertisement)" fullname="MathGame.Tests.EditMode.StageControllerTests.EveryPauseReason_IsIndependentAndIdempotent(Advertisement)" methodname="EveryPauseReason_IsIndependentAndIdempotent" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1531441728" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000072" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1048" name="EveryPauseReason_IsIndependentAndIdempotent(SystemInterruption)" fullname="MathGame.Tests.EditMode.StageControllerTests.EveryPauseReason_IsIndependentAndIdempotent(SystemInterruption)" methodname="EveryPauseReason_IsIndependentAndIdempotent" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1911346531" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000077" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1053" name="Exit_ClearsPauseStateAndRejectsFurtherCommands" fullname="MathGame.Tests.EditMode.StageControllerTests.Exit_ClearsPauseStateAndRejectsFurtherCommands" methodname="Exit_ClearsPauseStateAndRejectsFurtherCommands" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="464038223" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000501" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1052" name="Finish_FromReady_IsRejectedWithoutPublishingTransition" fullname="MathGame.Tests.EditMode.StageControllerTests.Finish_FromReady_IsRejectedWithoutPublishingTransition" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001277" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1050" name="Finish_FromReady_IsRejectedWithoutPublishingTransition(True)" fullname="MathGame.Tests.EditMode.StageControllerTests.Finish_FromReady_IsRejectedWithoutPublishingTransition(True)" methodname="Finish_FromReady_IsRejectedWithoutPublishingTransition" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1870160638" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000465" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1051" name="Finish_FromReady_IsRejectedWithoutPublishingTransition(False)" fullname="MathGame.Tests.EditMode.StageControllerTests.Finish_FromReady_IsRejectedWithoutPublishingTransition(False)" methodname="Finish_FromReady_IsRejectedWithoutPublishingTransition" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="746793560" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000114" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1054" name="InvalidTransition_DoesNotChangeStateOrRaiseEvent" fullname="MathGame.Tests.EditMode.StageControllerTests.InvalidTransition_DoesNotChangeStateOrRaiseEvent" methodname="InvalidTransition_DoesNotChangeStateOrRaiseEvent" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1963543048" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000193" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1042" name="NestedPause_DoesNotResumeUntilEveryReasonIsCleared" fullname="MathGame.Tests.EditMode.StageControllerTests.NestedPause_DoesNotResumeUntilEveryReasonIsCleared" methodname="NestedPause_DoesNotResumeUntilEveryReasonIsCleared" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1899092315" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000229" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1041" name="PauseAndResume_RestoresPreviousState" fullname="MathGame.Tests.EditMode.StageControllerTests.PauseAndResume_RestoresPreviousState" methodname="PauseAndResume_RestoresPreviousState" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1146307344" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000338" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1055" name="ResumeUnknownReason_DoesNotChangePausedState" fullname="MathGame.Tests.EditMode.StageControllerTests.ResumeUnknownReason_DoesNotChangePausedState" methodname="ResumeUnknownReason_DoesNotChangePausedState" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1590100804" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000202" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1040" name="StartAndFinishInitialization_EntersReadyInOrder" fullname="MathGame.Tests.EditMode.StageControllerTests.StartAndFinishInitialization_EntersReadyInOrder" methodname="StartAndFinishInitialization_EntersReadyInOrder" classname="MathGame.Tests.EditMode.StageControllerTests" runstate="Runnable" seed="1227840384" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000918" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+          <test-suite type="TestSuite" id="1184" name="Targets" fullname="MathGame.Tests.Targets" runstate="Runnable" testcasecount="32" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.043759" total="32" passed="32" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-suite type="TestFixture" id="1001" name="TargetsContractClosureTests" fullname="MathGame.Tests.Targets.TargetsContractClosureTests" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" testcasecount="13" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.027438" total="13" passed="13" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1007" name="DiagonalHoleAndDisconnectedCellsNeverFormWitness" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.DiagonalHoleAndDisconnectedCellsNeverFormWitness" methodname="DiagonalHoleAndDisconnectedCellsNeverFormWitness" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="1255107895" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.003663" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1009" name="ExactExpansionBoundaryAllowsNthAppendAndRejectsNPlusOne" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.ExactExpansionBoundaryAllowsNthAppendAndRejectsNPlusOne" methodname="ExactExpansionBoundaryAllowsNthAppendAndRejectsNPlusOne" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="1373620202" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001425" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1010" name="PositivePruningAndLargeSumsDoNotWrap" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.PositivePruningAndLargeSumsDoNotWrap" methodname="PositivePruningAndLargeSumsDoNotWrap" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="914207587" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000190" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1008" name="ReversePathsAndLongerPathsProduceOneDistinctTargetWitness" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.ReversePathsAndLongerPathsProduceOneDistinctTargetWitness" methodname="ReversePathsAndLongerPathsProduceOneDistinctTargetWitness" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="736113188" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.005033" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1015" name="SameSeedRecoveryIsDeterministicAndInvalidConfigMapsExactly" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.SameSeedRecoveryIsDeterministicAndInvalidConfigMapsExactly" methodname="SameSeedRecoveryIsDeterministicAndInvalidConfigMapsExactly" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="493699417" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.007362" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-suite type="ParameterizedMethod" id="1006" name="SearchFindsEachOrthogonalDirection" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.SearchFindsEachOrthogonalDirection" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002910" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <test-case id="1002" name="SearchFindsEachOrthogonalDirection(1,2,3)" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.SearchFindsEachOrthogonalDirection(1,2,3)" methodname="SearchFindsEachOrthogonalDirection" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="269020436" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001445" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1003" name="SearchFindsEachOrthogonalDirection(2,1,4)" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.SearchFindsEachOrthogonalDirection(2,1,4)" methodname="SearchFindsEachOrthogonalDirection" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="1901276912" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000173" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1004" name="SearchFindsEachOrthogonalDirection(1,0,5)" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.SearchFindsEachOrthogonalDirection(1,0,5)" methodname="SearchFindsEachOrthogonalDirection" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="124347300" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000061" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1005" name="SearchFindsEachOrthogonalDirection(0,1,6)" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.SearchFindsEachOrthogonalDirection(0,1,6)" methodname="SearchFindsEachOrthogonalDirection" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="560227012" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000053" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+              </test-suite>
+              <test-case id="1011" name="SelectorFailurePrecedenceAndInvalidHistoryConsumeNoRandomness" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.SelectorFailurePrecedenceAndInvalidHistoryConsumeNoRandomness" methodname="SelectorFailurePrecedenceAndInvalidHistoryConsumeNoRandomness" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="582290766" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000531" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1012" name="SelectorRejectsOutOfRangeRandomAndPropagatesRandomException" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.SelectorRejectsOutOfRangeRandomAndPropagatesRandomException" methodname="SelectorRejectsOutOfRangeRandomAndPropagatesRandomException" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="1155133197" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000501" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1014" name="ShuffleFailuresAndRandomFaultsDoNotMutateSource" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.ShuffleFailuresAndRandomFaultsDoNotMutateSource" methodname="ShuffleFailuresAndRandomFaultsDoNotMutateSource" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="7154457" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000640" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1013" name="ShufflePreservesTopologyBlocksCountAndProducesOrderedImmutableDeltas" fullname="MathGame.Tests.Targets.TargetsContractClosureTests.ShufflePreservesTopologyBlocksCountAndProducesOrderedImmutableDeltas" methodname="ShufflePreservesTopologyBlocksCountAndProducesOrderedImmutableDeltas" classname="MathGame.Tests.Targets.TargetsContractClosureTests" runstate="Runnable" seed="307479235" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002939" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1016" name="TargetsTests" fullname="MathGame.Tests.Targets.TargetsTests" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" testcasecount="19" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.015178" total="19" passed="19" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1023" name="CurrentValidRecoveryUsesNoRandomnessAndCostsNoMove" fullname="MathGame.Tests.Targets.TargetsTests.CurrentValidRecoveryUsesNoRandomnessAndCostsNoMove" methodname="CurrentValidRecoveryUsesNoRandomnessAndCostsNoMove" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="3946970" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.001533" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1018" name="ExactSearchLimitDiscardsPartialCandidates" fullname="MathGame.Tests.Targets.TargetsTests.ExactSearchLimitDiscardsPartialCandidates" methodname="ExactSearchLimitDiscardsPartialCandidates" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="1365184378" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000308" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1026" name="IdentityShuffleSucceedsWithNoDeltasAndExactCalls" fullname="MathGame.Tests.Targets.TargetsTests.IdentityShuffleSucceedsWithNoDeltasAndExactCalls" methodname="IdentityShuffleSucceedsWithNoDeltasAndExactCalls" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="788477071" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000660" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1029" name="MaximumHistoryCanSelectAlternativeAndResetWithoutOverflow" fullname="MathGame.Tests.Targets.TargetsTests.MaximumHistoryCanSelectAlternativeAndResetWithoutOverflow" methodname="MaximumHistoryCanSelectAlternativeAndResetWithoutOverflow" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="176372912" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000912" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1019" name="MissingInvalidAndUnsupportedSearchPrecedenceIsStable" fullname="MathGame.Tests.Targets.TargetsTests.MissingInvalidAndUnsupportedSearchPrecedenceIsStable" methodname="MissingInvalidAndUnsupportedSearchPrecedenceIsStable" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="2090967108" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000254" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1031" name="OneCellUnsupportedPrecedesInsufficientMovableBlocks" fullname="MathGame.Tests.Targets.TargetsTests.OneCellUnsupportedPrecedesInsufficientMovableBlocks" methodname="OneCellUnsupportedPrecedesInsufficientMovableBlocks" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="15250801" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000213" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1028" name="RecoveryExhaustsExactBoundedIdentityAttemptsWithoutPublishingBoard" fullname="MathGame.Tests.Targets.TargetsTests.RecoveryExhaustsExactBoundedIdentityAttemptsWithoutPublishingBoard" methodname="RecoveryExhaustsExactBoundedIdentityAttemptsWithoutPublishingBoard" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="579805823" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000483" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1033" name="RecoveryRetriesIdentityThenSucceedsOnSecondAttemptUsingSameStream" fullname="MathGame.Tests.Targets.TargetsTests.RecoveryRetriesIdentityThenSucceedsOnSecondAttemptUsingSameStream" methodname="RecoveryRetriesIdentityThenSucceedsOnSecondAttemptUsingSameStream" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="1678336049" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000569" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1035" name="RecoverySearchLimitAndInvalidInputsNeverPublishSafeBoard" fullname="MathGame.Tests.Targets.TargetsTests.RecoverySearchLimitAndInvalidInputsNeverPublishSafeBoard" methodname="RecoverySearchLimitAndInvalidInputsNeverPublishSafeBoard" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="910273854" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000270" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1034" name="RecoverySelectsAlternateOnCurrentBoardWithoutShuffle" fullname="MathGame.Tests.Targets.TargetsTests.RecoverySelectsAlternateOnCurrentBoardWithoutShuffle" methodname="RecoverySelectsAlternateOnCurrentBoardWithoutShuffle" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="1099063034" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000501" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1032" name="RecoverySucceedsAfterOneShuffleWithSharedRandomOrderAndCoherentFinalDeltas" fullname="MathGame.Tests.Targets.TargetsTests.RecoverySucceedsAfterOneShuffleWithSharedRandomOrderAndCoherentFinalDeltas" methodname="RecoverySucceedsAfterOneShuffleWithSharedRandomOrderAndCoherentFinalDeltas" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="253999236" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.002745" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1017" name="SearchReturnsSortedDistinctCanonicalWitnesses" fullname="MathGame.Tests.Targets.TargetsTests.SearchReturnsSortedDistinctCanonicalWitnesses" methodname="SearchReturnsSortedDistinctCanonicalWitnesses" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="455388036" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000912" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1024" name="SelectorSoleCandidateUsesMarkedFallbackAndOneDraw" fullname="MathGame.Tests.Targets.TargetsTests.SelectorSoleCandidateUsesMarkedFallbackAndOneDraw" methodname="SelectorSoleCandidateUsesMarkedFallbackAndOneDraw" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="1418023590" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000486" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1021" name="SelectorUsesOneExactDrawAndHonorsRepetitionCap" fullname="MathGame.Tests.Targets.TargetsTests.SelectorUsesOneExactDrawAndHonorsRepetitionCap" methodname="SelectorUsesOneExactDrawAndHonorsRepetitionCap" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="1518606526" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000404" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1025" name="SelectorValidationFailuresConsumeNoRandomness" fullname="MathGame.Tests.Targets.TargetsTests.SelectorValidationFailuresConsumeNoRandomness" methodname="SelectorValidationFailuresConsumeNoRandomness" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="1282488646" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000289" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1027" name="ShuffleRejectsInsufficientAndUnsupportedBoardsWithoutDraws" fullname="MathGame.Tests.Targets.TargetsTests.ShuffleRejectsInsufficientAndUnsupportedBoardsWithoutDraws" methodname="ShuffleRejectsInsufficientAndUnsupportedBoardsWithoutDraws" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="2137085146" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000242" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1022" name="ShuffleUsesFisherYatesAndPreservesSource" fullname="MathGame.Tests.Targets.TargetsTests.ShuffleUsesFisherYatesAndPreservesSource" methodname="ShuffleUsesFisherYatesAndPreservesSource" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="1141015439" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000740" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1030" name="SoleSameTargetAtMaximumHistoryOverflowsAfterExactSelectionDraw" fullname="MathGame.Tests.Targets.TargetsTests.SoleSameTargetAtMaximumHistoryOverflowsAfterExactSelectionDraw" methodname="SoleSameTargetAtMaximumHistoryOverflowsAfterExactSelectionDraw" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="1058952694" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000360" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1020" name="WitnessRejectsEquivalentReplacementAndStaleIdentity" fullname="MathGame.Tests.Targets.TargetsTests.WitnessRejectsEquivalentReplacementAndStaleIdentity" methodname="WitnessRejectsEquivalentReplacementAndStaleIdentity" classname="MathGame.Tests.Targets.TargetsTests" runstate="Runnable" seed="1968131234" result="Passed" start-time="2026-08-08 03:22:40Z" end-time="2026-08-08 03:22:40Z" duration="0.000288" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[Saving results to: C:/Users/USER/AppData/LocalLow/DefaultCompany/MathGame\TestResults.xml
+]]></output>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

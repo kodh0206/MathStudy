@@ -122,6 +122,42 @@
 **Decision:** STEP 6 resolves only full Open numeric boards. Any active Blocked or empty source state returns an explicit unsupported-state failure.
 **Rationale:** GDD obstacle types have incompatible layering and gravity behavior; STEP 10 must define them rather than treating one coarse flag as a universal rule.
 
+### ADR-021: Targets require deterministic current-board witnesses
+
+**Status:** Implemented and verified in STEP 7
+**Decision:** Search simple Open/occupied orthogonal paths with bounded deterministic DFS and expose one canonical witness per eligible distinct target. Search-limit exhaustion is indeterminate, never deadlock proof.
+**Rationale:** GDD forbids presenting an unproven target, while bounded search must fail safely on extreme content.
+
+### ADR-022: Use explicit uniform target and repetition policy
+
+**Status:** Implemented and verified in STEP 7
+**Decision:** Select uniformly across distinct proven values. Content supplies a positive consecutive-repeat cap; exclude the capped prior value when alternatives exist and permit it only as a marked sole-candidate fallback.
+**Rationale:** GDD requires limiting repetition but supplies neither weights nor a numeric cap. Explicit policy avoids hidden tuning and path-count bias.
+
+### ADR-023: Recover deadlocks with bounded identity-preserving shuffle
+
+**Status:** Implemented and verified in STEP 7
+**Decision:** Only after no eligible target exists, perform configured bounded Fisher–Yates attempts over full Open boards, preserving NumberBlock identities/values and proving a witness after every attempt. Recovery has semantic move cost zero.
+**Rationale:** Bounded attempts prevent hangs; copy-on-success and re-search prevent unsafe exposure. Obstacle-aware shuffle remains STEP 10.
+
+### ADR-024: StageSession is the authoritative move/objective terminal owner
+
+**Status:** Accepted for STEP 8 implementation
+**Decision:** Apply correlated answer/resolution attempts exactly once, consume normal Correct moves, update supported objective trackers atomically, and evaluate Success before zero-move Failure.
+**Rationale:** Stage lifecycle alone cannot enforce GDD objective and final-move ordering; a Unity-free session makes the product caller deterministic.
+
+### ADR-025: Implement only objectives with authoritative evidence
+
+**Status:** Accepted for STEP 8 implementation
+**Decision:** Support number removal, specified target completion, and long connections. Reject obstacle, restoration, and special objectives until their owning systems emit typed evidence.
+**Rationale:** Inferring those objectives from generic removals or path length would fabricate progress and conflict with later layered systems.
+
+### ADR-026: Undefined score values require explicit configuration
+
+**Status:** Accepted for STEP 8 implementation
+**Decision:** Stage definitions supply nonnegative base/grade/length score values; the domain has no guessed default. Exact GDD Fever contribution values and semantic special intents are calculated separately without applying a gauge or special.
+**Rationale:** The GDD specifies relative rewards and Fever contributions but omits production score/restoration/economy formulas.
+
 ## Tracked ambiguities for later STEP designs
 
 - Precise touch tolerance for backtracking/cancellation.

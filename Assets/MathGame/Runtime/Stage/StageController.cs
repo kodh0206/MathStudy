@@ -73,7 +73,7 @@ namespace MathGame.Stage
                 return TransitionResult.StageAlreadyTerminated;
             }
 
-            if (State is not (StageState.Ready or StageState.ResolvingAnswer))
+            if (State is not (StageState.Ready or StageState.ResolvingAnswer or StageState.RecoveringBoard))
             {
                 return InvalidTransition(StageState.PresentingTarget);
             }
@@ -124,6 +124,15 @@ namespace MathGame.Stage
             }
 
             return TransitionTo(StageState.PlayerInput, StageTransitionCause.MissResolutionFinished);
+        }
+
+        public TransitionResult BeginDeadlockRecovery()
+        {
+            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+                return TransitionResult.StageAlreadyTerminated;
+            if (State != StageState.PlayerInput)
+                return InvalidTransition(StageState.RecoveringBoard);
+            return TransitionTo(StageState.RecoveringBoard, StageTransitionCause.DeadlockRecoveryBegan);
         }
 
         public TransitionResult Pause(PauseReason reason)
@@ -245,6 +254,7 @@ namespace MathGame.Stage
                 or StageState.PresentingTarget
                 or StageState.PlayerInput
                 or StageState.ResolvingAnswer
+                or StageState.RecoveringBoard
                 or StageState.EnteringFever
                 or StageState.FeverInput
                 or StageState.EndingFever;

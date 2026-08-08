@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.Targets",
+  "rootNamespace": "MathGame.Targets",
+  "references": ["MathGame.Board", "MathGame.Answer", "MathGame.Core"],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}
