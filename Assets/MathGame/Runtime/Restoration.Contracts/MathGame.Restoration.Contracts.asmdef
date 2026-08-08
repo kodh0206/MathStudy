@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.Restoration.Contracts",
+  "rootNamespace": "MathGame.Restoration.Contracts",
+  "references": [],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

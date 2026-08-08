@@ -179,7 +179,7 @@
 ### ADR-030: Restoration uses fixed exact arithmetic and provisional stage ownership
 
 **Status:** Approved for STEP 11 implementation
-**Decision:** Each committed Correct awards `floor(10 × submitted-length factor × Fever factor)` with length factors 1.0/1.2/1.5/2.0, Fever factor 2, no combo factor, and one final floor using exact rational arithmetic. Large Fever-end awards fixed +50; other end tiers award zero directly. Progress is stage-local, clamped to capacity, discards excess, emits typed 25/50/75/100 milestones, is discarded on Failure/Abandon/Retry, preserved on Continue, and commits to world progress only on Success.
+**Decision:** Each committed Correct awards `floor(10 × submitted-length factor × Fever factor)` with length factors 1.0/1.2/1.5/2.0, Fever factor 2, no combo factor, and one final floor using exact rational arithmetic. Large Fever-end awards fixed +50; other end tiers emit no restoration evidence. Stage progress is provisional and clamped; world progress alone emits typed 25/50/75/100 milestones. Failure enters a pending decision, Retry/Abandon discard, Continue preserves, and only Success commits additively to world progress.
 **Rationale:** Product-approved values resolve the GDD's symbolic formula, provisional lifecycle, additive world application, and presentation boundary.
 
 Use the acyclic direction `Restoration.Contracts <- StageSession` and `Restoration.Contracts <- Restoration -> StageSession`. A sole restoration transaction coordinator binds prospective evidence into the correlated StageSession attempt/system-effect terminal decision and permits a world commit only from the accepted Success snapshot. Concrete art bindings remain STEP 12.
@@ -193,6 +193,16 @@ Detected failure enters FailedPendingDecision and preserves restoration. Continu
 - Weighted number-generation probabilities and stage-specific distribution data.
 - Production seed persistence/replay guarantees and session-long block-ID allocation.
 - Exact score values remain content-configured; the STEP 11 restoration formula is resolved by ADR-030.
+
+### ADR-031: STEP 12 presentation remains blocked on explicit product contracts
+
+**Status:** Open / implementation blocked
+
+STEP 12 keeps Board, Connection, Answer, Target, Fever, StageSession, obstacle, and restoration state authoritative in their existing domain assemblies. A Unity presentation coordinator may serialize immutable results and acknowledge exact sequence tokens, but views never mutate gameplay or world state.
+
+Implementation requires explicit decisions for Fever area-center selection, touch constants, animation/skip timing, approved assets, exact orientation/layout/accessibility defaults and settings-change timing, result/failure actions, pause behavior during animation, and the MVP disposition of the GDD-required special-block mechanics that have no domain implementation. STEP 10 orchestration must issue exact run/revision-correlated gameplay tokens, and Fever must expose a non-sampling read-only presentation snapshot; neither migration transfers gameplay authority to views. These product rules cannot be inferred safely. Until approved, no STEP 12 production scene/prefab/presenter work begins and STEP 13 remains out of scope.
+
+**Resolution (2026-08-08):** Product approved deterministic footprint-derived Fever centers, 45% logical hit radius with ordered drag interpolation, fixed presentation timings, Reduced Motion at command/reconciliation boundaries, placeholder assets, portrait-only layout, non-color state indicators, exact failure/success fields, pause suspension with stale-token reconciliation, and explicit special-block deferral. STEP 12 implementation is authorized; STEP 13 is not.
 - Which two obstacle types form the first prototype set and their detailed gravity interaction.
 - STEP 10 additionally requires the selected pair's spatial layers, hit aggregation, Fever expansion/end geometry, refill behavior, and objective-count policy; do not infer these from the current coarse Blocked state.
 - STEP 10 product addendum now selects Dust and Box and resolves their layers, HP, damage aggregation, Fever potency, Box-to-refill conversion, orthogonal expansion, all end-tier Manhattan geometries, objective evidence, and shuffle preservation. Area centers are explicit resolver inputs; their gameplay selection policy remains an orchestration/presentation decision.

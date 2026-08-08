@@ -19,6 +19,8 @@ namespace MathGame.Stage
         FeverInputEnabled = 14,
         FeverMissResolutionFinished = 15,
         FeverEndingBegan = 16,
-        FeverEndingFinished = 17
+        FeverEndingFinished = 17,
+        FailedDecisionBegan = 18,
+        ContinueResumed = 19
     }
 }

@@ -1,0 +1,15 @@
+{
+  "name": "MathGame.Presentation.Contracts",
+  "rootNamespace": "MathGame.Presentation",
+  "references": [
+    "MathGame.Board",
+    "MathGame.BoardResolution",
+    "MathGame.Fever",
+    "MathGame.ObstacleFlow",
+    "MathGame.Restoration",
+    "MathGame.Restoration.Contracts",
+    "MathGame.StageSession"
+  ],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

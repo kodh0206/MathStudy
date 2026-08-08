@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.Restoration",
+  "rootNamespace": "MathGame.Restoration",
+  "references": ["MathGame.Restoration.Contracts", "MathGame.StageSession"],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

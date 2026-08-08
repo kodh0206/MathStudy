@@ -69,7 +69,7 @@ namespace MathGame.BoardResolution
                 if (!placements.TryGetValue(p, out var block) || replacement.TryPlaceBlock(p, block) != BoardMutationResult.Succeeded) return ObstacleResolutionResult.Fail(ObstacleResolutionFailure.FinalBoardMutationRejected);
                 if (old.Dust.HasValue && !removed.Contains(p) && replacement.TryPlaceDust(p, old.Dust.Value) != BoardMutationResult.Succeeded) return ObstacleResolutionResult.Fail(ObstacleResolutionFailure.FinalBoardMutationRejected);
             }
-            return new ObstacleResolutionResult(ObstacleResolutionFailure.None, replacement, request.Mode, request.SystemEffectId, nextId, selected, collateral, moved, spawned, damage, destroyed);
+            return new ObstacleResolutionResult(ObstacleResolutionFailure.None, replacement, request.Mode, request.Pattern, request.SystemEffectId, nextId, selected, collateral, moved, spawned, damage, destroyed);
         }
 
         private void BuildEndRemovals(ObstacleResolutionRequest request, List<RemovedNumberDelta> result, HashSet<BoardPosition> removed)

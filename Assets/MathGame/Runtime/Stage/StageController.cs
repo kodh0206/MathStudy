@@ -230,6 +230,16 @@ namespace MathGame.Stage
             return Finish(StageState.Failure, StageTransitionCause.StageFailed);
         }
 
+        public TransitionResult EnterFailedPendingDecision()
+        {
+            return GuardedTransition(StageState.ResolvingAnswer, StageState.FailedPendingDecision, StageTransitionCause.FailedDecisionBegan);
+        }
+
+        public TransitionResult ResumeFromContinue()
+        {
+            return GuardedTransition(StageState.FailedPendingDecision, StageState.RecoveringBoard, StageTransitionCause.ContinueResumed);
+        }
+
         public TransitionResult Exit(StageExitReason reason)
         {
             if (State == StageState.Exited)
@@ -297,7 +307,8 @@ namespace MathGame.Stage
                 or StageState.RecoveringBoard
                 or StageState.EnteringFever
                 or StageState.FeverInput
-                or StageState.EndingFever;
+                or StageState.EndingFever
+                or StageState.FailedPendingDecision;
         }
 
         private static bool CanFinish(StageState state)
@@ -307,7 +318,8 @@ namespace MathGame.Stage
                 or StageState.ResolvingAnswer
                 or StageState.EnteringFever
                 or StageState.FeverInput
-                or StageState.EndingFever;
+                or StageState.EndingFever
+                or StageState.FailedPendingDecision;
         }
     }
 }

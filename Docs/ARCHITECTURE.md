@@ -135,6 +135,15 @@ The domain feature assemblies and test assemblies are not auto-referenced. Unity
 - Natural expiry emits immutable end-effect tiers based on total Fever Correct answers and resets only after effect acknowledgement. Terminal Stage outcomes abort Fever and suppress gameplay end effects.
 - Expanded removal, obstacle damage execution, restoration calculation, random/area end effects, and spectacle remain semantic requests for STEPs 10-12.
 
+### Restoration progress
+
+- `MathGame.Restoration.Contracts` contains Unity-free run/world identities, stage restoration configuration, typed award evidence, lifecycle facts, milestones, world-plan binding, and the two-phase Continue grant port.
+- `MathGame.StageSession` owns provisional per-run restoration. Approved answer and Large Fever-end awards enter the same prospective attempt/system-effect plan as objective and terminal evaluation; clamping and discarded excess are atomic with that plan.
+- `MathGame.Restoration` calculates exact integer awards, owns additive clamped world progress, derives canonical 25/50/75/100 milestones, and applies stable `WorldCommitId` values exactly once.
+- A prospective Success binds a versioned world plan before StageSession mutation. The composition coordinator in `MathGame.ObstacleFlow` then performs the already-validated StageSession and world assignments without callbacks between them; `MathGame.Restoration` has no Fever, Stage, or ObstacleFlow dependency.
+- Move exhaustion in restoration-enabled runs enters noninteractive `FailedPendingDecision`. Continue preserves the same run and provisional energy while adding the approved five moves through a two-phase grant reservation; Abandon discards provisional energy and terminates the run.
+- Obstacle answer/Fever/end orchestration supplies restoration evidence without changing STEP 10 board adoption or target-recovery ordering. Concrete restoration visuals and asset bindings remain STEP 12.
+
 ## Current runtime flow
 
 ```text
@@ -167,4 +176,4 @@ Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 9: Edit Mode 208/208 and
 - Board access is intentionally a minimal Open/Blocked fact. STEP 10 must derive or replace it from approved layered obstacle state so independent flags do not become competing rule authorities.
 - Exact gravity traversal through masked shapes and content connectivity rules remain deferred to their owning designs.
 - Initial population remains unverified until the implemented STEP 7 search supplies a current-board witness. Bounded `SearchLimitExceeded` or `UnrecoverableDeadlock` results intentionally keep input disabled and require content/configuration handling rather than unsafe target exposure.
-- Fever Core currently emits semantic expanded-removal, obstacle, restoration, and end-effect intents only. The full playable Fever promise remains incomplete until STEPs 10-12 implement and present those effects.
+- Restoration behavior is implemented as a logical domain transaction, but Unity Edit/Play verification is currently blocked by licensing initialization. Presentation remains STEP 12.

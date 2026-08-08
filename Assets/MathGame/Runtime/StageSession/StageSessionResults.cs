@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace MathGame.StageSession
 {
+    using MathGame.Restoration.Contracts;
     public static class ConnectionLengthRewardClassifier
     {
         public static ConnectionLengthRewardTier Classify(int length) => length < 2 ? ConnectionLengthRewardTier.None : length == 2 ? ConnectionLengthRewardTier.StandardRemoval : length == 3 ? ConnectionLengthRewardTier.ExtraFeverRequested : length == 4 ? ConnectionLengthRewardTier.BasicSpecialRequested : ConnectionLengthRewardTier.EnhancedAreaSpecialRequested;
@@ -34,6 +35,12 @@ namespace MathGame.StageSession
             MaximumFastStreak = session.MaximumFastStreak; TotalRemovedNumberBlocks = session.TotalRemoved;
             TotalDestroyedDust = session.TotalDestroyedDust; TotalDestroyedBoxes = session.TotalDestroyedBoxes;
             TotalLongConnections = session.TotalLong; TotalFeverContribution = session.TotalFever;
+            StageRunId = session.RunId; RestorationLifecycle = session.RestorationLifecycle;
+            StageRestorationCapacity = session.Definition.RestorationConfig?.StageCapacity ?? 0;
+            RestorationWorldId = session.Definition.RestorationConfig?.WorldId ?? default;
+            ProvisionalRestoration = session.ProvisionalRestoration; GrossRestorationEarned = session.GrossRestoration;
+            DiscardedRestorationExcess = session.DiscardedRestoration;
+            ContinueUsed = session.ContinueUsed;
         }
         public StageDefinitionId DefinitionId { get; } public StageSessionStatus Status { get; } public int InitialMoves { get; }
         public int RemainingMoves { get; } public int SpentMoves { get; } public long Score { get; } public StageAttemptId NextExpectedAttemptId { get; }
@@ -42,6 +49,14 @@ namespace MathGame.StageSession
         public long PerfectCount { get; } public long FastCount { get; } public long NormalCount { get; } public int CurrentFastStreak { get; }
         public int MaximumFastStreak { get; } public long TotalRemovedNumberBlocks { get; } public long TotalLongConnections { get; } public long TotalFeverContribution { get; }
         public long TotalDestroyedDust { get; } public long TotalDestroyedBoxes { get; }
+        public StageRunId StageRunId { get; }
+        public RestorationLifecycle RestorationLifecycle { get; }
+        public long StageRestorationCapacity { get; }
+        public WorldRestorationId RestorationWorldId { get; }
+        public long ProvisionalRestoration { get; }
+        public long GrossRestorationEarned { get; }
+        public long DiscardedRestorationExcess { get; }
+        public bool ContinueUsed { get; }
     }
     public sealed class StageAttemptResult
     {

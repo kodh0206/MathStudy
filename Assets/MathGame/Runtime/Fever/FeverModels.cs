@@ -1,5 +1,6 @@
 using System;
 using MathGame.StageSession;
+using MathGame.Restoration.Contracts;
 
 namespace MathGame.Fever
 {
@@ -44,6 +45,24 @@ namespace MathGame.Fever
         public FeverAttemptApplyStatus Status { get; } public StageAttemptResult StageResult { get; }
         public FeverSessionSnapshot Before { get; } public FeverSessionSnapshot After { get; } public FeverGameplayModifiers Modifiers { get; }
     }
+    public enum FeverAttemptPrepareStatus { Prepared, InvalidState, InvalidAttempt, StageSessionRejected, Disposed }
+    public sealed class FeverAttemptPlan
+    {
+        internal FeverAttemptPlan(FeverController owner, FeverSessionSnapshot before, FeverSessionSnapshot prospective, FeverGameplayModifiers modifiers, StageAttemptPlan stagePlan)
+        { Owner = owner; Before = before; Prospective = prospective; Modifiers = modifiers; StagePlan = stagePlan; }
+        internal FeverController Owner { get; }
+        internal FeverSessionSnapshot Prospective { get; }
+        public FeverSessionSnapshot Before { get; }
+        public FeverSessionSnapshot After => Prospective;
+        public FeverGameplayModifiers Modifiers { get; }
+        public StageAttemptPlan StagePlan { get; }
+    }
+    public sealed class FeverAttemptPrepareResult
+    {
+        internal FeverAttemptPrepareResult(FeverAttemptPrepareStatus status, FeverAttemptPlan plan) { Status = status; Plan = plan; }
+        public FeverAttemptPrepareStatus Status { get; }
+        public FeverAttemptPlan Plan { get; }
+    }
     public sealed class FeverEndResult
     {
         internal FeverEndResult(FeverTerminationReason reason, FeverEndEffectTier tier, FeverSessionSnapshot session, double elapsed)
@@ -51,5 +70,41 @@ namespace MathGame.Fever
         public FeverTerminationReason TerminationReason { get; } public FeverEndEffectTier EffectTier { get; }
         public long TotalCorrectAnswers { get; } public int CurrentCombo { get; } public int MaximumCombo { get; } public int FinalMultiplier { get; }
         public double InteractiveElapsedSeconds { get; } public int ObstacleDamageMultiplier { get; } public int RestorationMultiplier { get; }
+    }
+
+    public sealed class FeverPresentationSnapshot
+    {
+        internal FeverPresentationSnapshot(FeverState state, int gauge, int maximumGauge, FeverClockState clockState,
+            double durationSeconds, double elapsedSeconds, double remainingSeconds, FeverSessionSnapshot session,
+            FeverEndEffectTier? pendingEndTier, long revision)
+        {
+            State = state;
+            Gauge = gauge;
+            MaximumGauge = maximumGauge;
+            ClockState = clockState;
+            DurationSeconds = durationSeconds;
+            ElapsedSeconds = elapsedSeconds;
+            RemainingSeconds = remainingSeconds;
+            TotalCorrectAnswers = session?.TotalCorrectAnswers ?? 0;
+            CurrentCombo = session?.CurrentCombo ?? 0;
+            MaximumCombo = session?.MaximumCombo ?? 0;
+            CurrentMultiplier = session?.CurrentMultiplier ?? 1;
+            PendingEndTier = pendingEndTier;
+            Revision = revision;
+        }
+
+        public FeverState State { get; }
+        public int Gauge { get; }
+        public int MaximumGauge { get; }
+        public FeverClockState ClockState { get; }
+        public double DurationSeconds { get; }
+        public double ElapsedSeconds { get; }
+        public double RemainingSeconds { get; }
+        public long TotalCorrectAnswers { get; }
+        public int CurrentCombo { get; }
+        public int MaximumCombo { get; }
+        public int CurrentMultiplier { get; }
+        public FeverEndEffectTier? PendingEndTier { get; }
+        public long Revision { get; }
     }
 }

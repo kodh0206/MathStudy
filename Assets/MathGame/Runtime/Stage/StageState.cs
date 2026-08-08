@@ -15,7 +15,8 @@ namespace MathGame.Stage
         Failure = 10,
         Exited = 11,
         Ready = 12,
-        RecoveringBoard = 13
+        RecoveringBoard = 13,
+        FailedPendingDecision = 14
     }
 
     public enum AnswerResolutionOrigin

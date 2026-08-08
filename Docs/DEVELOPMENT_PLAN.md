@@ -235,4 +235,6 @@ STEP 11 product rules are approved: base 10, exact length factors, Fever ×2 wit
 
 The additional STEP 11 product addendum resolves FailedPendingDecision/Continue/Retry/Abandon behavior, additive clamped world commits, separate stage/world capacities, world-owned milestones, stable idempotent WorldCommitId, and omitted non-Large end evidence.
 
-Design STEP 11 is ready for independent review. After a PASS, the next dependency-safe command is `Implement STEP 11`. Do not begin STEP 12.
+STEP 11 production integration is structurally complete: exact answer/Large-end awards, provisional StageSession ownership, prepare/bind/commit transactions, world-only idempotent milestones, and FailedPendingDecision Continue/Abandon lifecycle. Static aggregate compilation passed. Unity Edit/Play verification remains blocked by licensing initialization and is recorded verification debt; it is not a runtime pass.
+
+STEP 12 design is documented but **BLOCKED**. Product must approve Fever area-center selection, touch constants, sequencing/skip timing, presentation assets, exact orientation/layout/accessibility defaults and settings-change timing, failure/result UI fields/actions, pause behavior for active animations, and whether the GDD-required special-block mechanics are deferred or implemented in a prerequisite domain slice. No STEP 12 production code or STEP 13 work is authorized.

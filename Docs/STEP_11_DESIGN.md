@@ -16,7 +16,7 @@ This is a design-only artifact. It changes no production behavior. STEP 10 remai
 
 ## Goal
 
-Convert committed gameplay outcomes into deterministic integer restoration energy, advance stage-local restoration through typed 25/50/75/100-percent milestones, update restoration objectives in the same StageSession transaction, discard or preserve provisional state according to lifecycle policy, and publish an atomic world-progression commit only on stage Success.
+Convert committed gameplay outcomes into deterministic integer stage-local restoration energy, update restoration objectives in the same StageSession transaction, discard or preserve provisional state according to lifecycle policy, and atomically advance persistent world restoration with typed 25/50/75/100-percent milestones only on stage Success.
 
 STEP 11 owns arithmetic and semantic progress. It does not own art, animation, scene objects, persistence storage, currency, stars, analytics, or ads.
 
@@ -178,11 +178,43 @@ Before any StageSession transition to Success, the coordinator creates an immuta
 
 1. STEP 10 produces a successful correlated normal/Fever answer resolution.
 2. Restoration calculator derives prospective evidence from the submitted answer length and trusted StageAttemptMode.
-3. The sole restoration transaction coordinator supplies that evidence to the same StageSession `ApplyAttempt` command.
-4. StageSession validates source ID/mode/rules version, calculates prospective clamped stage restoration, advances `EarnRestorationEnergy`, and evaluates Success-before-Failure in that same commit. It emits no milestone yet.
-5. Accepted result contains the immutable restoration award result. Rejected attempt changes nothing.
-6. If the accepted attempt is nonterminal, existing STEP 10 Board adoption and target-proof behavior continues unchanged.
-7. If it prospectively succeeds, the coordinator first prepares/binds the WorldCommitPlan, then performs the StageSession and world assignments exactly once.
+3. StageSession `PrepareAttempt` validates existing answer/resolution correlation plus restoration evidence and returns a version-bound StageAttemptPlan with restoration-aware terminal prediction; it does not mutate.
+4. If the plan predicts Success, the coordinator prepares WorldCommitPlan and binds it into a final StageAttemptPlan before commit.
+5. `CommitAttempt` performs only prevalidated nonthrowing StageSession/restoration assignment. For Success, the coordinator immediately applies the bound world snapshot with no callback/failure seam. For nonterminal Continue, it first adopts the already-resolved STEP 10 Board/next ID and marks target proof pending, then runs target recovery. A target failure leaves the attempt, restoration, and Board authoritative; `RetryTargetRecovery` never replays the answer or award.
+6. Fever uses a prospective combo plan bound to the exact StageAttemptPlan and commits combo only after StageSession assignment, preserving STEP 9 atomic ownership.
+
+```text
+StageAttemptPrepareResult StageSession.PrepareAttempt(
+    StageAttemptCommand command, RestorationAwardEvidence restoration)
+StageAttemptPrepareResult StageSession.BindWorldCommit(
+    StageAttemptPlan attemptPlan, WorldCommitPlan worldPlan)
+StageAttemptResult StageSession.CommitAttempt(StageAttemptPlan plan)
+
+FeverAttemptPrepareResult FeverController.PrepareFeverAttempt(
+    StageAttemptId id, AnswerResult answer, ObstacleResolutionResult resolution,
+    RestorationAwardEvidence restoration)
+FeverAttemptResult FeverController.CommitFeverAttempt(
+    FeverAttemptPlan feverPlan, StageAttemptPlan stagePlan)
+```
+
+`ApplyAttempt` and `ApplyFeverAttempt` remain compatibility wrappers only for configurations without restoration. A restoration-configured StageSession rejects direct Apply with `PreparationRequired`.
+
+Prepare precedence extends existing validation with `MissingRestorationEvidence`, `RestorationSourceMismatch`, `RestorationOwnerMismatch`, `RestorationVersionMismatch`, and `InvalidRestorationAward` before arithmetic mutation. Bind returns `MissingAttemptPlan`, `AttemptPlanNotSuccessful`, `MissingWorldPlan`, `WorldPlanMismatch`, `StalePlan`, or `Bound`. Commit adds `MissingPlan`, `WorldPlanRequired`, and `StalePlan`. Every failure preserves StageSession, Fever, restoration, Board owner, and world owner.
+
+Fever preparation derives prospective combo/multiplier without mutation, then invokes StageSession preparation with closed Fever rules. Its plan binds the exact StageSession plan/version. Commit validates both first, assigns StageSession, assigns Fever snapshot, and lets the coordinator assign any prevalidated world snapshot. All assignments are nonthrowing and invoke no subscribers.
+
+Fever-end system effects add exact overloads:
+
+```text
+StageSystemEffectPrepareResult StageSession.PrepareSystemEffect(
+    ObstacleResolutionResult result, RestorationAwardEvidence restoration)
+StageSystemEffectPrepareResult StageSession.BindWorldCommit(
+    StageSystemEffectPlan effectPlan, WorldCommitPlan worldPlan)
+StageSystemEffectCommitResult StageSession.CommitSystemEffect(
+    StageSystemEffectPlan boundPlan)
+```
+
+Large requires matching +50 evidence; non-Large requires absent restoration evidence. Preparation adds `MissingRequiredRestorationEvidence`, `UnexpectedRestorationEvidence`, `RestorationSourceMismatch`, and `InvalidRestorationAward` before existing arithmetic statuses. Bind requires a prospective Success plan and maps missing/mismatch/stale exactly as answer binding. A prospective Continue plan is not world-bound; target proof occurs before its existing system-effect commit, preserving STEP 10 end-flow atomicity. Success binds the prevalidated world plan and skips target proof.
 
 ### Fever-end flow
 
@@ -205,19 +237,21 @@ The exclusive restoration/gameplay coordinator exposes:
 
 ```text
 StageFailedDecisionResult ContinueFailedStage(ContinueGrant grant)
-StageFailedDecisionResult RetryFailedStage(StageDefinition definition)
+StageRetryResult RetryFailedStage(StageDefinition definition)
 StageFailedDecisionResult AbandonFailedStage()
 ```
 
-`ContinueGrant` is an immutable trusted contract with `ContinueGrantId`, exact `StageRunId`, and fixed `AdditionalMoves=5`. Construction is internal to the approved monetization/reward authorization adapter; gameplay/UI cannot construct arbitrary grants. STEP 11 validates positive unique grant ID, exact active run correlation, fixed move value 5, and unused status. It consumes one grant at most once and permits at most one Continue per StageRunId, matching GDD §8.4. Provider/ad execution remains STEP 15; tests use an internal friend factory/fake issuer.
+`ContinueGrant` is an immutable receipt with `ContinueGrantId`, exact `StageRunId`, and fixed `AdditionalMoves=5`. A public injected `IContinueGrantAuthority` uses a two-phase protocol: `PrepareConsume(ContinueGrant)` returns an immutable version-bound reservation without consuming it; `CommitConsume(ContinueGrantReservation)` is guaranteed nonthrowing after a valid reservation, and `CancelReservation` releases an uncommitted reservation. STEP 15 implements the production authority after approved rewarded-ad completion; STEP 11 tests use a fake.
+
+The coordinator first validates Stage/Session state, run correlation, fixed value 5, once-per-run status, and checked prospective move total. It then requests the reservation and binds its authority/version/token to the prepared Continue plan. Authority rejection/staleness returns `MissingOrInvalidGrant`/`DuplicateGrant` with no gameplay mutation. After reservation, only guaranteed nonthrowing authority consumption followed immediately by StageSession/Stage assignment remains; no callback or validation occurs between them. If the gameplay plan becomes stale before commit, the coordinator cancels the reservation and changes nothing.
 
 `StageFailedDecisionStatus` precedence is `InvalidStageState`, `SessionNotFailedPendingDecision`, `MissingOrInvalidGrant` (Continue only), `GrantRunMismatch`, `DuplicateGrant`, `ContinueAlreadyUsed`, `AlreadyResolvedDecision`, `RunIdAllocationFailed` (Retry only), `ArithmeticOverflow`, then `Continued`, `Retried`, or `Abandoned`.
 
 - Append StageState `FailedPendingDecision` without renumbering existing states. StageController `EnterFailedPendingDecision()` transitions `ResolvingAnswer -> FailedPendingDecision`; it is noninteractive/pausable. It replaces direct Failure for ordinary move exhaustion while a Continue decision is available. `ResumeFromContinue()` transitions `FailedPendingDecision -> RecoveringBoard`; target proof is required before presentation/input. Terminal `Fail()` is used only after Retry/Abandon/leave resolves the pending attempt for failure presentation/teardown.
 - Continue requires StageController and StageSession both FailedPendingDecision, checked-adds exactly 5 moves once, transitions the same StageSession back to Active and Stage to RecoveringBoard, increments version, and preserves restoration/run ID.
-- Retry and Abandon require the same pending state, atomically mark old restoration Discarded, make later Success/world commit impossible for that run, and resolve the decision once. Retry obtains a fresh run ID from the coordinator's ID source and returns a fresh zeroed StageSession; Abandon returns no replacement session.
+- Retry and Abandon require the same pending state, atomically mark old restoration Discarded, make later Success/world commit impossible for that run, and resolve the decision once. Abandon terminalizes/tears down the old StageController. Retry asks an injected `IStageRunFactory` for a complete fresh `StageRunHandle` containing a new StageController at Ready, zeroed StageSession, restoration coordinator ownership, and fresh run ID; it never reuses the terminal old controller.
 - Exit or leaving the failed flow delegates to AbandonFailedStage before teardown. Calls from Success, Active, already discarded, or exited states reject without mutation.
-- Results expose immutable old Before/After snapshots, optional replacement snapshot, applied move grant, and restoration disposition. No UI/ad SDK enters these commands; STEP 15 later supplies the approved ContinueGrant.
+- Results expose immutable old Before/After snapshots, optional replacement StageRunHandle, applied move grant, and restoration disposition. No ad SDK enters domain code; STEP 15 later implements the authority port.
 
 ### Stage-run identity ownership
 

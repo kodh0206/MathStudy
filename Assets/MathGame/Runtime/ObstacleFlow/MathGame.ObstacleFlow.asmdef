@@ -1,5 +1,5 @@
 {
   "name":"MathGame.ObstacleFlow","rootNamespace":"MathGame.ObstacleFlow",
-  "references":["MathGame.Board","MathGame.Answer","MathGame.BoardResolution","MathGame.StageSession","MathGame.Fever","MathGame.Targets","MathGame.Stage"],
+  "references":["MathGame.Board","MathGame.Answer","MathGame.BoardResolution","MathGame.StageSession","MathGame.Fever","MathGame.Targets","MathGame.Stage","MathGame.Restoration.Contracts","MathGame.Restoration"],
   "autoReferenced":false,"noEngineReferences":true
 }

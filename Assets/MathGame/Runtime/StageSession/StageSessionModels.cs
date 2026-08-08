@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MathGame.Answer;
 using MathGame.BoardResolution;
+using MathGame.Restoration.Contracts;
 
 namespace MathGame.StageSession
 {
@@ -46,8 +47,11 @@ namespace MathGame.StageSession
     public sealed class StageDefinition
     {
         public StageDefinition(StageDefinitionId id, int initialMoves, IEnumerable<StageObjectiveDefinition> objectives, ScoreRewardConfig scoreConfig)
-        { Id = id; InitialMoves = initialMoves; Objectives = objectives == null ? null : Array.AsReadOnly(objectives.ToArray()); ScoreConfig = scoreConfig; }
+            : this(id, initialMoves, objectives, scoreConfig, null) { }
+        public StageDefinition(StageDefinitionId id, int initialMoves, IEnumerable<StageObjectiveDefinition> objectives, ScoreRewardConfig scoreConfig, StageRestorationConfig restorationConfig)
+        { Id = id; InitialMoves = initialMoves; Objectives = objectives == null ? null : Array.AsReadOnly(objectives.ToArray()); ScoreConfig = scoreConfig; RestorationConfig = restorationConfig; }
         public StageDefinitionId Id { get; } public int InitialMoves { get; } public IReadOnlyList<StageObjectiveDefinition> Objectives { get; } public ScoreRewardConfig ScoreConfig { get; }
+        public StageRestorationConfig RestorationConfig { get; }
     }
     public sealed class StageAttemptCommand
     {
@@ -56,10 +60,13 @@ namespace MathGame.StageSession
         public StageAttemptCommand(StageAttemptId id, AnswerResult answer, BoardResolutionResult resolution, StageAttemptRules rules)
         { Id = id; Answer = answer; Resolution = resolution; Rules = rules ?? throw new ArgumentNullException(nameof(rules)); }
         public StageAttemptCommand(StageAttemptId id, AnswerResult answer, ObstacleResolutionResult resolution, StageAttemptRules rules)
-        { Id = id; Answer = answer; ObstacleResolution = resolution; Rules = rules ?? throw new ArgumentNullException(nameof(rules)); }
+            : this(id, answer, resolution, rules, null) { }
+        public StageAttemptCommand(StageAttemptId id, AnswerResult answer, ObstacleResolutionResult resolution, StageAttemptRules rules, RestorationAwardEvidence restoration)
+        { Id = id; Answer = answer; ObstacleResolution = resolution; Rules = rules ?? throw new ArgumentNullException(nameof(rules)); Restoration = restoration; }
         public StageAttemptId Id { get; } public AnswerResult Answer { get; } public BoardResolutionResult Resolution { get; }
         public ObstacleResolutionResult ObstacleResolution { get; }
         public StageAttemptRules Rules { get; }
+        public RestorationAwardEvidence Restoration { get; }
     }
     public enum StageAttemptMode { Normal, Fever }
     public sealed class StageAttemptRules
@@ -78,8 +85,8 @@ namespace MathGame.StageSession
         }
     }
     public enum StageSessionCreateStatus { MissingDefinition, InvalidDefinitionId, InvalidMoves, MissingObjectives, InvalidObjectiveCount, MissingObjective, UnsupportedObjective, InvalidObjective, DuplicateObjective, MissingScoreConfig, InvalidScoreConfig, Succeeded }
-    public enum StageSessionStatus { Active, Success, Failure }
-    public enum StageAttemptApplyStatus { AppliedContinue, AppliedMiss, AppliedSuccess, AppliedFailure, MissingCommand, SessionAlreadyTerminal, InvalidAttempt, DuplicateAttempt, OutOfOrderAttempt, InvalidAnswer, UnexpectedResolution, AnswerResolutionMismatch, NoMovesRemaining, ArithmeticOverflow }
+    public enum StageSessionStatus { Active, Success, Failure, FailedPendingDecision }
+    public enum StageAttemptApplyStatus { AppliedContinue, AppliedMiss, AppliedSuccess, AppliedFailure, MissingCommand, SessionAlreadyTerminal, InvalidAttempt, DuplicateAttempt, OutOfOrderAttempt, InvalidAnswer, UnexpectedResolution, AnswerResolutionMismatch, NoMovesRemaining, ArithmeticOverflow, MissingRestorationEvidence, UnexpectedRestorationEvidence, RestorationSourceMismatch, InvalidRestorationAward, PreparationRequired }
     public enum ConnectionLengthRewardTier { None, StandardRemoval, ExtraFeverRequested, BasicSpecialRequested, EnhancedAreaSpecialRequested }
     public enum StageSessionEventKind { AnswerAccepted, MissRecorded, ScoreAwarded, ObjectiveProgressed, MoveConsumed, StageSucceeded, StageFailed }
     public readonly struct StageSessionEvent

@@ -14,7 +14,10 @@
     "MathGame.StageSession",
     "MathGame.Fever",
     "MathGame.Obstacles",
-    "MathGame.ObstacleFlow"
+    "MathGame.ObstacleFlow",
+    "MathGame.Restoration.Contracts",
+    "MathGame.Restoration",
+    "MathGame.Presentation.Contracts"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

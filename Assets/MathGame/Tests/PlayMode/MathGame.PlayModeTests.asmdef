@@ -7,7 +7,11 @@
     "MathGame.Stage",
     "MathGame.Answer",
     "MathGame.StageSession",
-    "MathGame.Fever"
+    "MathGame.Fever",
+    "MathGame.Board",
+    "MathGame.ObstacleFlow",
+    "MathGame.Presentation.Contracts",
+    "MathGame.Presentation"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MathGame.BoardResolution;
+using MathGame.Restoration.Contracts;
 
 namespace MathGame.StageSession
 {
@@ -9,13 +10,17 @@ namespace MathGame.StageSession
 
     public sealed class StageSystemEffectPlan
     {
-        internal StageSystemEffectPlan(StageSession owner, long version, BoardSystemEffectId id, StageSessionSnapshot before, StageSessionSnapshot after, long[] progress, long totalRemoved, long totalDust, long totalBoxes, StageSessionStatus status, StageSessionEvent[] events)
-        { Owner = owner; PreparedSessionVersion = version; EffectId = id; Before = before; ProspectiveAfter = after; ProspectiveProgress = progress; ProspectiveTotalRemoved = totalRemoved; ProspectiveDestroyedDust = totalDust; ProspectiveDestroyedBoxes = totalBoxes; ProspectiveStatus = status; Events = Array.AsReadOnly(events); }
+        internal StageSystemEffectPlan(StageSession owner, long version, BoardSystemEffectId id, StageSessionSnapshot before, StageSessionSnapshot after, long[] progress, long totalRemoved, long totalDust, long totalBoxes, long grossRestoration, long provisionalRestoration, long discardedRestoration, StageSessionStatus status, StageSessionEvent[] events, IWorldCommitPlan worldPlan = null)
+        { Owner = owner; PreparedSessionVersion = version; EffectId = id; Before = before; ProspectiveAfter = after; ProspectiveProgress = progress; ProspectiveTotalRemoved = totalRemoved; ProspectiveDestroyedDust = totalDust; ProspectiveDestroyedBoxes = totalBoxes; ProspectiveGrossRestoration = grossRestoration; ProspectiveRestoration = provisionalRestoration; ProspectiveDiscardedRestoration = discardedRestoration; ProspectiveStatus = status; Events = Array.AsReadOnly(events); WorldPlan = worldPlan; }
         internal StageSession Owner { get; }
         internal long[] ProspectiveProgress { get; }
         internal long ProspectiveTotalRemoved { get; }
         internal long ProspectiveDestroyedDust { get; }
         internal long ProspectiveDestroyedBoxes { get; }
+        internal long ProspectiveGrossRestoration { get; }
+        internal long ProspectiveRestoration { get; }
+        internal long ProspectiveDiscardedRestoration { get; }
+        internal IWorldCommitPlan WorldPlan { get; }
         internal StageSessionStatus ProspectiveStatus { get; }
         public BoardSystemEffectId EffectId { get; }
         public long PreparedSessionVersion { get; }
@@ -23,6 +28,7 @@ namespace MathGame.StageSession
         public StageSessionSnapshot ProspectiveAfter { get; }
         public IReadOnlyList<StageSessionEvent> Events { get; }
         public bool WouldSucceed => ProspectiveStatus == StageSessionStatus.Success;
+        public bool IsWorldBound => WorldPlan != null;
     }
 
     public sealed class StageSystemEffectPrepareResult
