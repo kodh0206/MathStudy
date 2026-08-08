@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.BoardResolution",
+  "rootNamespace": "MathGame.BoardResolution",
+  "references": ["MathGame.Board", "MathGame.Answer", "MathGame.Connection", "MathGame.Core"],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

@@ -1,7 +1,7 @@
 # MathGame Development Plan
 
 Last updated: 2026-08-08  
-Status: **GDD-backed.** STEPs 1-5 are complete; later STEPs require their own GDD reconciliation.
+Status: **GDD-backed.** STEPs 1-6 are complete; later STEPs require their own GDD reconciliation.
 
 ## Planning basis
 
@@ -21,7 +21,8 @@ The repository contains an application/lifecycle foundation but no gameplay. `Do
 | 3 | Deterministic Initial Board Generation | Complete — Edit Mode 66/66 total, Play Mode regression 10/10, no P0/P1/P2 |
 | 4 | Orthogonal Connection Path | Complete — Edit Mode 82/82 total, Play Mode regression 10/10, no P0/P1/P2 |
 | 5 | Addition Validation and Interactive Timing | Complete — Edit Mode 99/99, Play Mode 19/19, no P0/P1/P2 |
-| 6-16 | Prototype/MVP development | Planned; design required per STEP |
+| 6 | Board Resolution: Removal, Gravity, Refill | Complete — Edit Mode 117/117, Play Mode 19/19, no P0/P1/P2 |
+| 7-16 | Prototype/MVP development | Planned; design required per STEP |
 
 ## Dependency path
 
@@ -224,4 +225,4 @@ After `Implement STEP N`, report: Goal; Requirements Implemented; Architecture; 
 
 ## Immediate next action
 
-Stop and wait for the user's next command. The next dependency-safe command is `Design STEP 6`; do not begin it automatically.
+Stop and wait for the user's next command. The next dependency-safe command is `Design STEP 7`; do not begin it automatically.

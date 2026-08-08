@@ -104,6 +104,24 @@
 **Decision:** A Stage-driven clock accumulates raw provider deltas only while effective player input is enabled. Misses do not reset the current target timer; correct completion freezes it. Prototype thresholds are inclusive 2/4 seconds.
 **Rationale:** GDD excludes every noninteractive phase, pause, app deactivation, and ad interval and treats speed only as optional reward.
 
+### ADR-018: Board resolution returns an atomic replacement Board
+
+**Status:** Implemented and verified in STEP 6
+**Decision:** Resolve correct answers by validating and planning off the source Board, then return a completely populated replacement Board plus immutable deltas. Never mutate and roll back the caller's Board.
+**Rationale:** MVP boards are tiny, and copy-on-success prevents partial corruption when validation, randomness, or placement fails.
+
+### ADR-019: Mask holes split downward gravity segments
+
+**Status:** Implemented and verified provisionally in STEP 6
+**Decision:** Gravity moves toward decreasing Row within vertically contiguous active segments. Inactive holes are hard barriers; refill follows deterministic column/segment/bottom-up order.
+**Rationale:** The GDD permits special shapes but does not define fall-through gaps. Segment barriers avoid teleportation and produce reproducible outcomes.
+
+### ADR-020: Reject generic blocked cells during basic resolution
+
+**Status:** Implemented and verified in STEP 6
+**Decision:** STEP 6 resolves only full Open numeric boards. Any active Blocked or empty source state returns an explicit unsupported-state failure.
+**Rationale:** GDD obstacle types have incompatible layering and gravity behavior; STEP 10 must define them rather than treating one coarse flag as a universal rule.
+
 ## Tracked ambiguities for later STEP designs
 
 - Precise touch tolerance for backtracking/cancellation.

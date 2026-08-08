@@ -8,7 +8,8 @@
     "MathGame.Board",
     "MathGame.BoardGeneration",
     "MathGame.Connection",
-    "MathGame.Answer"
+    "MathGame.Answer",
+    "MathGame.BoardResolution"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

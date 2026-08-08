@@ -20,6 +20,7 @@ MathGame.Board       (no custom assembly dependency; no UnityEngine reference)
 MathGame.BoardGeneration ---> MathGame.Board, MathGame.Core (no UnityEngine reference)
 MathGame.Connection  ---> MathGame.Board (no UnityEngine reference)
 MathGame.Answer      ---> MathGame.Connection, MathGame.Core, MathGame.Stage (no UnityEngine reference)
+MathGame.BoardResolution ---> MathGame.Board, MathGame.Answer, MathGame.Connection, MathGame.Core (no UnityEngine reference)
 MathGame.Stage  ---> MathGame.Core
 MathGame.App    ---> MathGame.Core, MathGame.Stage, MathGame.Save
 
@@ -42,7 +43,7 @@ The Board, BoardGeneration, Connection, and test assemblies are not auto-referen
 - `StageController` is a plain C# state owner with transition results and `StateChanged` events.
 - Foundation initialization ends in non-interactive `Ready`; a blank stage never advertises player input.
 - It implements initialization, nested pause reasons, resume-to-previous-state, guarded terminal commands, and exit.
-- `StageState` names future concepts (`PresentingTarget`, `ResolvingAnswer`, and Fever states), but the controller currently exposes no public transitions into those states. Their presence is not gameplay implementation.
+- `StageController` exposes the STEP 5 target-presentation, player-input, answer-resolution, and same-target miss-return transitions. Fever state names remain reserved and unreachable until their owning STEP.
 - Player input eligibility is derived from `PlayerInput` or `FeverInput`.
 - `Complete` and `Fail` are invalid from `None`, `Initializing`, and `Ready`. Later objective/session orchestration must become the authorized terminal caller.
 
@@ -95,6 +96,14 @@ The Board, BoardGeneration, Connection, and test assemblies are not auto-referen
 - Clock state/command/fault results are explicit. Nonfinite or backward time faults rather than silently changing a grade; disposal unsubscribes safely.
 - Stage now exposes the authoritative phase graph `Ready/ResolvingAnswer -> PresentingTarget -> PlayerInput -> ResolvingAnswer`, plus same-target miss return `ResolvingAnswer -> PlayerInput`. These commands add no Board resolution or target selection.
 
+### Board resolution
+
+- `BoardResolver` validates a Correct AnswerResult against exact current block positions, IDs, and values, then constructs a replacement Board without mutating the source.
+- Gravity moves toward decreasing Row within vertically contiguous active segments. Inactive topology holes split segments; blocks never cross holes or columns.
+- Survivors retain identity/value. Refills use injected randomness, configured inclusive bounds, sequential IDs, and deterministic column/segment/bottom-up traversal.
+- Results contain copied read-only removed, moved, and spawned deltas plus the next unused ID. Expected failures expose no Board/deltas and consume no randomness during preflight.
+- Basic resolution requires every active source cell to be Open and occupied. Generic blocked/obstacle states remain unsupported until STEP 10 defines their distinct semantics.
+
 ## Current runtime flow
 
 ```text
@@ -113,10 +122,10 @@ The stage is currently called “blank” because `Ready` has no board, target, 
 
 ## Verification already represented by tests
 
-- Edit Mode (99 tests): foundation through Answer coverage, including validation outcomes, minimum length, exact grade thresholds, Stage phase graph, clock command/fault behavior, and all earlier domain regressions.
+- Edit Mode (117 tests): foundation through BoardResolution coverage, including identity-safe atomic failure, rectangular/masked multi-segment gravity, deterministic refill/IDs/deltas, capacity and random-fault boundaries, source independence, delta/index coherence, stale repeat rejection, and all earlier regressions.
 - Play Mode (19 tests): bootstrap/lifecycle regressions plus Stage-driven interactive timing, same-target miss continuation, nested pause exclusions, stopping, reset, faults, and disposal.
 
-Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 5: Edit Mode 99/99 and Play Mode 19/19 passed with valid result XML. Answer, Stage, and affected assemblies compiled with no C# errors.
+Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 6: Edit Mode 117/117 and Play Mode 19/19 passed with valid result XML. BoardResolution and affected assemblies compiled with no C# errors.
 
 ## Known architectural risks
 
