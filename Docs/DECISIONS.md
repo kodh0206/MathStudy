@@ -142,19 +142,19 @@
 
 ### ADR-024: StageSession is the authoritative move/objective terminal owner
 
-**Status:** Accepted for STEP 8 implementation
+**Status:** Implemented and verified in STEP 8
 **Decision:** Apply correlated answer/resolution attempts exactly once, consume normal Correct moves, update supported objective trackers atomically, and evaluate Success before zero-move Failure.
 **Rationale:** Stage lifecycle alone cannot enforce GDD objective and final-move ordering; a Unity-free session makes the product caller deterministic.
 
 ### ADR-025: Implement only objectives with authoritative evidence
 
-**Status:** Accepted for STEP 8 implementation
+**Status:** Implemented and verified in STEP 8
 **Decision:** Support number removal, specified target completion, and long connections. Reject obstacle, restoration, and special objectives until their owning systems emit typed evidence.
 **Rationale:** Inferring those objectives from generic removals or path length would fabricate progress and conflict with later layered systems.
 
 ### ADR-026: Undefined score values require explicit configuration
 
-**Status:** Accepted for STEP 8 implementation
+**Status:** Implemented and verified in STEP 8
 **Decision:** Stage definitions supply nonnegative base/grade/length score values; the domain has no guessed default. Exact GDD Fever contribution values and semantic special intents are calculated separately without applying a gauge or special.
 **Rationale:** The GDD specifies relative rewards and Fever contributions but omits production score/restoration/economy formulas.
 

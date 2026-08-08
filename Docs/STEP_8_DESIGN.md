@@ -20,7 +20,7 @@ Fever move exemption, obstacle/restoration/special objectives, actual specials, 
 
 ## Assembly and ownership
 
-Add `MathGame.StageSession`, a Unity-free, non-auto-referenced assembly depending only on `MathGame.Answer` and `MathGame.BoardResolution` (and their transitive model dependencies). It does not reference StageController, Targets, Board, Unity, UI, SDKs, or persistence.
+Add `MathGame.StageSession`, a Unity-free, non-auto-referenced assembly depending on `MathGame.Answer` and `MathGame.BoardResolution`. Unity assembly references are not transitive, so it also directly references `MathGame.Connection` and `MathGame.Board` because correlation reads the public snapshot-entry and removed-block model types exposed by those dependencies. It does not mutate Board and does not reference StageController, Targets, Unity, UI, SDKs, or persistence.
 
 `StageSession` is the only mutable owner of a run's status, moves, objective progress, attempt sequence, counters, FAST streak, score, removed count, and accumulated semantic Fever contribution. Mutation occurs only through `ApplyAttempt`; it emits immutable returned semantic events rather than callbacks.
 

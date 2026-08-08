@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.StageSession",
+  "rootNamespace": "MathGame.StageSession",
+  "references": ["MathGame.Answer", "MathGame.BoardResolution", "MathGame.Connection", "MathGame.Board"],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

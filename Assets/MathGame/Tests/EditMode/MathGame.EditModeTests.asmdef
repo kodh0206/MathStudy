@@ -10,7 +10,8 @@
     "MathGame.Connection",
     "MathGame.Answer",
     "MathGame.BoardResolution",
-    "MathGame.Targets"
+    "MathGame.Targets",
+    "MathGame.StageSession"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

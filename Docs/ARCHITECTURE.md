@@ -9,7 +9,7 @@ This file describes only code present in the repository. Proposed gameplay archi
 - Unity 6000.3.6f1, Universal Render Pipeline 17.3.0, Input System 1.18.0, and Unity Test Framework 1.6.0.
 - The only enabled build scene is `Assets/Scenes/SampleScene.unity`.
 - Runtime code is under `Assets/MathGame/Runtime`; tests are under `Assets/MathGame/Tests`.
-- The logical board, deterministic initial population, and orthogonal connection-path domains exist. No playable board view/input adapter, target, answer resolution, objective, Fever, obstacle behavior, restoration, gameplay UI, analytics adapter, ad adapter, or concrete save repository exists.
+- Logical board, generation, connection, answer timing, board resolution, safe-target recovery, and stage-session domains exist. No playable board view/input adapter, composed gameplay loop, Fever, obstacle behavior, restoration, gameplay UI, analytics adapter, ad adapter, or concrete save repository exists.
 
 ## Assembly boundaries
 
@@ -22,6 +22,7 @@ MathGame.Connection  ---> MathGame.Board (no UnityEngine reference)
 MathGame.Answer      ---> MathGame.Connection, MathGame.Core, MathGame.Stage (no UnityEngine reference)
 MathGame.BoardResolution ---> MathGame.Board, MathGame.Answer, MathGame.Connection, MathGame.Core (no UnityEngine reference)
 MathGame.Targets     ---> MathGame.Board, MathGame.Answer, MathGame.Core (no UnityEngine reference)
+MathGame.StageSession ---> MathGame.Answer, MathGame.BoardResolution, MathGame.Connection, MathGame.Board (no UnityEngine reference)
 MathGame.Stage  ---> MathGame.Core
 MathGame.App    ---> MathGame.Core, MathGame.Stage, MathGame.Save
 
@@ -29,7 +30,7 @@ EditModeTests   ---> MathGame.Core, MathGame.Stage, MathGame.Save, MathGame.Boar
 PlayModeTests   ---> MathGame.App, MathGame.Core, MathGame.Stage
 ```
 
-The Board, BoardGeneration, Connection, and test assemblies are not auto-referenced. All three domain assemblies set `noEngineReferences` to enforce their Unity-free boundaries. Other runtime assemblies remain auto-referenced. Edit Mode tests are Editor-only.
+The domain feature assemblies and test assemblies are not auto-referenced. Unity-free domain assemblies set `noEngineReferences` to enforce their boundaries. Edit Mode tests are Editor-only.
 
 ## Existing systems
 
@@ -113,6 +114,16 @@ The Board, BoardGeneration, Connection, and test assemblies are not auto-referen
 - Successful recovery returns an exact witness, Board/history, zero move cost, and immutable original-to-final shuffle deltas. Failure never advertises a safe target or enables input.
 - Stage includes noninteractive pausable `RecoveringBoard`; deadlock recovery enters it from PlayerInput and only verified success may proceed to PresentingTarget.
 
+### Stage session, objectives, and completion
+
+- `StageSession` is the Unity-free authoritative owner of normal-mode moves, supported objective progress, score, answer counters, FAST streak, semantic Fever contributions, and terminal ordering.
+- Attempts use positive monotonic IDs. Duplicate, out-of-order, malformed, and mismatched answer/resolution inputs are rejected without mutation.
+- Correct attempts require a successful resolution whose removed entries exactly match the submitted positions, IDs, values, and order. Misses cost no move and reset the FAST streak.
+- Implemented objectives are number-block removal, specified-target completion, and long-connection completion. Obstacle, restoration-energy, and special create/use objectives fail explicitly until their owning systems provide authoritative evidence.
+- Normal Correct consumes one move. Objective effects are applied before terminal evaluation, so completing the final objective on the last move succeeds; zero moves with an incomplete objective fails.
+- Score values are explicit stage configuration because the GDD supplies no formula. Exact grade/length/FAST-streak Fever contributions and 4/5+ special intents are immutable semantic facts only; STEP 8 does not apply Fever or create specials.
+- Results expose immutable historical snapshots and ordered semantic events. StageController remains a lifecycle state machine; orchestration maps session Success/Failure from ResolvingAnswer to its existing terminal commands.
+
 ## Current runtime flow
 
 ```text
@@ -131,16 +142,15 @@ The stage is currently called “blank” because `Ready` has no board, target, 
 
 ## Verification already represented by tests
 
-- Edit Mode (150 tests): foundation through Targets coverage, including complete orthogonal/masked search contracts, expansion/pruning boundaries, selector validation and random faults, shuffle preservation/immutability, deterministic shared-RNG recovery, final delta coherence, RecoveringBoard transitions, and all earlier regressions.
+- Edit Mode (172 tests): foundation through StageSession coverage, including target recovery plus objective configuration, attempt correlation/idempotence, score/reward facts, move/terminal ordering, overflow atomicity, immutable histories, and all earlier regressions.
 - Play Mode (20 tests): bootstrap/lifecycle and answer-clock regressions plus focus/pause exclusion while RecoveringBoard is noninteractive.
 
-Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 7: Edit Mode 150/150 and Play Mode 20/20 passed with valid result XML. Targets, Stage, and affected assemblies compiled with no C# errors.
+Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 8: Edit Mode 172/172 and Play Mode 20/20 passed with valid result XML. StageSession and affected assemblies compiled with no C# errors.
 
 ## Known architectural risks
 
 - `StageState` anticipates future states without implemented transition commands; later STEP designs must confirm or revise these names rather than assuming them correct.
 - `MathGameBootstrap` directly constructs concrete services. This is adequate for the current small foundation but will need a deliberate composition strategy as gameplay dependencies arrive.
-- There is no explicit interactive-time owner; `UnityTimeProvider` alone must not be used to classify answer speed.
 - There is no scene/content bootstrap beyond the persistent application object.
 - Save-on-background, interrupted-stage restoration, and platform-specific lifecycle sequences still require their owning later STEP designs and device verification.
 - Board access is intentionally a minimal Open/Blocked fact. STEP 10 must derive or replace it from approved layered obstacle state so independent flags do not become competing rule authorities.
