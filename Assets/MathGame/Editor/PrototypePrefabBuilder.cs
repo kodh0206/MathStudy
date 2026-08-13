@@ -10,7 +10,7 @@ namespace MathGame.Editor.SceneBuilder
 {
     public static class PrototypePrefabBuilder
     {
-        const int ContractVersion=3;
+        const int ContractVersion=5;
         public const string Root = "Assets/MathGame/Prefabs";
         public const string GameRootPath = Root + "/Core/GameRoot.prefab";
         public const string BoardPath = Root + "/Board/Board.prefab";
@@ -57,12 +57,65 @@ namespace MathGame.Editor.SceneBuilder
             CreateIfMissing(FeverPath,()=>CreateLabelPanel("FeverGauge","FEVER  0/50",29));
             CreateIfMissing(RestorationPath,()=>CreateLabelPanel("RestorationGauge","RESTORATION  0/100",29));
             CreateIfMissing(HudPath,CreateHud);
+            UpgradeManagedHudLayout();
             EnsureRegistry();
             CreateIfMissing(GameRootPath,CreateGameRoot);
             EnsureGameRootOwnershipMarker();
             EnsureRegistry();
             AssetDatabase.SaveAssets();AssetDatabase.Refresh();
             Debug.Log("MathGame prototype prefabs are available. Existing prefab assets were preserved.");
+        }
+
+        static void UpgradeManagedHudLayout()
+        {
+            var hud = PrefabUtility.LoadPrefabContents(HudPath);
+            try
+            {
+                var mainStats = hud.transform.Find("MainStats") as RectTransform;
+                var resources = hud.transform.Find("Resources") as RectTransform;
+                var objectives = hud.transform.Find("Objectives") as RectTransform;
+                Set(hud.GetComponent<RectTransform>(), 0, 1, 1, 1, 24, -404, -24, -24);
+                if (mainStats != null) Set(mainStats, 0, 1, 1, 1, 24, -184, -24, -82);
+                if (resources != null) Set(resources, 0, 1, 1, 1, 24, -274, -24, -194);
+                if (objectives != null)
+                {
+                    Set(objectives, 0, 0, 1, 1, 24, 24, -24, 122);
+                    var layout = objectives.GetComponent<VerticalLayoutGroup>();
+                    if (layout != null)
+                    {
+                        layout.padding = new RectOffset(0, 0, 0, 0);
+                        layout.spacing = 6;
+                        layout.childAlignment = TextAnchor.UpperLeft;
+                        layout.childControlWidth = true;
+                        layout.childForceExpandWidth = true;
+                        layout.childControlHeight = true;
+                        layout.childForceExpandHeight = false;
+                    }
+                }
+                PrefabUtility.SaveAsPrefabAsset(hud, HudPath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(hud); }
+
+            var objective = PrefabUtility.LoadPrefabContents(ObjectivePath);
+            try
+            {
+                var element = objective.GetComponent<LayoutElement>() ?? objective.AddComponent<LayoutElement>();
+                element.minHeight = 40;
+                element.preferredHeight = 44;
+                element.flexibleWidth = 1;
+                var text = objective.GetComponent<Text>() ?? objective.GetComponentInChildren<Text>();
+                if (text != null)
+                {
+                    text.alignment = TextAnchor.MiddleLeft;
+                    text.resizeTextForBestFit = true;
+                    text.resizeTextMinSize = 18;
+                    text.resizeTextMaxSize = 26;
+                    text.horizontalOverflow = HorizontalWrapMode.Wrap;
+                    text.verticalOverflow = VerticalWrapMode.Truncate;
+                }
+                PrefabUtility.SaveAsPrefabAsset(objective, ObjectivePath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(objective); }
         }
 
         [MenuItem("MathGame/Development/Recreate Prototype Prefabs",priority=100)]
@@ -202,30 +255,44 @@ namespace MathGame.Editor.SceneBuilder
         {
             var root=new GameObject("Block");
             var background=GameObject.CreatePrimitive(PrimitiveType.Quad);background.name="Background";background.transform.SetParent(root.transform,false);background.transform.localScale=Vector3.one*.88f;UnityEngine.Object.DestroyImmediate(background.GetComponent<Collider>());
-            var value=new GameObject("ValueText");value.transform.SetParent(root.transform,false);value.transform.localPosition=Vector3.back*.02f;var text=value.AddComponent<TextMesh>();text.text="1";text.anchor=TextAnchor.MiddleCenter;text.alignment=TextAlignment.Center;text.characterSize=.35f;text.fontSize=64;text.color=Color.white;
+            var value=new GameObject("ValueText");value.transform.SetParent(root.transform,false);value.transform.localPosition=Vector3.back*.02f;var text=value.AddComponent<TextMesh>();ConfigureTextMesh(text,"1",.22f,48,new Color(.1f,.32f,.72f),20);
             new GameObject("OptionalEffectRoot").transform.SetParent(root.transform,false);
             return root;
         }
 
         static GameObject CreateCell()
         {
-            var root=GameObject.CreatePrimitive(PrimitiveType.Quad);root.name="Cell";root.AddComponent<PrototypeCellView>();root.transform.localScale=Vector3.one*.88f;
-            var block=new GameObject("BlockRoot");block.transform.SetParent(root.transform,false);var valueObject=new GameObject("ValueText");valueObject.transform.SetParent(block.transform,false);valueObject.transform.localPosition=Vector3.back*.08f;var value=valueObject.AddComponent<TextMesh>();value.anchor=TextAnchor.MiddleCenter;value.alignment=TextAlignment.Center;value.characterSize=.35f;value.fontSize=64;value.color=new Color(.035f,.055f,.09f,1f);value.GetComponent<MeshRenderer>().sortingOrder=20;
-            var obstacle=new GameObject("ObstacleRoot");obstacle.transform.SetParent(root.transform,false);var obstacleObject=new GameObject("ObstacleText");obstacleObject.transform.SetParent(obstacle.transform,false);obstacleObject.transform.localPosition=new Vector3(-.3f,.3f,-.1f);var obstacleText=obstacleObject.AddComponent<TextMesh>();obstacleText.anchor=TextAnchor.MiddleCenter;obstacleText.alignment=TextAlignment.Center;obstacleText.characterSize=.2f;obstacleText.fontSize=48;obstacleText.color=new Color(1f,.45f,.05f);obstacleText.GetComponent<MeshRenderer>().sortingOrder=30;
-            root.GetComponent<PrototypeCellView>().Configure(0,0,root.transform,value,obstacleText,block,obstacle);return root;
+            var root=UI("Cell",typeof(CanvasRenderer),typeof(Image),typeof(PrototypeCellView));
+            var background=root.GetComponent<Image>();background.color=new Color(.92f,.95f,1f,.98f);
+            var block=UI("BlockRoot");block.transform.SetParent(root.transform,false);Stretch(block.GetComponent<RectTransform>(),8);
+            var value=Text("ValueText","",40,TextAnchor.MiddleCenter,block.transform);value.fontStyle=FontStyle.Bold;Stretch(value.rectTransform,2);
+            var obstacle=UI("ObstacleRoot");obstacle.transform.SetParent(root.transform,false);Stretch(obstacle.GetComponent<RectTransform>(),4);
+            var obstacleText=Text("ObstacleText","",22,TextAnchor.UpperLeft,obstacle.transform);obstacleText.color=new Color(1f,.45f,.05f);Stretch(obstacleText.rectTransform,2);
+            root.GetComponent<PrototypeCellView>().Configure(0,0,background,value,obstacleText,block,obstacle);return root;
         }
 
         static GameObject CreateBoard()
         {
-            var root=new GameObject("BoardView",typeof(GameplayPresentationRoot),typeof(PlaceholderPresentationFeedback));
-            var cells=new GameObject("CellRoot");cells.transform.SetParent(root.transform,false);new GameObject("BlockRoot").transform.SetParent(root.transform,false);new GameObject("EffectRoot").transform.SetParent(root.transform,false);
+            var root=UI("BoardView",typeof(AudioSource),typeof(GameplayPresentationRoot),typeof(PlaceholderPresentationFeedback));
+            var audio=root.GetComponent<AudioSource>();audio.playOnAwake=false;audio.spatialBlend=0f;audio.volume=.22f;
+            var cells=UI("CellRoot");cells.transform.SetParent(root.transform,false);Stretch(cells.GetComponent<RectTransform>(),0);
+            var blocks=UI("BlockRoot");blocks.transform.SetParent(root.transform,false);Stretch(blocks.GetComponent<RectTransform>(),0);
+            var effects=UI("EffectRoot");effects.transform.SetParent(root.transform,false);Stretch(effects.GetComponent<RectTransform>(),0);
             var cellPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(CellPath);
             for(var row=0;row<8;row++)for(var column=0;column<8;column++)
             {
-                var cell=PrefabUtility.InstantiatePrefab(cellPrefab) as GameObject;cell.name="Cell_"+column+"_"+row;cell.transform.SetParent(cells.transform,false);cell.transform.localPosition=new Vector3(column,row,0);
-                cell.GetComponent<PrototypeCellView>().Configure(column,row,cell.transform,cell.transform.Find("BlockRoot/ValueText")?.GetComponent<TextMesh>(),cell.transform.Find("ObstacleRoot/ObstacleText")?.GetComponent<TextMesh>(),cell.transform.Find("BlockRoot")?.gameObject,cell.transform.Find("ObstacleRoot")?.gameObject);
+                var cell=PrefabUtility.InstantiatePrefab(cellPrefab) as GameObject;cell.name="Cell_"+column+"_"+row;cell.transform.SetParent(cells.transform,false);
+                cell.GetComponent<PrototypeCellView>().Configure(column,row,cell.GetComponent<Image>(),cell.transform.Find("BlockRoot/ValueText")?.GetComponent<Text>(),cell.transform.Find("ObstacleRoot/ObstacleText")?.GetComponent<Text>(),cell.transform.Find("BlockRoot")?.gameObject,cell.transform.Find("ObstacleRoot")?.gameObject);
             }
             return root;
+        }
+
+        static void ConfigureTextMesh(TextMesh text,string content,float characterSize,int fontSize,Color color,int sortingOrder)
+        {
+            text.text=content;text.anchor=TextAnchor.MiddleCenter;text.alignment=TextAlignment.Center;
+            text.characterSize=characterSize;text.fontSize=fontSize;text.color=color;
+            text.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var renderer=text.GetComponent<MeshRenderer>();renderer.sortingOrder=sortingOrder;renderer.sharedMaterial=text.font.material;
         }
 
         static GameObject CreateHud()
@@ -247,10 +314,13 @@ namespace MathGame.Editor.SceneBuilder
         {
             var root=new GameObject("GameRoot",typeof(GamePresentationHost),typeof(PrototypeGeneratedRoot));
             root.GetComponent<PrototypeGeneratedRoot>().Configure(ContractVersion);
-            var gameplay=new GameObject("GameplayRoot");gameplay.transform.SetParent(root.transform,false);
-            var boardSlot=new GameObject("BoardSlot");boardSlot.transform.SetParent(gameplay.transform,false);
-            var effectSlot=new GameObject("EffectSlot");effectSlot.transform.SetParent(gameplay.transform,false);
+            var gameplay=UI("GameplayRoot",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));gameplay.transform.SetParent(root.transform,false);
+            var gameplayCanvas=gameplay.GetComponent<Canvas>();gameplayCanvas.renderMode=RenderMode.ScreenSpaceOverlay;gameplayCanvas.sortingOrder=10;
+            var gameplayScaler=gameplay.GetComponent<CanvasScaler>();gameplayScaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;gameplayScaler.referenceResolution=new Vector2(1080,1920);gameplayScaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;gameplayScaler.matchWidthOrHeight=.5f;
+            var boardSlot=UI("BoardSlot");boardSlot.transform.SetParent(gameplay.transform,false);Set(boardSlot.GetComponent<RectTransform>(),.06f,.22f,.94f,.72f,0,0,0,0);
+            var effectSlot=UI("EffectSlot");effectSlot.transform.SetParent(gameplay.transform,false);Stretch(effectSlot.GetComponent<RectTransform>(),0);
             var board=PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(BoardPath)) as GameObject;board.transform.SetParent(boardSlot.transform,false);
+            Stretch(board.GetComponent<RectTransform>(),0);
             var uiRoot=new GameObject("UIRoot");uiRoot.transform.SetParent(root.transform,false);
             var canvasObject=UI("PrototypeCanvas",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster),typeof(PrototypeUILayout));canvasObject.transform.SetParent(root.transform,false);
             canvasObject.transform.SetParent(uiRoot.transform,false);
@@ -265,6 +335,7 @@ namespace MathGame.Editor.SceneBuilder
             var boardArea=UI("BoardArea");boardArea.transform.SetParent(centerSlot.transform,false);Set(boardArea.GetComponent<RectTransform>(),0,0,1,1,70,300,-70,-410);
             var bottom=UI("BottomHUD",typeof(Image));bottom.transform.SetParent(bottomSlot.transform,false);bottom.GetComponent<Image>().color=new Color(.035f,.055f,.09f,.96f);Set(bottom.GetComponent<RectTransform>(),0,0,1,0,24,24,-24,280);
             var status=Text("Status","Starting prototype...",26,TextAnchor.UpperCenter,bottom.transform);Set(status.rectTransform,0,1,1,1,24,-104,-24,-16);
+            var selectionSum=Text("SelectionSum","SELECTED SUM  0",30,TextAnchor.MiddleCenter,bottom.transform);Set(selectionSum.rectTransform,0,1,1,1,24,-154,-24,-104);
             var actions=UI("Actions",typeof(HorizontalLayoutGroup));actions.transform.SetParent(bottom.transform,false);Set(actions.GetComponent<RectTransform>(),0,0,1,1,20,18,-20,-116);var row=actions.GetComponent<HorizontalLayoutGroup>();row.spacing=12;row.childControlWidth=true;row.childForceExpandWidth=true;
             foreach(var pair in new[]{("Continue","Continue +5"),("Retry","Retry"),("Abandon","Abandon"),("RetryTarget","Retry Target"),("Restart","Restart")})Button(pair.Item1,pair.Item2,actions.transform);
             var presentation=new GameObject("PresentationRoot");presentation.transform.SetParent(root.transform,false);

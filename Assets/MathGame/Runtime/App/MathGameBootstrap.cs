@@ -70,6 +70,19 @@ namespace MathGame.App
             ReconcileLifecycleState();
         }
 
+        public bool RestartStage()
+        {
+            if (_instance != this || _logger == null) return false;
+            StageController?.Exit(StageExitReason.UserRequested);
+            StageController = new StageController(_logger);
+            _isStageInitialized = false;
+            if (StageController.Start() != TransitionResult.Succeeded) return false;
+            if (StageController.FinishInitialization() != TransitionResult.Succeeded) return false;
+            _isStageInitialized = true;
+            ReconcileLifecycleState();
+            return true;
+        }
+
         private void OnDestroy()
         {
             if (_lifecycleRelay != null)

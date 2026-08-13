@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74dce93583b742388be057fcfc7ac8d7, type: 3}
   m_Name: MathGamePrefabRegistry
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.MathGamePrefabRegistry
-  GameRootPrefab: {fileID: 7306849381890568419, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
-  BoardPrefab: {fileID: 4513634727066880562, guid: ab1103e31f7458248b7502c3310a0cd4, type: 3}
-  CellPrefab: {fileID: 5706648811167454357, guid: 5cee45328eedc364ab235b5e48d182bb, type: 3}
-  BlockPrefab: {fileID: 8895653934855768845, guid: ad7ac33e890bab546a48d4ed4a0365b2, type: 3}
-  HudPrefab: {fileID: 5325537519473406813, guid: 7a0d1a380bc9468428b13fe08c31ef2b, type: 3}
-  ObjectiveItemPrefab: {fileID: 6725319975757494866, guid: 8dd984b554bb6af4386d0dfdbc991362, type: 3}
-  FeverGaugePrefab: {fileID: 4838564452044685834, guid: eee1687f4dac8ac4988cf640a7fc12f0, type: 3}
-  RestorationGaugePrefab: {fileID: 1521316474554953430, guid: b9d7ddc9c3423454a9dbf311eea96172, type: 3}
+  GameRootPrefab: {fileID: 7254001563699216894, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
+  BoardPrefab: {fileID: 4296176194361827857, guid: ab1103e31f7458248b7502c3310a0cd4, type: 3}
+  CellPrefab: {fileID: 5375506155190311978, guid: 5cee45328eedc364ab235b5e48d182bb, type: 3}
+  BlockPrefab: {fileID: 3449895425409065078, guid: ad7ac33e890bab546a48d4ed4a0365b2, type: 3}
+  HudPrefab: {fileID: 8780089425523410580, guid: 7a0d1a380bc9468428b13fe08c31ef2b, type: 3}
+  ObjectiveItemPrefab: {fileID: 3089025840076147471, guid: 8dd984b554bb6af4386d0dfdbc991362, type: 3}
+  FeverGaugePrefab: {fileID: 5257739891999365672, guid: eee1687f4dac8ac4988cf640a7fc12f0, type: 3}
+  RestorationGaugePrefab: {fileID: 1896965400762272369, guid: b9d7ddc9c3423454a9dbf311eea96172, type: 3}

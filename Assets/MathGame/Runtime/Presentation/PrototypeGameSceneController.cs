@@ -126,6 +126,10 @@ namespace MathGame.Presentation.Unity
                 return;
             }
             boardView.PlaybackCompleted += PlaybackCompleted;
+            boardView.BeginSession();
+            // Prototype board visuals are authored in the scene. Reconcile them immediately
+            // instead of holding input while staging per-delta animations.
+            boardView.Configure(new PresentationTiming(0, 0, 0, 0, 0));
             boardView.ConfigureRegistry(presentationHost.Registry);
             var context = presentationHost.CreateContext();
             boardView.ConfigureSlots(boardView.transform.Find("CellRoot"), boardView.transform.Find("BlockRoot"), context.EffectSlot);
@@ -169,7 +173,12 @@ namespace MathGame.Presentation.Unity
                 var tick = fever.Tick();
                 if (tick == FeverControllerTickResult.EndingBegan && !resolvingEnd) ResolveFeverEnd();
             }
-            if (!stage.AcceptsPlayerInput) return;
+            if (!stage.AcceptsPlayerInput)
+            {
+                if(Mouse.current?.leftButton.wasPressedThisFrame==true||Touchscreen.current?.primaryTouch.press.wasPressedThisFrame==true)
+                    status="Input locked while stage is "+stage.State+".";
+                return;
+            }
             HandlePointer();
         }
 
@@ -179,6 +188,7 @@ namespace MathGame.Presentation.Unity
             if (down)
             {
                 selected.Clear();
+                uiLayout?.SetSelectionSum(0,0);
                 if (TryPointerCell(screenPosition, out var cell))
                 {
                     var result = commands.BeginPath(new PathCommandRequest(new PresentationCommandId(commandId++), commands.CurrentToken, cell));
@@ -198,6 +208,7 @@ namespace MathGame.Presentation.Unity
                     refill, history, targetConfig, stage.ResolutionOrigin == AnswerResolutionOrigin.Fever);
                 HandleRelease(commands.ReleasePath(request));
                 selected.Clear();
+                uiLayout?.SetSelectionSum(0,0);
                 UpdateLine();
             }
         }
@@ -205,8 +216,15 @@ namespace MathGame.Presentation.Unity
         void AcceptPathResult(GameplayCommandResult result)
         {
             if (result?.Status != PresentationCommandStatus.Accepted || result.Path == null) return;
+            var previousCount=selected.Count;
             selected.Clear();
             foreach (var entry in result.Path.Entries) selected.Add(entry.Position);
+            long sum=0;
+            foreach(var position in selected)
+                if(obstacleFlow.CurrentBoard.TryGetCell(position,out var cell)==CellLookupResult.Succeeded&&cell.Block.HasValue)
+                    sum+=cell.Block.Value.Value;
+            uiLayout?.SetSelectionSum(sum,selected.Count);
+            if(selected.Count>previousCount)boardView?.PlaySelectionCue();
             UpdateLine();
         }
 
@@ -355,6 +373,7 @@ namespace MathGame.Presentation.Unity
 
         void UpdateLine()
         {
+            boardView?.SetSelectedPositions(selected);
             if (selectionLine == null) return;
             selectionLine.positionCount = selected.Count;
             for (var i = 0; i < selected.Count; i++) selectionLine.SetPosition(i, boardView.GetCellWorldPosition(selected[i]));
@@ -394,18 +413,8 @@ namespace MathGame.Presentation.Unity
             targetRecoveryPending = false;
             resolvingEnd = false;
             if (selectionLine != null) Destroy(selectionLine.gameObject);
-            if (bootstrap != null) Destroy(bootstrap.gameObject);
             yield return null;
-
-            var controllerObject = new GameObject("GameController");
-            controllerObject.AddComponent<ApplicationLifecycleRelay>();
-            bootstrap = controllerObject.AddComponent<MathGameBootstrap>();
-            for (var i = 0; i < 120; i++)
-            {
-                if (bootstrap != null && bootstrap.StageController?.State == StageState.Ready) break;
-                yield return null;
-            }
-            if (bootstrap == null || bootstrap.StageController?.State != StageState.Ready)
+            if (bootstrap == null || !bootstrap.RestartStage())
             {
                 status = "Restart bootstrap did not reach Ready.";
                 restarting = false;

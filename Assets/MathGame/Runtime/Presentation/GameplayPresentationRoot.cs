@@ -28,9 +28,16 @@ namespace MathGame.Presentation.Unity
         public int ObstacleViewCount => obstacles.Count;
         public int SerializedCellViewCount => GetComponentsInChildren<PrototypeCellView>(true).Length;
         public PresentationTiming Timing { get; private set; } = PresentationTiming.Approved;
+        public void PlaySelectionCue()=>feedback?.Play(PresentationFeedbackCue.Selection,true,false);
+        public void SetSelectedPositions(IReadOnlyCollection<BoardPosition> positions)
+        {
+            var selectedPositions=positions==null?new HashSet<BoardPosition>():new HashSet<BoardPosition>(positions);
+            foreach(var pair in prebuiltCells)if(pair.Value.gameObject.activeSelf)pair.Value.SetSelected(selectedPositions.Contains(pair.Key));
+        }
 
         public void FrameCamera(Camera camera)
         {
+            if(transform is RectTransform)return;
             if (camera == null || displayedBoard == null) return;
             if (prebuiltCells.Count == 0) IndexPrebuiltCells();
 
@@ -65,14 +72,32 @@ namespace MathGame.Presentation.Unity
         public bool TryScreenPointToCell(Camera camera, Vector2 screenPosition, out BoardPosition position)
         {
             position = default;
-            if (camera == null || displayedBoard == null || !camera.pixelRect.Contains(screenPosition)) return false;
+            if (camera == null || displayedBoard == null) return false;
+            if(transform is RectTransform)
+            {
+                foreach(var pair in prebuiltCells)
+                    if(pair.Value.gameObject.activeInHierarchy&&RectTransformUtility.RectangleContainsScreenPoint(pair.Value.RectTransform,screenPosition,null))
+                    {position=pair.Key;return displayedBoard.IsActive(position);}
+                return false;
+            }
             var ray = camera.ScreenPointToRay(screenPosition);
+            var hits=Physics.RaycastAll(ray,100f);
+            Array.Sort(hits,(left,right)=>left.distance.CompareTo(right.distance));
+            foreach(var hit in hits)
+            {
+                var view=hit.collider.GetComponentInParent<PrototypeCellView>();
+                if(view==null||!view.transform.IsChildOf(transform))continue;
+                var hitPosition=view.Position;
+                if(!displayedBoard.IsActive(hitPosition))continue;
+                position=hitPosition;
+                return true;
+            }
             var plane = new Plane(transform.forward, transform.position);
             if (!plane.Raycast(ray, out var distance)) return false;
             var local = transform.InverseTransformPoint(ray.GetPoint(distance));
             var column = Mathf.RoundToInt(local.x);
             var row = Mathf.RoundToInt(local.y);
-            if (Mathf.Abs(local.x - column) > .45f || Mathf.Abs(local.y - row) > .45f) return false;
+            if (Mathf.Abs(local.x - column) > .5f || Mathf.Abs(local.y - row) > .5f) return false;
             var candidate = new BoardPosition(column, row);
             if (!displayedBoard.IsActive(candidate) || !prebuiltCells.ContainsKey(candidate)) return false;
             position = candidate;
@@ -96,11 +121,19 @@ namespace MathGame.Presentation.Unity
 
         void Awake()
         {
+            BeginSession();
+        }
+
+        // The BoardView is serialized scene content and survives prototype stage restarts.
+        // GameplayPresentationCoordinator.Dispose tears down session subscriptions, so a
+        // new composition must explicitly restore them before binding the next Board.
+        public void BeginSession()
+        {
             IndexPrebuiltCells();
-            foreach (var view in prebuiltCells.Values) view.SetUnused();
             overlay = GetComponent<GameplayOverlayView>();
             if (overlay == null) overlay = gameObject.AddComponent<GameplayOverlayView>();
             feedback = GetComponent<IPresentationFeedbackPort>();
+            if (touch != null) touch.PathChanged -= PathChanged;
             touch = GetComponentInChildren<LogicalBoardTouchAdapter>();
             if (touch != null) touch.PathChanged += PathChanged;
         }
@@ -132,11 +165,14 @@ namespace MathGame.Presentation.Unity
         void ApplyPrebuiltBoard(MathGame.Board.Board board,IPresentationPlan plan)
         {
             var active=new HashSet<BoardPosition>();blocks.Clear();obstacles.Clear();
+            var minColumn=int.MaxValue;var maxColumn=int.MinValue;var minRow=int.MaxValue;var maxRow=int.MinValue;
+            foreach(var position in board.EnumerateActivePositions()){minColumn=Math.Min(minColumn,position.Column);maxColumn=Math.Max(maxColumn,position.Column);minRow=Math.Min(minRow,position.Row);maxRow=Math.Max(maxRow,position.Row);}
+            var columns=Math.Max(1,maxColumn-minColumn+1);var rows=Math.Max(1,maxRow-minRow+1);
             foreach(var position in board.EnumerateActivePositions())
             {
                 active.Add(position);
                 if(!prebuiltCells.TryGetValue(position,out var view))throw new InvalidOperationException("Board exceeds prebuilt visual capacity at "+position);
-                board.TryGetCell(position,out var snapshot);view.Apply(snapshot);
+                board.TryGetCell(position,out var snapshot);view.SetGridLayout(minColumn,minRow,columns,rows,6f);view.Apply(snapshot);
                 if(snapshot.Block.HasValue)blocks[snapshot.Block.Value.Id]=view.gameObject;
                 if(snapshot.HasDust)obstacles[snapshot.Dust.Value.Id]=view.gameObject;
                 if(snapshot.HasBox)obstacles[snapshot.Box.Value.Id]=view.gameObject;
@@ -179,10 +215,8 @@ namespace MathGame.Presentation.Unity
                 case PresentationEventKind.RemoveSelected:
                 case PresentationEventKind.RemoveCollateral:
                     var blockId = new BlockId((int)value.Identity);
-                    if (blocks.TryGetValue(blockId, out var removed) && removed != null)
-                    {
-                        var prebuilt=removed.GetComponent<PrototypeCellView>();if(prebuilt!=null)prebuilt.SetBlockVisible(false);else Destroy(removed);
-                    }
+                    // Prebuilt cells are never hidden or destroyed during playback. Their
+                    // final number is rebound from the authoritative Board at reconciliation.
                     blocks.Remove(blockId);
                     feedback?.Play(value.Kind == PresentationEventKind.RemoveSelected ? PresentationFeedbackCue.Correct : PresentationFeedbackCue.Selection,
                         plan.Settings.AudioEnabled, plan.Settings.HapticsEnabled);
@@ -200,8 +234,8 @@ namespace MathGame.Presentation.Unity
                     break;
                 case PresentationEventKind.DestroyObstacle:
                     var obstacleId = new ObstacleId((int)value.Identity);
-                    if (obstacles.TryGetValue(obstacleId, out var destroyed) && destroyed != null)
-                    {var prebuilt=destroyed.GetComponent<PrototypeCellView>();if(prebuilt!=null)prebuilt.SetObstacleVisible(false);else Destroy(destroyed);}
+                    // As with blocks, obstacle visuals are serialized children of each cell;
+                    // ApplyFinalState updates their visibility and HP without recreating them.
                     obstacles.Remove(obstacleId);
                     feedback?.Play(PresentationFeedbackCue.ObstacleDestroyed, plan.Settings.AudioEnabled, plan.Settings.HapticsEnabled);
                     break;

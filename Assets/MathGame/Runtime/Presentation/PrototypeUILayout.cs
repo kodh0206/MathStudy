@@ -22,6 +22,7 @@ namespace MathGame.Presentation.Unity
         Text restoration;
         Text fever;
         Text status;
+        Text selectionSum;
         Button continueButton;
         Button retryButton;
         Button abandonButton;
@@ -44,6 +45,7 @@ namespace MathGame.Presentation.Unity
             {
                 BindPrefabHierarchy(onContinue,onRetry,onAbandon,onTargetRetry);
                 ValidateBoundHierarchy();
+                ConfigureResponsiveHud();
                 ApplySafeArea(true);
                 return;
             }
@@ -91,6 +93,8 @@ namespace MathGame.Presentation.Unity
                 Vector2.zero, new Vector2(1, 0), new Vector2(24, 24), new Vector2(-24, 280));
             status = Label("Status", bottom, "Starting prototype...", 26, TextAnchor.UpperCenter, FontStyle.Normal);
             SetRect(status.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(24, -104), new Vector2(-24, -16));
+            selectionSum = Label("SelectionSum", bottom, "SELECTED SUM  0", 30, TextAnchor.MiddleCenter, FontStyle.Bold);
+            SetRect(selectionSum.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(24, -154), new Vector2(-24, -104));
             var actions = Rect("Actions", bottom, Vector2.zero, Vector2.one, new Vector2(20, 18), new Vector2(-20, -116));
             var actionLayout = actions.gameObject.AddComponent<HorizontalLayoutGroup>();
             actionLayout.spacing = 12;
@@ -116,6 +120,7 @@ namespace MathGame.Presentation.Unity
             target=FindText("SafeArea/TopSlot/HUD/MainStats/Target/Value");moves=FindText("SafeArea/TopSlot/HUD/MainStats/Moves/Value");
             score=FindText("SafeArea/TopSlot/HUD/MainStats/Score/Value");restoration=FindText("SafeArea/TopSlot/HUD/Resources/Restoration");
             fever=FindText("SafeArea/TopSlot/HUD/Resources/Fever");status=FindText("SafeArea/BottomSlot/BottomHUD/Status");
+            selectionSum=FindText("SafeArea/BottomSlot/BottomHUD/SelectionSum");
             objectiveContainer=transform.Find("SafeArea/TopSlot/HUD/Objectives");objectives.Clear();
             if(objectiveContainer!=null)foreach(Transform child in objectiveContainer){var value=child.GetComponent<Text>()??child.GetComponentInChildren<Text>();if(value!=null)objectives.Add(value);}
             continueButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Continue");retryButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Retry");
@@ -129,8 +134,75 @@ namespace MathGame.Presentation.Unity
         static void Wire(Button button,Action callback){if(button==null)return;button.onClick.RemoveAllListeners();if(callback!=null)button.onClick.AddListener(()=>callback());}
         void ValidateBoundHierarchy()
         {
-            if(safeArea==null||target==null||moves==null||score==null||restoration==null||fever==null||status==null||objectiveContainer==null||continueButton==null||retryButton==null||abandonButton==null||targetRetryButton==null||restartButton==null)
+            if(safeArea==null||target==null||moves==null||score==null||restoration==null||fever==null||status==null||selectionSum==null||objectiveContainer==null||continueButton==null||retryButton==null||abandonButton==null||targetRetryButton==null||restartButton==null)
                 throw new InvalidOperationException("GameRoot/HUD prefab contract is incomplete. Rebuild or migrate the presentation prefab explicitly.");
+        }
+
+        void ConfigureResponsiveHud()
+        {
+            var hud = transform.Find("SafeArea/TopSlot/HUD") as RectTransform;
+            var mainStats = transform.Find("SafeArea/TopSlot/HUD/MainStats") as RectTransform;
+            var resources = transform.Find("SafeArea/TopSlot/HUD/Resources") as RectTransform;
+            var objectiveRoot = objectiveContainer as RectTransform;
+            if (hud != null) SetRect(hud, new Vector2(0, 1), Vector2.one, new Vector2(24, -404), new Vector2(-24, -24));
+            if (mainStats != null) SetRect(mainStats, new Vector2(0, 1), Vector2.one, new Vector2(24, -184), new Vector2(-24, -82));
+            if (resources != null) SetRect(resources, new Vector2(0, 1), Vector2.one, new Vector2(24, -274), new Vector2(-24, -194));
+            if (objectiveRoot != null) SetRect(objectiveRoot, Vector2.zero, Vector2.one, new Vector2(24, 24), new Vector2(-24, 122));
+
+            var stats = mainStats != null ? mainStats.GetComponent<GridLayoutGroup>() : null;
+            if (stats != null)
+            {
+                stats.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                stats.constraintCount = 3;
+                stats.cellSize = new Vector2(320, 92);
+                stats.spacing = new Vector2(20, 0);
+                stats.childAlignment = TextAnchor.MiddleCenter;
+            }
+
+            var objectiveLayout = objectiveRoot != null ? objectiveRoot.GetComponent<VerticalLayoutGroup>() : null;
+            if (objectiveLayout != null)
+            {
+                objectiveLayout.padding = new RectOffset(0, 0, 0, 0);
+                objectiveLayout.spacing = 6;
+                objectiveLayout.childAlignment = TextAnchor.UpperLeft;
+                objectiveLayout.childControlWidth = true;
+                objectiveLayout.childForceExpandWidth = true;
+                objectiveLayout.childControlHeight = true;
+                objectiveLayout.childForceExpandHeight = false;
+            }
+
+            ConfigureStatusText(restoration, TextAnchor.MiddleLeft);
+            ConfigureStatusText(fever, TextAnchor.MiddleRight);
+            foreach (var objective in objectives) ConfigureObjectiveText(objective);
+        }
+
+        static void ConfigureStatusText(Text text, TextAnchor alignment)
+        {
+            if (text == null) return;
+            text.alignment = alignment;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 20;
+            text.resizeTextMaxSize = 29;
+        }
+
+        static void ConfigureObjectiveText(Text text)
+        {
+            if (text == null) return;
+            var parent = text.transform.parent;
+            var root = parent != null && parent.GetComponent<VerticalLayoutGroup>() == null
+                ? parent as RectTransform
+                : text.rectTransform;
+            var layout = root != null ? root.GetComponent<LayoutElement>() : null;
+            if (root != null && layout == null) layout = root.gameObject.AddComponent<LayoutElement>();
+            if (layout != null) { layout.minHeight = 40; layout.preferredHeight = 44; layout.flexibleWidth = 1; }
+            text.alignment = TextAnchor.MiddleLeft;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = 18;
+            text.resizeTextMaxSize = 26;
         }
 
         public void Refresh(StageSessionSnapshot snapshot, int targetValue, int gauge, int maximumGauge,
@@ -163,6 +235,11 @@ namespace MathGame.Presentation.Unity
             ApplySafeArea(false);
         }
 
+        public void SetSelectionSum(long value,int count)
+        {
+            if(selectionSum!=null)selectionSum.text=count>0?"SELECTED SUM  "+value:"SELECTED SUM  0";
+        }
+
         void EnsureObjectiveCount(int count)
         {
             while(objectives.Count<count)
@@ -171,6 +248,7 @@ namespace MathGame.Presentation.Unity
                 if(prefabRegistry!=null&&prefabRegistry.ObjectiveItemPrefab!=null)instance=Instantiate(prefabRegistry.ObjectiveItemPrefab,objectiveContainer);
                 if(instance==null){var value=Label("ObjectiveItem",objectiveContainer,"Objective",26,TextAnchor.MiddleLeft,FontStyle.Normal);objectives.Add(value);continue;}
                 var text=instance.GetComponent<Text>()??instance.GetComponentInChildren<Text>();if(text==null)throw new InvalidOperationException("Objective item prefab requires a Text component.");objectives.Add(text);
+                ConfigureObjectiveText(text);
             }
         }
 

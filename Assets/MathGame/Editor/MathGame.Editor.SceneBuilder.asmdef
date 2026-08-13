@@ -3,6 +3,7 @@
   "rootNamespace": "MathGame.Editor.SceneBuilder",
   "references": [
     "MathGame.App",
+    "MathGame.Board",
     "MathGame.Presentation",
     "Unity.UGUI"
   ],

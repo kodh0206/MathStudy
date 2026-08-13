@@ -10,8 +10,8 @@ using UnityEngine.SceneManagement;
 namespace MathGame.Editor.SceneBuilder
 {
     /// <summary>
-    /// Creates the small authored entry-point required by the runtime prototype composition.
-    /// Gameplay state and generated placeholder views remain runtime-owned.
+    /// Creates the authored entry-point and serialized prototype board views.
+    /// Runtime gameplay binds logical state to these existing views; it does not create them.
     /// </summary>
     public static class PrototypeGameSceneBuilder
     {
@@ -51,6 +51,7 @@ namespace MathGame.Editor.SceneBuilder
                 if(prefab==null)throw new InvalidOperationException("GameRoot prefab was not created.");
                 gameRoot=PrefabUtility.InstantiatePrefab(prefab,scene) as GameObject;
             }
+            BakeSerializedBoardPreview(gameRoot);
             composition.GetComponent<PrototypeGameSceneController>().ConfigurePresentationHost(gameRoot.GetComponent<GamePresentationHost>());
 
             var camera = FindMainCamera(scene);
@@ -143,6 +144,31 @@ namespace MathGame.Editor.SceneBuilder
             return marker != null && marker.IsMathGameOwned &&
                    source != null && AssetDatabase.GetAssetPath(source) == PrototypePrefabBuilder.GameRootPath &&
                    root.GetComponent<GamePresentationHost>()?.HasValidContext == true;
+        }
+
+        static void BakeSerializedBoardPreview(GameObject gameRoot)
+        {
+            var boardView = gameRoot.GetComponent<GamePresentationHost>()?.BoardView;
+            if (boardView == null)
+                throw new InvalidOperationException("Managed GameRoot has no serialized BoardView.");
+
+            foreach (var cell in boardView.GetComponentsInChildren<PrototypeCellView>(true))
+            {
+                var position = cell.Position;
+                var visible = position.Column >= 0 && position.Column < 5 &&
+                              position.Row >= 0 && position.Row < 5;
+                Undo.RecordObject(cell.gameObject, "Bake MathGame board preview");
+                if (visible)
+                {
+                    cell.SetGridLayout(0, 0, 5, 5, 6f);
+                    var value = 1 + ((position.Column * 3 + position.Row * 2) % 4);
+                    var obstacle = position.Column == 1 && position.Row == 1 ? "D" :
+                        position.Column == 2 && position.Row == 2 ? "B2" : string.Empty;
+                    cell.ConfigureScenePreview(true, value, obstacle);
+                }
+                else cell.ConfigureScenePreview(false, 0, string.Empty);
+                EditorUtility.SetDirty(cell.gameObject);
+            }
         }
 
         static Camera FindMainCamera(Scene scene)
