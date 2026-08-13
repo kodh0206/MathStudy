@@ -1,4 +1,4 @@
-ame: Deploy MathGame WebGL
+name: Deploy MathGame WebGL
 
 on:
   push:
