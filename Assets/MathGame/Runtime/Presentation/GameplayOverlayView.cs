@@ -9,21 +9,13 @@ namespace MathGame.Presentation.Unity
     // Placeholder presentation uses built-in TextMesh/LineRenderer only; concrete art bindings remain external.
     public sealed class GameplayOverlayView : MonoBehaviour
     {
-        TextMesh hud;
         LineRenderer connection;
 
-        public string HudText => hud == null ? string.Empty : hud.text;
+        public string HudText => string.Empty;
         public int Target { get; private set; }
 
         void Awake()
         {
-            var hudObject = new GameObject("GameplayHUD_AccessibleText");
-            hudObject.transform.SetParent(transform, false);
-            hudObject.transform.localPosition = new Vector3(0, 6, -1);
-            hud = hudObject.AddComponent<TextMesh>();
-            hud.anchor = TextAnchor.UpperLeft;
-            hud.characterSize = .25f;
-
             var lineObject = new GameObject("ConnectionLine");
             lineObject.transform.SetParent(transform, false);
             connection = lineObject.AddComponent<LineRenderer>();
@@ -33,28 +25,12 @@ namespace MathGame.Presentation.Unity
 
         public void ApplyEnvelope(PresentationEnvelope envelope)
         {
-            if (envelope?.Session == null || hud == null) return;
-            var text = new StringBuilder();
-            text.Append("Target ").Append(Target)
-                .Append("  Moves ").Append(envelope.Session.RemainingMoves)
-                .Append("  Score ").Append(envelope.Session.Score)
-                .Append("  Restoration ").Append(envelope.Session.ProvisionalRestoration);
-            if (envelope.Fever != null)
-                text.Append("  Fever ").Append(envelope.Fever.Gauge).Append('/').Append(envelope.Fever.MaximumGauge)
-                    .Append(" ").Append(envelope.Fever.RemainingSeconds.ToString("0.0"));
-            for (var i = 0; i < envelope.Session.Objectives.Count; i++)
-            {
-                var objective = envelope.Session.Objectives[i];
-                text.Append("\nObjective ").Append(i + 1).Append(": ")
-                    .Append(objective.Current).Append('/').Append(objective.Required);
-            }
-            hud.text = text.ToString();
+            // The responsive Canvas owned by PrototypeUILayout renders the HUD.
         }
 
         public void SetTarget(int target)
         {
             Target = target;
-            if (hud != null && !hud.text.StartsWith("Target " + target + " ")) hud.text = "Target " + target + "  " + hud.text;
         }
 
         public void ShowPath(ConnectionPathSnapshot path)
@@ -74,17 +50,16 @@ namespace MathGame.Presentation.Unity
             if (positions != null)
                 for (var i = 0; i < positions.Count; i++)
                     connection.SetPosition(i, new Vector3(positions[i].Column, positions[i].Row, -.2f));
-            if (hud != null) hud.text = "Sum " + sum + "\n" + hud.text;
         }
 
         public void ShowResult(bool success, string detail)
         {
-            if (hud != null) hud.text = (success ? "SUCCESS" : "FAILED") + "\n" + (detail ?? string.Empty);
+            // Result copy is rendered by the responsive prototype Canvas.
         }
 
         public void ShowStatus(string status)
         {
-            if (hud != null) hud.text = status + "\n" + hud.text;
+            // Status copy is rendered by the responsive prototype Canvas.
         }
 
         public void ShowMilestone(long milestone)

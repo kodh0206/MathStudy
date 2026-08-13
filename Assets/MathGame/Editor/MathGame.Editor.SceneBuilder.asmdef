@@ -1,0 +1,12 @@
+{
+  "name": "MathGame.Editor.SceneBuilder",
+  "rootNamespace": "MathGame.Editor.SceneBuilder",
+  "references": [
+    "MathGame.App",
+    "MathGame.Presentation",
+    "Unity.UGUI"
+  ],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

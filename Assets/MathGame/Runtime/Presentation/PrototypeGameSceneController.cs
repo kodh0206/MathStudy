@@ -26,6 +26,7 @@ namespace MathGame.Presentation.Unity
     [DefaultExecutionOrder(100)]
     public sealed class PrototypeGameSceneController : MonoBehaviour
     {
+        [SerializeField] GamePresentationHost presentationHost;
         MathGameBootstrap bootstrap;
         StageController stage;
         Session session;
@@ -41,6 +42,7 @@ namespace MathGame.Presentation.Unity
         RefillValueRange refill;
         WorldRestorationProgress world;
         LineRenderer selectionLine;
+        PrototypeUILayout uiLayout;
         readonly List<BoardPosition> selected = new List<BoardPosition>();
         long commandId = 1;
         long presentationId = 1;
@@ -119,10 +121,16 @@ namespace MathGame.Presentation.Unity
             commands = new ObstacleGameplayPresentationPort(obstacleFlow, stage, fever, session,
                 new AnswerValidator(AnswerTimingThresholds.Prototype), null);
 
-            var rootObject = new GameObject("PrototypeBoardView");
-            rootObject.AddComponent<PlaceholderPresentationFeedback>();
-            boardView = rootObject.AddComponent<GameplayPresentationRoot>();
+            boardView = presentationHost!=null?presentationHost.BoardView:FindFirstObjectByType<GameplayPresentationRoot>();
+            if(boardView==null)
+            {
+                var rootObject = new GameObject("PrototypeBoardView");
+                rootObject.AddComponent<PlaceholderPresentationFeedback>();
+                boardView = rootObject.AddComponent<GameplayPresentationRoot>();
+            }
             boardView.PlaybackCompleted += PlaybackCompleted;
+            boardView.ConfigureRegistry(presentationHost?.Registry);
+            if(presentationHost!=null){var context=presentationHost.CreateContext();boardView.ConfigureSlots(context.BoardSlot.Find("BoardView/CellRoot"),context.BoardSlot.Find("BoardView/BlockRoot"),context.EffectSlot);}
             presentation = new GameplayPresentationCoordinator(commands, boardView);
             boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
 
@@ -136,10 +144,11 @@ namespace MathGame.Presentation.Unity
             if (camera != null)
             {
                 camera.orthographic = true;
-                camera.orthographicSize = 4.2f;
-                camera.transform.position = new Vector3(2, 2.4f, -10);
                 camera.backgroundColor = new Color(.07f, .09f, .13f);
             }
+            uiLayout = presentationHost!=null?presentationHost.UILayout:FindFirstObjectByType<PrototypeUILayout>();
+            if(uiLayout==null)uiLayout=new GameObject("PrototypeCanvas").AddComponent<PrototypeUILayout>();
+            uiLayout.Build(camera, Continue, Restart, Abandon, RetryTarget,presentationHost?.Registry);
             stage.BeginTargetPresentation();
             stage.EnablePlayerInput();
             targetStarted = Time.unscaledTime;
@@ -149,6 +158,10 @@ namespace MathGame.Presentation.Unity
         void Update()
         {
             if (commands == null) return;
+            var currentSnapshot=session.CreateSnapshot();
+            uiLayout?.Refresh(currentSnapshot,target.Value,fever.Gauge,50,status,
+                stage.State==StageState.FailedPendingDecision,targetRecoveryPending,
+                stage.State is StageState.Success or StageState.Failure);
             if (stage.State == StageState.EnteringFever)
             {
                 if (fever.CompleteEntry() == FeverControllerCommandResult.Succeeded)
@@ -355,31 +368,10 @@ namespace MathGame.Presentation.Unity
             for (var i = 0; i < selected.Count; i++) selectionLine.SetPosition(i, new Vector3(selected[i].Column, selected[i].Row, -.5f));
         }
 
-        void OnGUI()
+        void Abandon()
         {
-            if (session == null) { GUI.Label(new Rect(15, 15, 800, 30), status); return; }
-            var snapshot = session.CreateSnapshot();
-            GUI.Box(new Rect(10, 10, 430, 150), "MathGame Deterministic Prototype");
-            GUI.Label(new Rect(25, 38, 400, 24), "Target: " + target.Value + "   Moves: " + snapshot.RemainingMoves + "   Score: " + snapshot.Score);
-            GUI.Label(new Rect(25, 62, 400, 24), "Restoration: " + snapshot.ProvisionalRestoration + "/" + snapshot.StageRestorationCapacity + "   Fever: " + fever.Gauge + "/50");
-            GUI.Label(new Rect(25, 86, 400, 24), "Stage: " + stage.State + "   " + status);
-            GUI.Label(new Rect(25, 110, 400, 24), "Objectives: remove 12 numbers and destroy Dust");
-
-            if (stage.State == StageState.FailedPendingDecision)
-            {
-                if (GUI.Button(new Rect(20, 175, 120, 40), "Continue +5")) Continue();
-                if (GUI.Button(new Rect(150, 175, 120, 40), "Retry")) Restart();
-                if (GUI.Button(new Rect(280, 175, 120, 40), "Abandon")) { session.TryDiscardFailedAttempt(); stage.Fail(); status = "Abandoned"; }
-            }
-            else if(targetRecoveryPending&&stage.State is StageState.ResolvingAnswer or StageState.RecoveringBoard)
-            {
-                if(GUI.Button(new Rect(20,175,180,40),"Retry Target Recovery"))RetryTarget();
-            }
-            else if (stage.State == StageState.Success || stage.State == StageState.Failure)
-            {
-                if (GUI.Button(new Rect(20, 175, 120, 40), "Retry Stage")) Restart();
-            }
-            if (GUI.Button(new Rect(Screen.width - 155, 15, 140, 35), "Restart Prototype")) Restart();
+            if(stage.State!=StageState.FailedPendingDecision)return;
+            session.TryDiscardFailedAttempt();stage.Fail();status="Abandoned";
         }
 
         void Continue()
@@ -414,5 +406,9 @@ namespace MathGame.Presentation.Unity
             if (boardView != null) boardView.PlaybackCompleted -= PlaybackCompleted;
             presentation?.Dispose(); fever?.Dispose();
         }
+
+#if UNITY_EDITOR
+        public void ConfigurePresentationHost(GamePresentationHost host)=>presentationHost=host;
+#endif
     }
 }

@@ -18,6 +18,8 @@ namespace MathGame.Presentation.Unity
         IPresentationFeedbackPort feedback;
         MathGame.Board.Board displayedBoard;
         LogicalBoardTouchAdapter touch;
+        MathGamePrefabRegistry prefabRegistry;
+        Transform cellRoot,blockRoot,effectRoot;
 
         public event Action PlaybackCompleted;
         public IReadOnlyList<PresentationEvent> AppliedEvents => appliedEvents.AsReadOnly();
@@ -26,6 +28,8 @@ namespace MathGame.Presentation.Unity
         public PresentationTiming Timing { get; private set; } = PresentationTiming.Approved;
 
         public void Configure(PresentationTiming timing) => Timing = timing ?? throw new ArgumentNullException(nameof(timing));
+        public void ConfigureRegistry(MathGamePrefabRegistry registry)=>prefabRegistry=registry;
+        public void ConfigureSlots(Transform cellsSlot,Transform blocksSlot,Transform effectsSlot){cellRoot=cellsSlot;blockRoot=blocksSlot;effectRoot=effectsSlot;}
 
         void Awake()
         {
@@ -60,22 +64,22 @@ namespace MathGame.Presentation.Unity
                 seen.Add(position);
                 if (!cells.TryGetValue(position, out var cell) || cell == null)
                 {
-                    cell = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                    cell = prefabRegistry!=null&&prefabRegistry.CellPrefab!=null?Instantiate(prefabRegistry.CellPrefab):GameObject.CreatePrimitive(PrimitiveType.Quad);
                     cell.name = "Cell_" + position.Column + "_" + position.Row;
-                    cell.transform.SetParent(transform, false);
+                    cell.transform.SetParent(cellRoot!=null?cellRoot:transform, false);
                     cells[position] = cell;
                 }
                 cell.transform.localPosition = new Vector3(position.Column, position.Row, 0);
                 board.TryGetCell(position, out var snapshot);
-                cell.transform.localScale = snapshot.HasBox ? new Vector3(.85f, .85f, 1) : Vector3.one;
+                cell.transform.localScale = snapshot.HasBox ? new Vector3(.78f, .78f, 1) : new Vector3(.88f, .88f, 1);
                 // Shape/scale is an additional non-colour indicator for Box/unavailable state.
                 if (snapshot.Block.HasValue)
                 {
                     var block = snapshot.Block.Value;
                     if (!blocks.TryGetValue(block.Id, out var blockView) || blockView == null)
                     {
-                        blockView = new GameObject();
-                        var label = blockView.AddComponent<TextMesh>();
+                        blockView = prefabRegistry!=null&&prefabRegistry.BlockPrefab!=null?Instantiate(prefabRegistry.BlockPrefab):new GameObject();
+                        var label = blockView.GetComponentInChildren<TextMesh>()??blockView.AddComponent<TextMesh>();
                         label.anchor = TextAnchor.MiddleCenter;
                         label.alignment = TextAlignment.Center;
                         label.characterSize = .35f;
@@ -84,7 +88,7 @@ namespace MathGame.Presentation.Unity
                         blocks[block.Id] = blockView;
                     }
                     blockView.name = "Block_" + block.Id.Value + "_Value_" + block.Value;
-                    var numberLabel = blockView.GetComponent<TextMesh>();
+                    var numberLabel = blockView.GetComponentInChildren<TextMesh>();
                     if (numberLabel != null) numberLabel.text = block.Value.ToString();
                     blockView.transform.SetParent(cell.transform, false);
                     blockView.transform.localPosition = Vector3.back * .01f;
