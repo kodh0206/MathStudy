@@ -3,7 +3,7 @@ name: Deploy MathGame WebGL
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - "WebGLBuild/**"
       - ".github/workflows/deploy-webgl.yml"
