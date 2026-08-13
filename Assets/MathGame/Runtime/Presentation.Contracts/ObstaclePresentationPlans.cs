@@ -10,7 +10,8 @@ namespace MathGame.Presentation
     public enum PresentationEventKind
     {
         RemoveSelected, RemoveCollateral, DamageObstacle, DestroyObstacle,
-        MoveBlock, SpawnBlock, ShuffleBlock, PresentTarget, RestorationMilestone, Reconcile
+        MoveBlock, SpawnBlock, ShuffleBlock, PresentTarget, RestorationMilestone,
+        Miss, FeverEntry, FeverEnd, StageSuccess, StageFailure, Reconcile
     }
 
     public readonly struct PresentationEvent
@@ -35,6 +36,28 @@ namespace MathGame.Presentation
 
     public static class ObstaclePresentationPlanBuilder
     {
+        public static ObstaclePresentationPlan ForMiss(PresentationEnvelope envelope, PresentationSettings settings)
+        {
+            if (envelope == null || settings == null || envelope.AcknowledgementKind != PresentationAcknowledgementKind.Answer)
+                throw new ArgumentException("A miss acknowledgement envelope is required.");
+            return new ObstaclePresentationPlan(envelope, settings,
+                new List<PresentationEvent>
+                {
+                    new PresentationEvent(PresentationEventKind.Miss, default, envelope.SourceId),
+                    new PresentationEvent(PresentationEventKind.Reconcile, default, envelope.Gameplay.Token.Revision)
+                }, false);
+        }
+
+        public static ObstaclePresentationPlan ForTerminal(PresentationEnvelope envelope, PresentationSettings settings, bool success)
+        {
+            if (envelope == null || settings == null) throw new ArgumentNullException();
+            return new ObstaclePresentationPlan(envelope, settings,
+                new List<PresentationEvent>
+                {
+                    new PresentationEvent(success ? PresentationEventKind.StageSuccess : PresentationEventKind.StageFailure, default, envelope.SourceId),
+                    new PresentationEvent(PresentationEventKind.Reconcile, default, envelope.Gameplay.Token.Revision)
+                }, false);
+        }
         public static ObstaclePresentationPlan ForAnswer(PresentationEnvelope envelope, PresentationSettings settings, ObstacleAnswerFlowResult result)
         {
             if (envelope == null || settings == null || result?.ResolutionResult == null || !result.ResolutionResult.Succeeded)

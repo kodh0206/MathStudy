@@ -18,6 +18,13 @@ namespace MathGame.Presentation
     {
         GameplayStateToken CurrentToken { get; }
         bool IsStageTerminated { get; }
+        GameplayCommandResult BeginPath(PathCommandRequest request);
+        GameplayCommandResult ExtendPath(PathCommandRequest request);
+        GameplayCommandResult ReleasePath(ReleasePathRequest request);
+        GameplayCommandResult CancelPath(PresentationCommandId commandId, GameplayStateToken token);
+        GameplayCommandResult RetryTargetRecovery(TargetRetryRequest request);
+        GameplayCommandResult ResolveFeverEnd(FeverEndCommandRequest request);
+        GameplayCommandResult ResolveFailedDecision(FailedDecisionRequest request);
         PresentationAcknowledgementStatus Acknowledge(PresentationAcknowledgement acknowledgement);
     }
 
@@ -30,6 +37,7 @@ namespace MathGame.Presentation
     public interface IPresentationViewPort
     {
         void Prepare(IPresentationPlan plan);
+        void CancelPlayback();
         void ApplyFinalState(IPresentationPlan plan);
         void TearDown();
     }
@@ -64,11 +72,19 @@ namespace MathGame.Presentation
             if (gameplay.IsStageTerminated) return PresentationCommandStatus.StageTerminated;
             if (plan.Envelope.Gameplay.Token != gameplay.CurrentToken) return PresentationCommandStatus.StaleGameplayToken;
             if (plan.Envelope.SequenceId.Value <= lastSequence) return PresentationCommandStatus.DuplicateCommand;
+            if (plan.Envelope.SequenceId.Value != lastSequence + 1) return PresentationCommandStatus.OutOfOrderCommand;
             if (Phase is not PresentationPhase.Idle) return PresentationCommandStatus.PresentationStillRunning;
-            views.Prepare(plan);
             active = plan;
             lastSequence = plan.Envelope.SequenceId.Value;
-            Phase = PresentationPhase.Playing;
+            Phase = PresentationPhase.Preparing;
+            try { views.Prepare(plan); }
+            catch
+            {
+                active = null;
+                Phase = PresentationPhase.Faulted;
+                return PresentationCommandStatus.DomainRejected;
+            }
+            if (Phase == PresentationPhase.Preparing) Phase = PresentationPhase.Playing;
             return PresentationCommandStatus.Accepted;
         }
 
@@ -97,8 +113,14 @@ namespace MathGame.Presentation
         {
             if (disposed) return PresentationCommandStatus.Disposed;
             if (active == null) return PresentationCommandStatus.MissingRequest;
-            active = null;
-            Phase = PresentationPhase.Idle;
+            try
+            {
+                views.CancelPlayback();
+                Phase = PresentationPhase.Reconciling;
+                views.ApplyFinalState(active);
+            }
+            catch { Phase = PresentationPhase.Faulted; return PresentationCommandStatus.DomainRejected; }
+            Phase = PresentationPhase.AwaitingAcknowledgement;
             return PresentationCommandStatus.Accepted;
         }
 
@@ -112,7 +134,8 @@ namespace MathGame.Presentation
 
             // This block is deliberately synchronous and non-cancellable: there is no callback/await gap.
             Phase = PresentationPhase.Reconciling;
-            views.ApplyFinalState(active);
+            try { views.ApplyFinalState(active); }
+            catch { Phase = PresentationPhase.Faulted; return PresentationAcknowledgementStatus.WrongPhase; }
             var acknowledgement = new PresentationAcknowledgement(active.Envelope.SequenceId, gameplay.CurrentToken,
                 active.Envelope.AcknowledgementKind, active.Envelope.SourceId);
             var status = gameplay.Acknowledge(acknowledgement);

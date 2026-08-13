@@ -177,3 +177,11 @@ Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 9: Edit Mode 208/208 and
 - Exact gravity traversal through masked shapes and content connectivity rules remain deferred to their owning designs.
 - Initial population remains unverified until the implemented STEP 7 search supplies a current-board witness. Bounded `SearchLimitExceeded` or `UnrecoverableDeadlock` results intentionally keep input disabled and require content/configuration handling rather than unsafe target exposure.
 - Restoration behavior is implemented as a logical domain transaction, but Unity Edit/Play verification is currently blocked by licensing initialization. Presentation remains STEP 12.
+
+### STEP 12 presentation boundary
+
+- `MathGame.Presentation.Contracts` owns immutable presentation envelopes, ordered plans, gameplay command/acknowledgement contracts, deterministic touch/center policies, and cancellation/reconciliation sequencing.
+- `MathGame.Presentation` owns Unity-only placeholder views, logical touch input, identity-keyed block/obstacle views, HUD/connection/result feedback, and a playback driver. Views never mutate Board, StageSession, Fever, restoration, or world state directly.
+- `ObstacleGameplayPresentationPort` delegates normal/Fever answers, target retries, Fever end effects, and failed decisions to the existing STEP 10/11 authorities. Miss and committed-answer presentation remain noninteractive until their exact token/source acknowledgement.
+- Animation cancellation stops the active coroutine, reconciles the authoritative snapshot once, and requires explicit acknowledgement. Stale tokens never replay gameplay commands.
+- Static Production/Edit/Play assembly compilation is verified. Unity Edit/Play execution remains environment-blocked by licensing initialization and is not recorded as a runtime pass.

@@ -45,7 +45,7 @@ namespace MathGame.Tests.Presentation
             var stale = Envelope(board, new GameplayStateToken(new StageRunId(9), 2, GameplayStateSource.Answer, 1), 1);
             Assert.That(coordinator.Prepare(new PresentationPlan(stale, new PresentationSettings(false))), Is.EqualTo(PresentationCommandStatus.StaleGameplayToken));
 
-            var plan = new PresentationPlan(Envelope(board, token, 2), new PresentationSettings(false));
+            var plan = new PresentationPlan(Envelope(board, token, 1), new PresentationSettings(false));
             Assert.That(coordinator.Prepare(plan), Is.EqualTo(PresentationCommandStatus.Accepted));
             Assert.That(coordinator.Prepare(plan), Is.EqualTo(PresentationCommandStatus.DuplicateCommand));
             Assert.That(port.Acknowledgements, Is.Zero);
@@ -61,11 +61,32 @@ namespace MathGame.Tests.Presentation
             var board = StableBoard(1, 1);
             var token = new GameplayStateToken(new StageRunId(4), 1, GameplayStateSource.Initial, 0);
             var port = new FakeGameplayPort(token);
-            var coordinator = new GameplayPresentationCoordinator(port, new FakeView());
+            var coordinatorView = new FakeView();
+            var coordinator = new GameplayPresentationCoordinator(port, coordinatorView);
             Assert.That(coordinator.Prepare(new PresentationPlan(Envelope(board, token, 1), new PresentationSettings(false))), Is.EqualTo(PresentationCommandStatus.Accepted));
             Assert.That(coordinator.CancelBeforeReconcile(), Is.EqualTo(PresentationCommandStatus.Accepted));
+            Assert.That(coordinatorView.Cancellations, Is.EqualTo(1));
             Assert.That(port.Acknowledgements, Is.Zero);
             Assert.That(port.CurrentToken, Is.EqualTo(token));
+            Assert.That(coordinator.Phase, Is.EqualTo(PresentationPhase.AwaitingAcknowledgement));
+            Assert.That(coordinator.CompletePlayback(), Is.EqualTo(PresentationAcknowledgementStatus.Accepted));
+        }
+
+        [Test]
+        public void Prepare_InstallsActivePlanBeforeSynchronousViewCompletion()
+        {
+            var board = StableBoard(1, 1);
+            var token = new GameplayStateToken(new StageRunId(41), 1, GameplayStateSource.Initial, 0);
+            var port = new FakeGameplayPort(token);
+            GameplayPresentationCoordinator coordinator = null;
+            var view = new FakeView { OnPrepare = () => coordinator.CompletePlayback() };
+            coordinator = new GameplayPresentationCoordinator(port, view);
+
+            var status = coordinator.Prepare(new PresentationPlan(Envelope(board, token, 1), new PresentationSettings(false)));
+
+            Assert.That(status, Is.EqualTo(PresentationCommandStatus.Accepted));
+            Assert.That(coordinator.Phase, Is.EqualTo(PresentationPhase.Idle));
+            Assert.That(port.Acknowledgements, Is.EqualTo(1));
         }
 
         [Test]
@@ -98,6 +119,14 @@ namespace MathGame.Tests.Presentation
             Assert.That(committed.Plan.CrossedMilestones, Is.EqualTo(new[] { WorldRestorationMilestone.Quarter, WorldRestorationMilestone.Half, WorldRestorationMilestone.ThreeQuarters, WorldRestorationMilestone.Complete }));
         }
 
+        [Test]
+        public void GameplaySnapshot_ClonesBoardAndTokenIsRunRevisionCorrelated()
+        {
+            var source=StableBoard(1,1);var token=new GameplayStateToken(new StageRunId(33),7,GameplayStateSource.Answer,4);
+            var snapshot=new GameplayStateSnapshot(token,source,2);source.TryRemoveBlock(new BoardPosition(0,0),out _);
+            Assert.That(snapshot.Board.BlockCount,Is.EqualTo(1));Assert.That(snapshot.Token.Revision,Is.EqualTo(7));Assert.That(snapshot.Token.SourceId,Is.EqualTo(4));
+        }
+
         static RemovedNumberDelta Removed(BoardPosition p, int id) => new RemovedNumberDelta(p, new NumberBlock(new BlockId(id), 1), RemovedNumberCause.Selected, RemovalOrigin.Fever);
         static MathGame.Board.Board StableBoard(int width, int height)
         {
@@ -115,12 +144,22 @@ namespace MathGame.Tests.Presentation
             public GameplayStateToken CurrentToken { get; set; }
             public bool IsStageTerminated { get; set; }
             public int Acknowledgements { get; private set; }
+            public GameplayCommandResult BeginPath(PathCommandRequest request) => null;
+            public GameplayCommandResult ExtendPath(PathCommandRequest request) => null;
+            public GameplayCommandResult ReleasePath(ReleasePathRequest request) => null;
+            public GameplayCommandResult CancelPath(PresentationCommandId commandId, GameplayStateToken token) => null;
+            public GameplayCommandResult RetryTargetRecovery(TargetRetryRequest request) => null;
+            public GameplayCommandResult ResolveFeverEnd(FeverEndCommandRequest request) => null;
+            public GameplayCommandResult ResolveFailedDecision(FailedDecisionRequest request) => null;
             public PresentationAcknowledgementStatus Acknowledge(PresentationAcknowledgement acknowledgement) { Acknowledgements++; return PresentationAcknowledgementStatus.Accepted; }
         }
         sealed class FakeView : IPresentationViewPort
         {
             public int Reconciles { get; private set; }
-            public void Prepare(IPresentationPlan plan) { }
+            public int Cancellations { get; private set; }
+            public System.Action OnPrepare { get; set; }
+            public void Prepare(IPresentationPlan plan) { OnPrepare?.Invoke(); }
+            public void CancelPlayback() { Cancellations++; }
             public void ApplyFinalState(IPresentationPlan plan) => Reconciles++;
             public void TearDown() { }
         }

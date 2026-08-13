@@ -86,7 +86,8 @@ namespace MathGame.Presentation
     {
         public PresentationEnvelope(PresentationSequenceId sequenceId, GameplayStateSnapshot gameplay,
             StageSessionSnapshot session, MathGame.Fever.FeverPresentationSnapshot fever,
-            PresentationAcknowledgementKind acknowledgementKind, long sourceId)
+            PresentationAcknowledgementKind acknowledgementKind, long sourceId,
+            FailurePresentationSnapshot failure = null, SuccessPresentationSnapshot success = null)
         {
             if (!sequenceId.IsValid) throw new ArgumentException("Invalid sequence.", nameof(sequenceId));
             Gameplay = gameplay ?? throw new ArgumentNullException(nameof(gameplay));
@@ -95,6 +96,8 @@ namespace MathGame.Presentation
             Fever = fever;
             AcknowledgementKind = acknowledgementKind;
             SourceId = sourceId;
+            Failure = failure;
+            Success = success;
         }
         public PresentationSequenceId SequenceId { get; }
         public GameplayStateSnapshot Gameplay { get; }
@@ -102,6 +105,8 @@ namespace MathGame.Presentation
         public MathGame.Fever.FeverPresentationSnapshot Fever { get; }
         public PresentationAcknowledgementKind AcknowledgementKind { get; }
         public long SourceId { get; }
+        public FailurePresentationSnapshot Failure { get; }
+        public SuccessPresentationSnapshot Success { get; }
     }
 
     public sealed class FailurePresentationSnapshot
@@ -125,5 +130,19 @@ namespace MathGame.Presentation
         public WorldRestorationSnapshot ResultingWorld => WorldResult.After;
         public IReadOnlyList<WorldRestorationMilestone> NewlyCrossedMilestones => WorldResult.Plan?.CrossedMilestones ?? Array.Empty<WorldRestorationMilestone>();
         public bool ProceedAvailable => true;
+    }
+
+    public enum PresentationStateIndicator { Selected, Blocked, Damaged, Completed, Unavailable }
+    public enum PresentationFeedbackCue { Selection, Correct, Miss, ObstacleDamaged, ObstacleDestroyed, FeverEntry, FeverEnd, Milestone, Success, Failure }
+    public interface IPresentationFeedbackPort { void Play(PresentationFeedbackCue cue, bool audioEnabled, bool hapticsEnabled); }
+
+    public sealed class GameplayHudSnapshot
+    {
+        public GameplayHudSnapshot(int target, StageSessionSnapshot session, MathGame.Fever.FeverPresentationSnapshot fever)
+        { Target=target;Session=session??throw new ArgumentNullException(nameof(session));Fever=fever; }
+        public int Target{get;} public StageSessionSnapshot Session{get;} public MathGame.Fever.FeverPresentationSnapshot Fever{get;}
+        public int RemainingMoves=>Session.RemainingMoves;public long Score=>Session.Score;
+        public IReadOnlyList<ObjectiveProgressSnapshot> Objectives=>Session.Objectives;
+        public long StageLocalRestoration=>Session.ProvisionalRestoration;
     }
 }

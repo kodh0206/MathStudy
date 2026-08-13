@@ -1,7 +1,7 @@
 {
   "name": "MathGame.Presentation",
   "rootNamespace": "MathGame.Presentation.Unity",
-  "references": ["MathGame.Presentation.Contracts", "MathGame.Board", "MathGame.ObstacleFlow", "MathGame.Stage", "MathGame.Fever"],
+  "references": ["MathGame.Presentation.Contracts", "MathGame.Board", "MathGame.BoardResolution", "MathGame.Connection", "MathGame.Answer", "MathGame.Targets", "MathGame.ObstacleFlow", "MathGame.Stage", "MathGame.StageSession", "MathGame.Fever", "MathGame.Restoration.Contracts"],
   "autoReferenced": false,
   "noEngineReferences": false
 }

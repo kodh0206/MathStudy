@@ -5,6 +5,7 @@
     "MathGame.Answer",
     "MathGame.Board",
     "MathGame.BoardResolution",
+    "MathGame.Connection",
     "MathGame.Fever",
     "MathGame.ObstacleFlow",
     "MathGame.Restoration",

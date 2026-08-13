@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MathGame.Board;
 using MathGame.BoardResolution;
 using MathGame.Restoration;
+using System.Numerics;
 
 namespace MathGame.Presentation
 {
@@ -14,12 +15,12 @@ namespace MathGame.Presentation
             if (topology == null || footprint == null || footprint.Count == 0) return false;
             long columns = 0, rows = 0;
             for (var i = 0; i < footprint.Count; i++) { columns += footprint[i].Position.Column; rows += footprint[i].Position.Row; }
-            var bestDistance = double.MaxValue;
+            BigInteger bestDistance = default;
             var found = false;
             foreach (var position in topology.EnumerateActivePositions())
             {
-                var dc = position.Column * (double)footprint.Count - columns;
-                var dr = position.Row * (double)footprint.Count - rows;
+                var dc = (BigInteger)position.Column * footprint.Count - columns;
+                var dr = (BigInteger)position.Row * footprint.Count - rows;
                 var distance = dc * dc + dr * dr;
                 if (!found || distance < bestDistance)
                 { found = true; bestDistance = distance; center = position; }

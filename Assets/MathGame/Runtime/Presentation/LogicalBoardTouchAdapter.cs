@@ -7,30 +7,68 @@ namespace MathGame.Presentation.Unity
 {
     public sealed class LogicalBoardTouchAdapter : MonoBehaviour
     {
-        readonly HashSet<BoardPosition> visited = new HashSet<BoardPosition>();
-        BoardPosition? last;
+        readonly List<BoardPosition> path = new List<BoardPosition>();
+        readonly HashSet<BoardPosition> selected = new HashSet<BoardPosition>();
+        BoardPosition? lastHit;
+        int activePointerId = int.MinValue;
+
         public float CellSize = 1f;
         public int Width = 5;
         public int Height = 5;
         public event Action<BoardPosition> LogicalCellEntered;
+        public event Action Released;
+        public event Action Cancelled;
+        public event Action<IReadOnlyList<BoardPosition>> PathChanged;
 
-        public void Begin(Vector2 localPosition)
+        public bool Begin(int pointerId, Vector2 localPosition)
         {
-            visited.Clear(); last = null;
-            Add(localPosition);
+            if (activePointerId != int.MinValue) return false;
+            activePointerId = pointerId; path.Clear(); selected.Clear(); lastHit = null;
+            AddHit(localPosition); return true;
+        }
+        public void Begin(Vector2 localPosition) => Begin(0, localPosition);
+
+        public bool Drag(int pointerId, Vector2 localPosition)
+        {
+            if (pointerId != activePointerId) return false;
+            if (!LogicalBoardTouch.TryHit(localPosition.x, localPosition.y, CellSize, Width, Height, out var hit)) return false;
+            if (lastHit.HasValue) foreach (var position in LogicalBoardTouch.Interpolate(lastHit.Value, hit)) EmitGesture(position);
+            else EmitGesture(hit);
+            lastHit = hit; return true;
+        }
+        public void Drag(Vector2 localPosition) => Drag(0, localPosition);
+
+        public bool Release(int pointerId)
+        {
+            if (pointerId != activePointerId) return false;
+            Clear(); Released?.Invoke(); return true;
+        }
+        public void End() => Release(activePointerId);
+
+        public bool Cancel(int pointerId)
+        {
+            if (pointerId != activePointerId) return false;
+            Clear(); Cancelled?.Invoke(); return true;
         }
 
-        public void Drag(Vector2 localPosition)
+        void AddHit(Vector2 point)
         {
-            if (!LogicalBoardTouch.TryHit(localPosition.x, localPosition.y, CellSize, Width, Height, out var hit)) return;
-            if (last.HasValue)
-                foreach (var position in LogicalBoardTouch.Interpolate(last.Value, hit)) EmitOnce(position);
-            else EmitOnce(hit);
-            last = hit;
+            if (!LogicalBoardTouch.TryHit(point.x, point.y, CellSize, Width, Height, out var hit)) return;
+            EmitGesture(hit); lastHit = hit;
         }
 
-        public void End() { last = null; visited.Clear(); }
-        void Add(Vector2 point) { if (LogicalBoardTouch.TryHit(point.x, point.y, CellSize, Width, Height, out var hit)) { EmitOnce(hit); last = hit; } }
-        void EmitOnce(BoardPosition position) { if (visited.Add(position)) LogicalCellEntered?.Invoke(position); }
+        void EmitGesture(BoardPosition position)
+        {
+            if (path.Count >= 2 && path[path.Count - 2] == position)
+            {
+                selected.Remove(path[path.Count - 1]); path.RemoveAt(path.Count - 1);
+                LogicalCellEntered?.Invoke(position); PathChanged?.Invoke(path.AsReadOnly()); return;
+            }
+            if (!selected.Add(position)) return;
+            path.Add(position); LogicalCellEntered?.Invoke(position); PathChanged?.Invoke(path.AsReadOnly());
+        }
+
+        void Clear(){activePointerId=int.MinValue;lastHit=null;path.Clear();selected.Clear();PathChanged?.Invoke(path.AsReadOnly());}
+        void OnDisable(){if(activePointerId!=int.MinValue)Cancel(activePointerId);}
     }
 }

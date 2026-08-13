@@ -61,7 +61,11 @@ namespace MathGame.Fever
                 Abort(committed.Result.After.Status == StageSessionStatus.Success ? FeverTerminationReason.StageSucceeded : FeverTerminationReason.StageFailed);
                 return new FeverAttemptResult(FeverAttemptApplyStatus.AppliedTerminal, committed.Result, feverPlan.Before, after, feverPlan.Modifiers);
             }
-            return new FeverAttemptResult(FeverAttemptApplyStatus.AppliedContinue, committed.Result, feverPlan.Before, after, feverPlan.Modifiers);
+            var status = committed.Result.Status == StageAttemptApplyStatus.AppliedMiss
+                ? FeverAttemptApplyStatus.AppliedMiss
+                : FeverAttemptApplyStatus.AppliedContinue;
+            return new FeverAttemptResult(status, committed.Result, feverPlan.Before, after,
+                status == FeverAttemptApplyStatus.AppliedMiss ? FeverGameplayModifiers.None : feverPlan.Modifiers);
         }
         public FeverControllerTickResult Tick()
         { if (State == FeverState.Disposed) return FeverControllerTickResult.Disposed; if (State == FeverState.Ending) return FeverControllerTickResult.AlreadyEnding; if (State != FeverState.Active) return FeverControllerTickResult.InvalidFromCurrentState; var result = clock.Tick(); BumpPresentationRevision(); if (result == FeverClockResult.InvalidTimeSource) return FeverControllerTickResult.ClockFaulted; if (result != FeverClockResult.JustExpired) return FeverControllerTickResult.NoChange; if (stage.State != StageState.FeverInput || stage.BeginFeverEnding() != TransitionResult.Succeeded) { State = FeverState.Faulted; return FeverControllerTickResult.InvalidFromCurrentState; } PendingEndResult = new FeverEndResult(FeverTerminationReason.NaturalExpiry, Tier(session.Snapshot.TotalCorrectAnswers), session.Snapshot, clock.ElapsedSeconds); State = FeverState.Ending; return FeverControllerTickResult.EndingBegan; }
@@ -73,7 +77,7 @@ namespace MathGame.Fever
         private FeverAttemptResult Reject(FeverAttemptApplyStatus status) { var value = session?.Snapshot; return new FeverAttemptResult(status, null, value, value, FeverGameplayModifiers.None); }
         private void ClockFault() { if (State == FeverState.Disposed) return; State = FeverState.Faulted; session = null; PendingEndResult = null; if (stage.State == StageState.FeverInput) stage.BeginFeverEnding(); }
         private void StageChanged(StageTransition transition) { BumpPresentationRevision(); if (transition.Current == StageState.FeverInput && State == FeverState.Faulted) stage.BeginFeverEnding(); if (transition.Current == StageState.Success) Abort(FeverTerminationReason.StageSucceeded); else if (transition.Current == StageState.Failure) Abort(FeverTerminationReason.StageFailed); else if (transition.Current == StageState.Exited) Abort(FeverTerminationReason.StageExited); }
-        private void BumpPresentationRevision() { presentationRevision = checked(presentationRevision + 1); }
+        private void BumpPresentationRevision() { if (presentationRevision < long.MaxValue) presentationRevision++; }
         private static FeverEndEffectTier Tier(long count) => count <= 0 ? FeverEndEffectTier.None : count == 1 ? FeverEndEffectTier.RandomThreeBlocks : count == 2 ? FeverEndEffectTier.SmallAreaExplosion : count == 3 ? FeverEndEffectTier.CenterAreaExplosion : FeverEndEffectTier.LargeExplosionAndRestoration;
     }
 }
