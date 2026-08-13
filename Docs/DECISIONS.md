@@ -205,6 +205,16 @@ Implementation requires explicit decisions for Fever area-center selection, touc
 **Resolution (2026-08-08):** Product approved deterministic footprint-derived Fever centers, 45% logical hit radius with ordered drag interpolation, fixed presentation timings, Reduced Motion at command/reconciliation boundaries, placeholder assets, portrait-only layout, non-color state indicators, exact failure/success fields, pause suspension with stale-token reconciliation, and explicit special-block deferral. STEP 12 implementation is authorized; STEP 13 is not.
 
 **Implementation note (2026-08-13):** STEP 12 uses run/revision/source-correlated envelopes and exact acknowledgements. The Unity layer renders placeholder identity-keyed board objects, logical path/live-sum feedback, HUD and terminal/milestone cues, while all mutations continue through STEP 10/11 coordinators. Static compilation is verified; Unity Edit/Play execution remains unverified because licensing initialization blocks the runner.
+
+### ADR-032: STEP 13 persistence is blocked on progression and recovery policy
+
+**Status:** Open / implementation blocked
+
+STEP 13 must persist successful progression/world restoration and settings without owning Board, StageSession, Fever, Restoration, or Presentation state. Successful world commits require a save-revision-bound prepare/commit plan and durable WorldCommitId/StageRunId uniqueness; active Board/Fever state is not assumed persistable.
+
+The GDD provides themes and qualitative progression but no exact catalog/unlock graph, persisted stage result fields, settings defaults/ranges, interrupted-attempt behavior, durability point, corruption/future-version recovery, v1 migration meaning, or storage backend policy. `Docs/STEP_13_DESIGN.md` records the minimum decisions and a separate lowest-risk recommendation. No production persistence schema is authorized until product approves those rules. STEP 14 remains out of scope.
+
+Exactly-once across restart additionally requires a product-approved durable prospective snapshot or write-ahead commit protocol before irreversible StageSession/world assignment. StageRunId reservation must also become durable before a new run handle is exposed. Primary/backup/WAL revisions require anti-rollback rules so recovery cannot lose applied commit IDs or reserved run IDs.
 - Which two obstacle types form the first prototype set and their detailed gravity interaction.
 - STEP 10 additionally requires the selected pair's spatial layers, hit aggregation, Fever expansion/end geometry, refill behavior, and objective-count policy; do not infer these from the current coarse Blocked state.
 - STEP 10 product addendum now selects Dust and Box and resolves their layers, HP, damage aggregation, Fever potency, Box-to-refill conversion, orthogonal expansion, all end-tier Manhattan geometries, objective evidence, and shuffle preservation. Area centers are explicit resolver inputs; their gameplay selection policy remains an orchestration/presentation decision.

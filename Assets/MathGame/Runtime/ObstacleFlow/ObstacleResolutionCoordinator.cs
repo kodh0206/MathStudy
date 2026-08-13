@@ -40,6 +40,14 @@ namespace MathGame.ObstacleFlow
         ObstacleAnswerFlowStatus? PreflightAnswer(ObstacleAnswerFlowRequest q){if(q==null)return ObstacleAnswerFlowStatus.MissingRequest;if(stage.State!=StageState.ResolvingAnswer||session.Status!=StageSessionStatus.Active||gameplayRevision==long.MaxValue)return ObstacleAnswerFlowStatus.InvalidStageState;if(pending)return ObstacleAnswerFlowStatus.PendingTargetProofExists;if(q.Answer==null)return ObstacleAnswerFlowStatus.MissingAnswer;if(q.Refill==null)return ObstacleAnswerFlowStatus.MissingRefillRange;if(q.History==null)return ObstacleAnswerFlowStatus.MissingHistory;if(q.TargetConfig==null)return ObstacleAnswerFlowStatus.MissingTargetConfig;return null;}
         public ObstacleAnswerFlowResult RetryTargetRecovery(TargetHistory h,TargetRecoveryConfig c)=>Tag(RetryTargetRecoveryCore(h,c));
         ObstacleAnswerFlowResult RetryTargetRecoveryCore(TargetHistory h,TargetRecoveryConfig c){if(stage.State!=StageState.ResolvingAnswer||session.Status!=StageSessionStatus.Active||gameplayRevision==long.MaxValue)return Fail(ObstacleAnswerFlowStatus.InvalidStageState);if(!pending)return Fail(ObstacleAnswerFlowStatus.NoPendingTargetProof);if(h==null)return Fail(ObstacleAnswerFlowStatus.MissingHistory);if(c==null)return Fail(ObstacleAnswerFlowStatus.MissingTargetConfig);return Recover(h,c,null,null,null,false);}
+        public ObstacleAnswerFlowResult RecoverAfterContinue(TargetHistory h,TargetRecoveryConfig c)
+        {
+            if(stage.State!=StageState.RecoveringBoard||session.Status!=StageSessionStatus.Active||gameplayRevision==long.MaxValue)return Tag(Fail(ObstacleAnswerFlowStatus.InvalidStageState));
+            if(h==null)return Tag(Fail(ObstacleAnswerFlowStatus.MissingHistory));
+            if(c==null)return Tag(Fail(ObstacleAnswerFlowStatus.MissingTargetConfig));
+            if(!pending){pending=true;pendingSourceId=Math.Max(1,session.CreateSnapshot().NextExpectedAttemptId.Value-1);}
+            return Tag(Recover(h,c,null,null,null,false));
+        }
         ObstacleAnswerFlowResult Recover(TargetHistory h,TargetRecoveryConfig c,ObstacleResolutionResult r,StageAttemptResult a,FeverAttemptResult f,bool committed){var t=targets.SelectNextTarget(board,h,c);if(!t.Succeeded)return new ObstacleAnswerFlowResult(MapA(t.Status),Clone(board),nextId,r,a,f,t,committed,false);Adopt(t.Board,nextId,GameplayStateSource.TargetRecovery,pendingSourceId);pending=false;return new ObstacleAnswerFlowResult(ObstacleAnswerFlowStatus.Succeeded,Clone(board),nextId,r,a,f,t,committed,true);}
         public ObstacleEndFlowResult ResolveAndCommitEnd(ObstacleEndFlowRequest q)=>Tag(ResolveAndCommitEndCore(q));
         ObstacleEndFlowResult ResolveAndCommitEndCore(ObstacleEndFlowRequest q)

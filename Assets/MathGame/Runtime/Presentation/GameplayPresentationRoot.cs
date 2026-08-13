@@ -73,8 +73,19 @@ namespace MathGame.Presentation.Unity
                 {
                     var block = snapshot.Block.Value;
                     if (!blocks.TryGetValue(block.Id, out var blockView) || blockView == null)
-                    { blockView = new GameObject(); blocks[block.Id] = blockView; }
+                    {
+                        blockView = new GameObject();
+                        var label = blockView.AddComponent<TextMesh>();
+                        label.anchor = TextAnchor.MiddleCenter;
+                        label.alignment = TextAlignment.Center;
+                        label.characterSize = .35f;
+                        label.fontSize = 64;
+                        label.color = Color.white;
+                        blocks[block.Id] = blockView;
+                    }
                     blockView.name = "Block_" + block.Id.Value + "_Value_" + block.Value;
+                    var numberLabel = blockView.GetComponent<TextMesh>();
+                    if (numberLabel != null) numberLabel.text = block.Value.ToString();
                     blockView.transform.SetParent(cell.transform, false);
                     blockView.transform.localPosition = Vector3.back * .01f;
                 }
@@ -82,17 +93,31 @@ namespace MathGame.Presentation.Unity
                 {
                     var dust = snapshot.Dust.Value;
                     if (!obstacles.TryGetValue(dust.Id,out var dustView)||dustView==null)
-                    {dustView=new GameObject();obstacles[dust.Id]=dustView;}
+                    {
+                        dustView=new GameObject();
+                        var label=dustView.AddComponent<TextMesh>();
+                        label.anchor=TextAnchor.UpperLeft;label.characterSize=.18f;label.fontSize=48;label.color=new Color(.75f,.65f,.45f);
+                        obstacles[dust.Id]=dustView;
+                    }
                     dustView.name="Dust_"+dust.Id.Value+"_HP_"+dust.CurrentHitPoints+"_DamagedIndicator";
                     dustView.transform.SetParent(cell.transform,false);
+                    dustView.transform.localPosition=new Vector3(-.38f,.4f,-.03f);
+                    dustView.GetComponent<TextMesh>().text="D";
                 }
                 if (snapshot.HasBox)
                 {
                     var box=snapshot.Box.Value;
                     if(!obstacles.TryGetValue(box.Id,out var boxView)||boxView==null)
-                    {boxView=new GameObject();obstacles[box.Id]=boxView;}
+                    {
+                        boxView=new GameObject();
+                        var label=boxView.AddComponent<TextMesh>();
+                        label.anchor=TextAnchor.MiddleCenter;label.alignment=TextAlignment.Center;label.characterSize=.3f;label.fontSize=56;label.color=new Color(1f,.55f,.2f);
+                        obstacles[box.Id]=boxView;
+                    }
                     boxView.name="Box_"+box.Id.Value+"_HP_"+box.CurrentHitPoints+"_BlockedIndicator";
                     boxView.transform.SetParent(cell.transform,false);
+                    boxView.transform.localPosition=new Vector3(0,0,-.03f);
+                    boxView.GetComponent<TextMesh>().text="B"+box.CurrentHitPoints;
                 }
             }
             var removed = new List<BoardPosition>();

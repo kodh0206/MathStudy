@@ -69,7 +69,8 @@ namespace MathGame.Presentation
         {
             if (disposed) return PresentationCommandStatus.Disposed;
             if (plan?.Envelope == null) return PresentationCommandStatus.MissingRequest;
-            if (gameplay.IsStageTerminated) return PresentationCommandStatus.StageTerminated;
+            if (gameplay.IsStageTerminated && plan.Envelope.AcknowledgementKind != PresentationAcknowledgementKind.Terminal)
+                return PresentationCommandStatus.StageTerminated;
             if (plan.Envelope.Gameplay.Token != gameplay.CurrentToken) return PresentationCommandStatus.StaleGameplayToken;
             if (plan.Envelope.SequenceId.Value <= lastSequence) return PresentationCommandStatus.DuplicateCommand;
             if (plan.Envelope.SequenceId.Value != lastSequence + 1) return PresentationCommandStatus.OutOfOrderCommand;
@@ -128,7 +129,8 @@ namespace MathGame.Presentation
         {
             if (disposed) return PresentationAcknowledgementStatus.Disposed;
             if (active == null) return PresentationAcknowledgementStatus.MissingAcknowledgement;
-            if (gameplay.IsStageTerminated) return PresentationAcknowledgementStatus.StageTerminated;
+            if (gameplay.IsStageTerminated && active.Envelope.AcknowledgementKind != PresentationAcknowledgementKind.Terminal)
+                return PresentationAcknowledgementStatus.StageTerminated;
             if (requireCurrentToken && active.Envelope.Gameplay.Token != gameplay.CurrentToken) return PresentationAcknowledgementStatus.StaleGameplayToken;
             if (active.Envelope.SequenceId.Value <= lastAcknowledged) return PresentationAcknowledgementStatus.DuplicateAcknowledgement;
 

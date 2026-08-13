@@ -161,8 +161,12 @@ namespace MathGame.Presentation.Unity
             var flow=gameplay.ResolveAndCommitEnd(new ObstacleEndFlowRequest(fever.PendingEndResult,center,request.Refill,request.History,request.Config));
             if(!flow.EffectCommitted)return Result(PresentationCommandStatus.DomainRejected,end:flow);
             if(flow.Status==ObstacleEndFlowStatus.StageTerminal&&flow.SystemEffectResult?.After!=null)
-            {if(stage.Complete()!=TransitionResult.Succeeded)return Result(PresentationCommandStatus.DomainRejected,end:flow);}
-            endTargetReady=flow.IsInputReady;Expect(PresentationAcknowledgementKind.FeverEnd,flow.ResolutionResult.SystemEffectId.Value,flow.GameplayToken);
+            {
+                if(stage.Complete()!=TransitionResult.Succeeded)return Result(PresentationCommandStatus.DomainRejected,end:flow);
+                endTargetReady=false;Expect(PresentationAcknowledgementKind.Terminal,flow.ResolutionResult.SystemEffectId.Value,flow.GameplayToken);
+            }
+            else
+            {endTargetReady=flow.IsInputReady;Expect(PresentationAcknowledgementKind.FeverEnd,flow.ResolutionResult.SystemEffectId.Value,flow.GameplayToken);}
             return Result(PresentationCommandStatus.Accepted,end:flow,token:flow.GameplayToken);
         }
 
@@ -198,7 +202,10 @@ namespace MathGame.Presentation.Unity
             var accepted = acknowledgement.Kind switch
             {
                 PresentationAcknowledgementKind.TargetReady when stage.State == StageState.PresentingTarget =>
-                    fever.State == FeverState.Active ? stage.EnableFeverInput() : stage.EnablePlayerInput(),
+                    fever.State == FeverState.PendingEntry
+                        ? (fever.BeginEntry(true, session == null || session.Status == StageSessionStatus.Active) == FeverControllerCommandResult.Succeeded
+                            ? TransitionResult.Succeeded : TransitionResult.InvalidFromCurrentState)
+                        : fever.State == FeverState.Active ? stage.EnableFeverInput() : stage.EnablePlayerInput(),
                 PresentationAcknowledgementKind.Answer when stage.State == StageState.ResolvingAnswer && pendingMiss =>
                     pendingMissWasFever ? stage.FinishFeverMissResolution() : stage.FinishMissResolution(),
                 PresentationAcknowledgementKind.Answer when stage.State == StageState.ResolvingAnswer => stage.BeginTargetPresentation(),
