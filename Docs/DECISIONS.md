@@ -186,6 +186,16 @@ Use the acyclic direction `Restoration.Contracts <- StageSession` and `Restorati
 
 Detected failure enters FailedPendingDecision and preserves restoration. Continue resumes the same run; Retry/Abandon discard it. Success applies `min(WorldCapacity, WorldCurrent + StageCommittedRestoration)` once per stable WorldCommitId. World milestones alone use 25/50/75/100 thresholds. Non-Large Fever-end tiers omit restoration evidence.
 
+### ADR-033: Core implementation and Unity Production are separate conditional phases
+
+**Status:** Accepted
+
+**Decision:** Every STEP is classified as `DOMAIN_ONLY`, `UNITY_FACING`, or `MIXED`. The Unity Client Developer owns approved Domain/Application/code architecture and deterministic core behavior. A dedicated Unity Production Agent conditionally follows core implementation to integrate Unity-facing work into Scenes, Prefabs, serialized views, UI, input/EventSystem, Safe Area/layout, and Editor validation. The Lead/Manager chooses the exact review/test ordering based on whether Unity integration is required before meaningful Play Mode testing.
+
+Stable presentation hierarchies are Prefab/Scene-owned and runtime-bound. Unity Production must not duplicate gameplay rules, recreate established BoardView/UI roots for convenience, infer ownership from names, or silently overwrite designer-authored assets. Player-facing work requires Unity integration verification and an exact manual checklist; unexecuted runtime behavior is reported as manual verification debt rather than a pass.
+
+**Rationale:** Deterministic core tests establish gameplay correctness without Unity lifecycle noise, while an explicit production phase establishes that the same feature is actually composed and usable in Unity. The split preserves Domain independence, designer-friendly Prefabs, explicit Scene ownership, faster automated development, and clearer human Play Mode acceptance.
+
 ## Tracked ambiguities for later STEP designs
 
 - Precise touch tolerance for backtracking/cancellation.

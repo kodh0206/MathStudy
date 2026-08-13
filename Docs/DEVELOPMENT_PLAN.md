@@ -43,6 +43,72 @@ The repository contains an application/lifecycle foundation but no gameplay. `Do
 
 Presentation work may be prototyped alongside domain STEPs only when explicitly included in the requested STEP; it must not pull later gameplay rules forward.
 
+## STEP execution workflow
+
+Before implementation, the Lead/Manager classifies the requested STEP:
+
+- `DOMAIN_ONLY`: pure Domain/Application/contracts work. Unity Production Scope is `None`.
+- `UNITY_FACING`: primarily Scene, Prefab, UI, input, presentation, or Unity lifecycle work.
+- `MIXED`: core gameplay/application behavior plus player-facing Unity integration.
+
+The default pipeline is:
+
+```text
+Requirements Analyst
+-> Unity Architect
+-> Manager architecture review
+-> Unity Client Developer
+-> Core verification
+-> Core code review
+-> Unity Production Agent (UNITY_FACING/MIXED only)
+-> Unity integration verification
+-> Final integration review
+-> Human Play Mode verification when required
+```
+
+The Manager may place Unity Production before Play Mode tests when meaningful Play Mode coverage requires the Scene/Prefab integration. The classification and ordering must be explicit rather than mechanical.
+
+### Existing STEP classification guidance
+
+This table classifies workflow needs, not feature completion state:
+
+| STEP | Classification | Unity Production expectation |
+|---:|---|---|
+| 1 | MIXED | Bootstrap/lifecycle relay and Scene composition require focused Unity verification. |
+| 2 | DOMAIN_ONLY | None. |
+| 3 | DOMAIN_ONLY | None. |
+| 4 | DOMAIN_ONLY | None unless a separately approved input/view slice is included. |
+| 5 | MIXED | Core answer/timing plus Unity lifecycle/input-clock verification. |
+| 6 | MIXED | Core resolver plus resolution/input-lock integration. |
+| 7 | DOMAIN_ONLY | None for search/recovery algorithms; orchestration Play Mode coverage may remain focused. |
+| 8 | MIXED | Core objectives/session plus terminal Unity flow when included by the approved design. |
+| 9 | MIXED | Core Fever plus Stage/input/clock Unity integration. |
+| 10 | MIXED | Core obstacles/resolution plus BoardView/orchestration integration. |
+| 11 | MIXED | Core restoration plus failure/continue/result integration; concrete art remains presentation-owned. |
+| 12 | UNITY_FACING | Full presentation, input, Prefab, Scene, responsive layout, and Play Mode scope. |
+| 13 | DOMAIN_ONLY | Persistence/progression contracts and backend-neutral core; no artificial UI work. |
+| 14 | DOMAIN_ONLY | Semantic analytics contracts/adapters unless provider-specific Unity setup is explicitly approved. |
+| 15 | MIXED | Core exactly-once/provider behavior plus Unity lifecycle and presentation integration. |
+| 16 | MIXED | Release composition, validation, build configuration, and end-to-end Unity verification. |
+
+### Canonical STEP template
+
+Every new or revised STEP definition records:
+
+- **Goal**
+- **Requirements**
+- **Systems**
+- **Expected Files**
+- **Dependencies**
+- **Implementation Scope**
+- **Core Tests**
+- **Unity Production Scope** (`None` for `DOMAIN_ONLY`)
+- **Unity Validation**
+- **Manual Verification**
+- **Completion Criteria**
+
+Core verification covers deterministic C#, Edit Mode, Domain/Application, and lifecycle/state tests. Unity integration verification covers serialized references, Scene/Prefab composition, EventSystem/input, Safe Area/layout, GameObject lifecycle, scene reload/retry, presentation binding, and Play Mode behavior. Visual feel, touch feel, readability, and animation timing require explicit human verification when automation cannot establish them.
+
 ---
 
 ## STEP 1 — Project Foundation and Stage Lifecycle
@@ -225,7 +291,43 @@ Presentation work may be prototyped alongside domain STEPs only when explicitly 
 
 ## Required completion report
 
-After `Implement STEP N`, report: Goal; Requirements Implemented; Architecture; Files Added/Modified; Edit Mode/Play Mode tests; Review P0/P1/P2; Verification (Compilation, Edit Mode, Play Mode, Manual); Out-of-Scope Findings; Remaining Risks; and final Status (`PASS` or `BLOCKED`). Then stop.
+After `Implement STEP N`, report and then stop:
+
+```text
+# STEP N — Complete
+
+## Goal
+## Requirements Implemented
+## Architecture
+## Core Implementation
+## Unity Production
+### Scene
+### Prefabs
+### Runtime Wiring
+### UI / Presentation
+## Files Added
+## Files Modified
+## Tests
+### Edit Mode
+### Play Mode
+### Unity Integration Validation
+## Review
+### P0
+### P1
+### P2
+## Manual Verification
+## Verification
+Compilation: PASS / FAIL / NOT VERIFIED
+Edit Mode: PASS / FAIL / NOT RUN
+Play Mode: PASS / FAIL / NOT RUN
+Unity Integration: PASS / FAIL / MANUAL REQUIRED / NOT APPLICABLE
+Manual: PASS / FAIL / REQUIRED / NOT APPLICABLE
+## Out-of-Scope Findings
+## Remaining Risks
+## Status
+```
+
+For a `DOMAIN_ONLY` STEP, `Unity Production: NOT APPLICABLE` is valid. Final status is `PASS`, `PASS — MANUAL UNITY VERIFICATION REQUIRED`, `BLOCKED`, or `BLOCKED BY PRODUCT DECISION`. A Unity-facing STEP cannot report full `PASS` when its Unity runtime behavior was not verified.
 
 ## Immediate next action
 

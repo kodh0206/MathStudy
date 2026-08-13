@@ -11,6 +11,23 @@ This file describes only code present in the repository. Proposed gameplay archi
 - Runtime code is under `Assets/MathGame/Runtime`; tests are under `Assets/MathGame/Tests`.
 - Logical board, generation, connection, answer timing, board resolution, safe-target recovery, stage-session, and Fever-core domains exist. No playable board view/input adapter, composed gameplay loop, concrete Fever board effects, obstacle behavior, restoration, gameplay UI, analytics adapter, ad adapter, or concrete save repository exists.
 
+## Development responsibility boundary
+
+Core gameplay implementation and Unity production integration are separate delivery responsibilities:
+
+```text
+Domain / Application / StageSession
+-> Presentation contracts and runtime adapters
+-> Unity Production integration
+-> Serialized Prefabs / Scene
+```
+
+The Unity Client Developer owns approved code architecture, deterministic gameplay/application behavior, presenters/contracts, and required runtime adapters. The Unity Production Agent consumes those APIs to make the feature usable in Unity through Scene composition, Prefabs, serialized references, BoardView/UI binding, input/EventSystem wiring, responsive Safe Area layout, and Unity-specific validation.
+
+Unity Production is conditional: `DOMAIN_ONLY` work does not acquire artificial Scene/Prefab scope; `UNITY_FACING` and `MIXED` work do. Stable presentation objects such as GameRoot, BoardView, HUD roots, and overlay roots should be serialized where the feature design establishes that model. Runtime binds state to those views rather than recreating their hierarchy. Dynamic content such as variable objective items may instantiate controlled Prefabs.
+
+This workflow boundary does not change runtime assembly ownership or transfer gameplay authority to MonoBehaviours.
+
 ## Assembly boundaries
 
 ```text

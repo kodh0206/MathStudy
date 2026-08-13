@@ -21,18 +21,21 @@
 
 - **Analyze STEP N:** requirements analysis only; no production-code edits.
 - **Design STEP N:** requirements analysis and architecture proposal only; no production-code edits.
-- **Implement STEP N:** requirements, architecture review, focused implementation, tests, and independent review. Stop after the completion report.
-- **Test STEP N:** validate that STEP; make no unrelated gameplay changes.
+- **Implement STEP N:** classify the STEP as `DOMAIN_ONLY`, `UNITY_FACING`, or `MIXED`; perform requirements and architecture review, core implementation and verification, conditional Unity Production integration and Unity verification, independent review, and any required manual checklist. Stop after the completion report.
+- **Test STEP N:** validate core behavior and, for `UNITY_FACING`/`MIXED` work, Unity integration. Report anything not executed as `NOT RUN`, `NOT VERIFIED`, or `MANUAL REQUIRED` rather than a pass.
 - **Review STEP N:** independent review only; do not automatically fix findings.
-- **Fix STEP N:** fix confirmed findings, rerun relevant tests, and review again.
+- **Fix STEP N:** route Domain/Application findings to the Unity Client Developer and Prefab/Scene/UI/serialized-wiring findings to the Unity Production Agent; rerun the corresponding verification and review.
 - **Status:** report STEP/test/risk state; make no gameplay changes.
 
 ## Specialist responsibilities
 
+- **Lead / Manager Agent:** own STEP scope, classify it as `DOMAIN_ONLY`, `UNITY_FACING`, or `MIXED`, choose the dependency-safe implementation/test/review ordering, route findings to the correct specialist, enforce completion gates, and stop before the next STEP.
 - **Requirements Analyst:** extract Goal, Relevant Design Requirements, Functional Requirements, Acceptance Criteria, Edge Cases, Dependencies, and Out of Scope. Never edit production code.
 - **Unity Architect:** define ownership, boundaries, interfaces, lifecycle, data flow, files, and test strategy. Never implement production code unless explicitly asked.
 - **Unity Client Developer:** implement only the approved architecture for the current STEP; read before editing and avoid unrelated refactors.
-- **Test Engineer:** test externally visible behavior, deterministic paths, boundaries, lifecycle, failure handling, and cleanup. Never hide a failure.
+- **Unity Production Agent:** after core implementation when the STEP requires it, integrate the approved feature into Unity Scenes, Prefabs, GameRoot, BoardView/UI, serialized references, MonoBehaviour adapters, EventSystem/input, Safe Area/responsive layout, and Editor validation. Never own or duplicate gameplay rules. Preserve prebuilt serialized presentation objects, prove ownership before modifying managed assets, and never silently overwrite designer-authored Prefabs.
+- **Core Test Engineer:** verify deterministic Domain/Application behavior, boundaries, lifecycle, failure handling, and cleanup with pure C#/Edit Mode tests and focused core Play Mode tests. Never hide a failure.
+- **Unity Integration Test Engineer:** for `UNITY_FACING`/`MIXED` work, verify serialized references, Scene/Prefab composition, EventSystem/input, layout/Safe Area, GameObject lifecycle, retry/reload, and Play Mode binding. Clearly separate environment blocks and manual checks from passing evidence.
 - **Code Reviewer:** independently check design, architecture, Unity lifecycle, C# correctness, and tests. Classify P0-P3; unresolved P0 blocks completion.
 
 ## Engineering rules
@@ -48,4 +51,4 @@
 
 ## Completion gate
 
-A STEP is complete only when its requirements are implemented, relevant compilation/tests are verified, lifecycle behavior is checked, no P0 remains, architecture documentation reflects material changes, and no later STEP was introduced. Use the completion-report format specified in `Docs/DEVELOPMENT_PLAN.md`.
+A STEP is complete only when its requirements are implemented, relevant compilation/tests are verified, lifecycle behavior is checked, no P0 remains, architecture documentation reflects material changes, and no later STEP was introduced. For `UNITY_FACING` and `MIXED` STEPs, required Prefab/Scene wiring and serialized references must also be validated, Unity integration must be tested where possible, and exact manual Play Mode checks must be supplied. Unexecuted Unity behavior is never reported as passed; use `PASS — MANUAL UNITY VERIFICATION REQUIRED` when appropriate. Use the completion-report format specified in `Docs/DEVELOPMENT_PLAN.md`.
