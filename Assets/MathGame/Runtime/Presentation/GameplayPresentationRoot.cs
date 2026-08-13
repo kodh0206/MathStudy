@@ -20,19 +20,84 @@ namespace MathGame.Presentation.Unity
         LogicalBoardTouchAdapter touch;
         MathGamePrefabRegistry prefabRegistry;
         Transform cellRoot,blockRoot,effectRoot;
+        readonly Dictionary<BoardPosition,PrototypeCellView> prebuiltCells=new Dictionary<BoardPosition,PrototypeCellView>();
 
         public event Action PlaybackCompleted;
         public IReadOnlyList<PresentationEvent> AppliedEvents => appliedEvents.AsReadOnly();
         public int BlockViewCount => blocks.Count;
         public int ObstacleViewCount => obstacles.Count;
+        public int SerializedCellViewCount => GetComponentsInChildren<PrototypeCellView>(true).Length;
         public PresentationTiming Timing { get; private set; } = PresentationTiming.Approved;
+
+        public void FrameCamera(Camera camera)
+        {
+            if (camera == null || displayedBoard == null) return;
+            if (prebuiltCells.Count == 0) IndexPrebuiltCells();
+
+            var hasCell = false;
+            var center = Vector3.zero;
+            var count = 0;
+            foreach (var position in displayedBoard.EnumerateActivePositions())
+            {
+                if (!prebuiltCells.TryGetValue(position, out var view)) continue;
+                center += view.transform.position;
+                count++;
+                hasCell = true;
+            }
+            if (!hasCell) return;
+            center /= count;
+
+            camera.transform.rotation = transform.rotation;
+            camera.transform.position = center - camera.transform.forward * 10f;
+            var halfWidth = .5f;
+            var halfHeight = .5f;
+            foreach (var position in displayedBoard.EnumerateActivePositions())
+            {
+                if (!prebuiltCells.TryGetValue(position, out var view)) continue;
+                var offset = view.transform.position - center;
+                halfWidth = Mathf.Max(halfWidth, Mathf.Abs(Vector3.Dot(offset, camera.transform.right)) + .5f);
+                halfHeight = Mathf.Max(halfHeight, Mathf.Abs(Vector3.Dot(offset, camera.transform.up)) + .5f);
+            }
+            camera.orthographic = true;
+            camera.orthographicSize = Mathf.Max(halfHeight, halfWidth / Mathf.Max(.1f, camera.aspect)) + .25f;
+        }
+
+        public bool TryScreenPointToCell(Camera camera, Vector2 screenPosition, out BoardPosition position)
+        {
+            position = default;
+            if (camera == null || displayedBoard == null || !camera.pixelRect.Contains(screenPosition)) return false;
+            var ray = camera.ScreenPointToRay(screenPosition);
+            var plane = new Plane(transform.forward, transform.position);
+            if (!plane.Raycast(ray, out var distance)) return false;
+            var local = transform.InverseTransformPoint(ray.GetPoint(distance));
+            var column = Mathf.RoundToInt(local.x);
+            var row = Mathf.RoundToInt(local.y);
+            if (Mathf.Abs(local.x - column) > .45f || Mathf.Abs(local.y - row) > .45f) return false;
+            var candidate = new BoardPosition(column, row);
+            if (!displayedBoard.IsActive(candidate) || !prebuiltCells.ContainsKey(candidate)) return false;
+            position = candidate;
+            return true;
+        }
+
+        public Vector3 GetCellWorldPosition(BoardPosition position) =>
+            prebuiltCells.TryGetValue(position, out var view)
+                ? view.transform.position - transform.forward * .5f
+                : transform.TransformPoint(new Vector3(position.Column, position.Row, -.5f));
 
         public void Configure(PresentationTiming timing) => Timing = timing ?? throw new ArgumentNullException(nameof(timing));
         public void ConfigureRegistry(MathGamePrefabRegistry registry)=>prefabRegistry=registry;
         public void ConfigureSlots(Transform cellsSlot,Transform blocksSlot,Transform effectsSlot){cellRoot=cellsSlot;blockRoot=blocksSlot;effectRoot=effectsSlot;}
+        void IndexPrebuiltCells()
+        {
+            prebuiltCells.Clear();
+            foreach(var view in GetComponentsInChildren<PrototypeCellView>(true))
+                if(!prebuiltCells.TryAdd(view.Position,view))throw new InvalidOperationException("Duplicate prebuilt CellView position: "+view.Position);
+        }
 
         void Awake()
         {
+            IndexPrebuiltCells();
+            foreach (var view in prebuiltCells.Values) view.SetUnused();
             overlay = GetComponent<GameplayOverlayView>();
             if (overlay == null) overlay = gameObject.AddComponent<GameplayOverlayView>();
             feedback = GetComponent<IPresentationFeedbackPort>();
@@ -58,79 +123,26 @@ namespace MathGame.Presentation.Unity
             if (plan?.Envelope?.Gameplay?.Board == null) throw new ArgumentNullException(nameof(plan));
             var board = plan.Envelope.Gameplay.Board;
             displayedBoard = board;
-            var seen = new HashSet<BoardPosition>();
-            foreach (var position in board.EnumerateActivePositions())
+            if(prebuiltCells.Count==0)IndexPrebuiltCells();
+            if (prebuiltCells.Count == 0)
+                throw new InvalidOperationException("BoardView has no serialized PrototypeCellView children. Rebuild the versioned Board prefab before Play Mode.");
+            ApplyPrebuiltBoard(board, plan);
+        }
+
+        void ApplyPrebuiltBoard(MathGame.Board.Board board,IPresentationPlan plan)
+        {
+            var active=new HashSet<BoardPosition>();blocks.Clear();obstacles.Clear();
+            foreach(var position in board.EnumerateActivePositions())
             {
-                seen.Add(position);
-                if (!cells.TryGetValue(position, out var cell) || cell == null)
-                {
-                    cell = prefabRegistry!=null&&prefabRegistry.CellPrefab!=null?Instantiate(prefabRegistry.CellPrefab):GameObject.CreatePrimitive(PrimitiveType.Quad);
-                    cell.name = "Cell_" + position.Column + "_" + position.Row;
-                    cell.transform.SetParent(cellRoot!=null?cellRoot:transform, false);
-                    cells[position] = cell;
-                }
-                cell.transform.localPosition = new Vector3(position.Column, position.Row, 0);
-                board.TryGetCell(position, out var snapshot);
-                cell.transform.localScale = snapshot.HasBox ? new Vector3(.78f, .78f, 1) : new Vector3(.88f, .88f, 1);
-                // Shape/scale is an additional non-colour indicator for Box/unavailable state.
-                if (snapshot.Block.HasValue)
-                {
-                    var block = snapshot.Block.Value;
-                    if (!blocks.TryGetValue(block.Id, out var blockView) || blockView == null)
-                    {
-                        blockView = prefabRegistry!=null&&prefabRegistry.BlockPrefab!=null?Instantiate(prefabRegistry.BlockPrefab):new GameObject();
-                        var label = blockView.GetComponentInChildren<TextMesh>()??blockView.AddComponent<TextMesh>();
-                        label.anchor = TextAnchor.MiddleCenter;
-                        label.alignment = TextAlignment.Center;
-                        label.characterSize = .35f;
-                        label.fontSize = 64;
-                        label.color = Color.white;
-                        blocks[block.Id] = blockView;
-                    }
-                    blockView.name = "Block_" + block.Id.Value + "_Value_" + block.Value;
-                    var numberLabel = blockView.GetComponentInChildren<TextMesh>();
-                    if (numberLabel != null) numberLabel.text = block.Value.ToString();
-                    blockView.transform.SetParent(cell.transform, false);
-                    blockView.transform.localPosition = Vector3.back * .01f;
-                }
-                if (snapshot.HasDust)
-                {
-                    var dust = snapshot.Dust.Value;
-                    if (!obstacles.TryGetValue(dust.Id,out var dustView)||dustView==null)
-                    {
-                        dustView=new GameObject();
-                        var label=dustView.AddComponent<TextMesh>();
-                        label.anchor=TextAnchor.UpperLeft;label.characterSize=.18f;label.fontSize=48;label.color=new Color(.75f,.65f,.45f);
-                        obstacles[dust.Id]=dustView;
-                    }
-                    dustView.name="Dust_"+dust.Id.Value+"_HP_"+dust.CurrentHitPoints+"_DamagedIndicator";
-                    dustView.transform.SetParent(cell.transform,false);
-                    dustView.transform.localPosition=new Vector3(-.38f,.4f,-.03f);
-                    dustView.GetComponent<TextMesh>().text="D";
-                }
-                if (snapshot.HasBox)
-                {
-                    var box=snapshot.Box.Value;
-                    if(!obstacles.TryGetValue(box.Id,out var boxView)||boxView==null)
-                    {
-                        boxView=new GameObject();
-                        var label=boxView.AddComponent<TextMesh>();
-                        label.anchor=TextAnchor.MiddleCenter;label.alignment=TextAlignment.Center;label.characterSize=.3f;label.fontSize=56;label.color=new Color(1f,.55f,.2f);
-                        obstacles[box.Id]=boxView;
-                    }
-                    boxView.name="Box_"+box.Id.Value+"_HP_"+box.CurrentHitPoints+"_BlockedIndicator";
-                    boxView.transform.SetParent(cell.transform,false);
-                    boxView.transform.localPosition=new Vector3(0,0,-.03f);
-                    boxView.GetComponent<TextMesh>().text="B"+box.CurrentHitPoints;
-                }
+                active.Add(position);
+                if(!prebuiltCells.TryGetValue(position,out var view))throw new InvalidOperationException("Board exceeds prebuilt visual capacity at "+position);
+                board.TryGetCell(position,out var snapshot);view.Apply(snapshot);
+                if(snapshot.Block.HasValue)blocks[snapshot.Block.Value.Id]=view.gameObject;
+                if(snapshot.HasDust)obstacles[snapshot.Dust.Value.Id]=view.gameObject;
+                if(snapshot.HasBox)obstacles[snapshot.Box.Value.Id]=view.gameObject;
             }
-            var removed = new List<BoardPosition>();
-            foreach (var pair in cells) if (!seen.Contains(pair.Key)) { if (pair.Value != null) Destroy(pair.Value); removed.Add(pair.Key); }
-            foreach (var position in removed) cells.Remove(position);
-            ReconcileIdentityViews(board);
-            overlay?.ApplyEnvelope(plan.Envelope);
-            appliedEvents.Clear();
-            if(plan is ObstaclePresentationPlan obstaclePlan)appliedEvents.AddRange(obstaclePlan.Events);
+            foreach(var pair in prebuiltCells)if(!active.Contains(pair.Key))pair.Value.SetUnused();
+            overlay?.ApplyEnvelope(plan.Envelope);appliedEvents.Clear();if(plan is ObstaclePresentationPlan obstaclePlan)appliedEvents.AddRange(obstaclePlan.Events);
         }
 
         public void SetPaused(bool value) => paused = value;
@@ -141,7 +153,6 @@ namespace MathGame.Presentation.Unity
             touch = null;
             if (playback != null) StopCoroutine(playback);
             playback = null;
-            foreach (var item in cells.Values) if (item != null) Destroy(item);
             cells.Clear(); blocks.Clear(); obstacles.Clear(); appliedEvents.Clear();
         }
 
@@ -168,7 +179,10 @@ namespace MathGame.Presentation.Unity
                 case PresentationEventKind.RemoveSelected:
                 case PresentationEventKind.RemoveCollateral:
                     var blockId = new BlockId((int)value.Identity);
-                    if (blocks.TryGetValue(blockId, out var removed) && removed != null) Destroy(removed);
+                    if (blocks.TryGetValue(blockId, out var removed) && removed != null)
+                    {
+                        var prebuilt=removed.GetComponent<PrototypeCellView>();if(prebuilt!=null)prebuilt.SetBlockVisible(false);else Destroy(removed);
+                    }
                     blocks.Remove(blockId);
                     feedback?.Play(value.Kind == PresentationEventKind.RemoveSelected ? PresentationFeedbackCue.Correct : PresentationFeedbackCue.Selection,
                         plan.Settings.AudioEnabled, plan.Settings.HapticsEnabled);
@@ -177,16 +191,17 @@ namespace MathGame.Presentation.Unity
                 case PresentationEventKind.ShuffleBlock:
                     var movedId = new BlockId((int)value.Identity);
                     if (blocks.TryGetValue(movedId, out var moved) && moved != null && cells.TryGetValue(value.Position, out var destination))
-                        moved.transform.SetParent(destination.transform, false);
+                    {if(moved.GetComponent<PrototypeCellView>()==null)moved.transform.SetParent(destination.transform, false);}
                     break;
                 case PresentationEventKind.DamageObstacle:
                     var damageId = new ObstacleId((int)value.Identity);
-                    if (obstacles.TryGetValue(damageId, out var damaged) && damaged != null) damaged.transform.localScale = Vector3.one * .8f;
+                    if (obstacles.TryGetValue(damageId, out var damaged) && damaged != null&&damaged.GetComponent<PrototypeCellView>()==null) damaged.transform.localScale = Vector3.one * .8f;
                     feedback?.Play(PresentationFeedbackCue.ObstacleDamaged, plan.Settings.AudioEnabled, plan.Settings.HapticsEnabled);
                     break;
                 case PresentationEventKind.DestroyObstacle:
                     var obstacleId = new ObstacleId((int)value.Identity);
-                    if (obstacles.TryGetValue(obstacleId, out var destroyed) && destroyed != null) Destroy(destroyed);
+                    if (obstacles.TryGetValue(obstacleId, out var destroyed) && destroyed != null)
+                    {var prebuilt=destroyed.GetComponent<PrototypeCellView>();if(prebuilt!=null)prebuilt.SetObstacleVisible(false);else Destroy(destroyed);}
                     obstacles.Remove(obstacleId);
                     feedback?.Play(PresentationFeedbackCue.ObstacleDestroyed, plan.Settings.AudioEnabled, plan.Settings.HapticsEnabled);
                     break;

@@ -27,7 +27,8 @@ namespace MathGame.Editor.SceneBuilder
                 return;
 
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            PrototypePrefabBuilder.EnsurePrototypePrefabs();
+            if (!PrototypePrefabBuilder.EnsurePrototypePrefabsForSceneBuild())
+                return;
             var controller = FindRoot(scene, ControllerName) ?? new GameObject(ControllerName);
             EnsureComponent<ApplicationLifecycleRelay>(controller);
             EnsureComponent<MathGameBootstrap>(controller);
@@ -36,11 +37,16 @@ namespace MathGame.Editor.SceneBuilder
             EnsureComponent<PrototypeGameSceneController>(composition);
             EnsureComponent<PortraitOnlyPolicy>(composition);
 
-            var gameRoot=FindRoot(scene,GameRootName);
-            if(gameRoot!=null&&gameRoot.GetComponent<GamePresentationHost>()==null)
-                throw new InvalidOperationException("A user-authored root named GameRoot already exists. Rename it before building; no user object was modified.");
-            if(gameRoot==null)
+            var gameRoot = FindRoot(scene, GameRootName);
+            if (gameRoot != null && !IsManagedGameRoot(gameRoot))
+                throw new InvalidOperationException(
+                    "A root named GameRoot exists, but MathGame ownership could not be proven. " +
+                    "It was not modified. Rename the user-authored object before building.");
+
+            if (gameRoot == null || !IsCurrentManagedGameRoot(gameRoot))
             {
+                if(gameRoot!=null)
+                    Undo.DestroyObjectImmediate(gameRoot);
                 var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(PrototypePrefabBuilder.GameRootPath);
                 if(prefab==null)throw new InvalidOperationException("GameRoot prefab was not created.");
                 gameRoot=PrefabUtility.InstantiatePrefab(prefab,scene) as GameObject;
@@ -55,6 +61,9 @@ namespace MathGame.Editor.SceneBuilder
                 camera = cameraObject.AddComponent<Camera>();
                 cameraObject.AddComponent<AudioListener>();
             }
+            camera.orthographic = true;
+            camera.orthographicSize = 4.5f;
+            camera.transform.position = new Vector3(3.5f, 3.5f, -10f);
 
             EnsureInBuildSettings(ScenePath);
             EditorSceneManager.MarkSceneDirty(scene);
@@ -94,6 +103,8 @@ namespace MathGame.Editor.SceneBuilder
             if (composition.GetComponent<PrototypeGameSceneController>() == null) return "PrototypeGameSceneController is missing.";
             var gameRoot=FindRoot(scene,GameRootName);
             if(gameRoot==null||PrefabUtility.GetCorrespondingObjectFromSource(gameRoot)==null)return "GameRoot prefab instance is missing.";
+            var ownership=gameRoot.GetComponent<PrototypeGeneratedRoot>();
+            if(ownership==null||!ownership.IsMathGameOwned)return "GameRoot MathGame ownership marker is missing or invalid.";
             var host=gameRoot.GetComponent<GamePresentationHost>();if(host==null||!host.HasValidContext)return "GameRoot presentation context is incomplete.";
             if (FindMainCamera(scene) == null) return "A tagged Main Camera is missing.";
             if (!EditorBuildSettings.scenes.Any(item => item.path == ScenePath && item.enabled)) return "GameScene is not enabled in Build Settings.";
@@ -102,6 +113,37 @@ namespace MathGame.Editor.SceneBuilder
 
         static GameObject FindRoot(Scene scene, string name) =>
             scene.GetRootGameObjects().FirstOrDefault(item => item.name == name);
+
+        static bool IsManagedGameRoot(GameObject root)
+        {
+            var marker = root.GetComponent<PrototypeGeneratedRoot>();
+            if (marker != null && marker.IsMathGameOwned) return true;
+
+            var contract = root.GetComponent<PresentationPrefabContract>();
+            if (contract != null && contract.ContractId == GameRootName) return true;
+
+            var source = PrefabUtility.GetCorrespondingObjectFromSource(root);
+            if (source != null && AssetDatabase.GetAssetPath(source) == PrototypePrefabBuilder.GameRootPath)
+                return true;
+
+            // Strict legacy signature: both MathGame presentation components plus the
+            // exact generated hierarchy. Names alone are deliberately insufficient.
+            var gameplay = root.transform.Find("GameplayRoot");
+            var boardSlot = gameplay != null ? gameplay.Find("BoardSlot") : null;
+            var uiRoot = root.transform.Find("UIRoot");
+            return gameplay != null && boardSlot != null && uiRoot != null &&
+                   root.GetComponentInChildren<GameplayPresentationRoot>(true) != null &&
+                   root.GetComponentInChildren<PrototypeUILayout>(true) != null;
+        }
+
+        static bool IsCurrentManagedGameRoot(GameObject root)
+        {
+            var marker = root.GetComponent<PrototypeGeneratedRoot>();
+            var source = PrefabUtility.GetCorrespondingObjectFromSource(root);
+            return marker != null && marker.IsMathGameOwned &&
+                   source != null && AssetDatabase.GetAssetPath(source) == PrototypePrefabBuilder.GameRootPath &&
+                   root.GetComponent<GamePresentationHost>()?.HasValidContext == true;
+        }
 
         static Camera FindMainCamera(Scene scene)
         {

@@ -53,14 +53,6 @@ namespace MathGame.Presentation.Unity
         bool restarting;
         string status = "Starting prototype...";
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Install()
-        {
-            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "GameScene") return;
-            if (FindFirstObjectByType<PrototypeGameSceneController>() != null) return;
-            new GameObject("PrototypeGameSceneComposition").AddComponent<PrototypeGameSceneController>();
-        }
-
         IEnumerator Start()
         {
             for (var i = 0; i < 120; i++)
@@ -79,6 +71,12 @@ namespace MathGame.Presentation.Unity
 
         void Compose()
         {
+            if (presentationHost == null || !presentationHost.HasValidContext)
+            {
+                status = "Serialized GamePresentationHost context is missing or incomplete.";
+                return;
+            }
+
             stage = bootstrap.StageController;
             var random = new SystemRandomSource(13012);
             var generated = new BoardGenerator(random).Generate(new BoardGenerationConfig(BoardTopology.CreateRectangular(5, 5), 1, 4));
@@ -121,16 +119,16 @@ namespace MathGame.Presentation.Unity
             commands = new ObstacleGameplayPresentationPort(obstacleFlow, stage, fever, session,
                 new AnswerValidator(AnswerTimingThresholds.Prototype), null);
 
-            boardView = presentationHost!=null?presentationHost.BoardView:FindFirstObjectByType<GameplayPresentationRoot>();
-            if(boardView==null)
+            boardView = presentationHost.BoardView;
+            if (boardView == null || !boardView.transform.IsChildOf(presentationHost.CreateContext().BoardSlot))
             {
-                var rootObject = new GameObject("PrototypeBoardView");
-                rootObject.AddComponent<PlaceholderPresentationFeedback>();
-                boardView = rootObject.AddComponent<GameplayPresentationRoot>();
+                status = "Serialized BoardView must exist below GameplayRoot/BoardSlot before Play Mode.";
+                return;
             }
             boardView.PlaybackCompleted += PlaybackCompleted;
-            boardView.ConfigureRegistry(presentationHost?.Registry);
-            if(presentationHost!=null){var context=presentationHost.CreateContext();boardView.ConfigureSlots(context.BoardSlot.Find("BoardView/CellRoot"),context.BoardSlot.Find("BoardView/BlockRoot"),context.EffectSlot);}
+            boardView.ConfigureRegistry(presentationHost.Registry);
+            var context = presentationHost.CreateContext();
+            boardView.ConfigureSlots(boardView.transform.Find("CellRoot"), boardView.transform.Find("BlockRoot"), context.EffectSlot);
             presentation = new GameplayPresentationCoordinator(commands, boardView);
             boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
 
@@ -146,9 +144,8 @@ namespace MathGame.Presentation.Unity
                 camera.orthographic = true;
                 camera.backgroundColor = new Color(.07f, .09f, .13f);
             }
-            uiLayout = presentationHost!=null?presentationHost.UILayout:FindFirstObjectByType<PrototypeUILayout>();
-            if(uiLayout==null)uiLayout=new GameObject("PrototypeCanvas").AddComponent<PrototypeUILayout>();
-            uiLayout.Build(camera, Continue, Restart, Abandon, RetryTarget,presentationHost?.Registry);
+            uiLayout = presentationHost.UILayout;
+            uiLayout.Build(camera, boardView, Continue, Restart, Abandon, RetryTarget, presentationHost.Registry);
             stage.BeginTargetPresentation();
             stage.EnablePlayerInput();
             targetStarted = Time.unscaledTime;
@@ -320,14 +317,14 @@ namespace MathGame.Presentation.Unity
 
         static bool TryReadPointer(out Vector2 position, out bool down, out bool held, out bool up)
         {
-            if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+            if (Touchscreen.current != null)
             {
                 var touch = Touchscreen.current.primaryTouch;
                 position = touch.position.ReadValue();
                 down = touch.press.wasPressedThisFrame;
                 held = touch.press.isPressed;
                 up = touch.press.wasReleasedThisFrame;
-                return true;
+                if (down || held || up) return true;
             }
 
             if (Mouse.current != null)
@@ -348,12 +345,7 @@ namespace MathGame.Presentation.Unity
         {
             position = default;
             var camera = Camera.main;
-            if (camera == null) return false;
-            var worldPoint = camera.ScreenToWorldPoint(screenPosition);
-            var column = Mathf.RoundToInt(worldPoint.x);
-            var row = Mathf.RoundToInt(worldPoint.y);
-            if (Mathf.Abs(worldPoint.x - column) > .45f || Mathf.Abs(worldPoint.y - row) > .45f) return false;
-            var candidate = new BoardPosition(column, row);
+            if (camera == null || boardView == null || !boardView.TryScreenPointToCell(camera, screenPosition, out var candidate)) return false;
             if (!obstacleFlow.CurrentBoard.IsActive(candidate)) return false;
             obstacleFlow.CurrentBoard.TryGetCell(candidate, out var cell);
             if (!cell.IsSelectable) return false;
@@ -365,7 +357,7 @@ namespace MathGame.Presentation.Unity
         {
             if (selectionLine == null) return;
             selectionLine.positionCount = selected.Count;
-            for (var i = 0; i < selected.Count; i++) selectionLine.SetPosition(i, new Vector3(selected[i].Column, selected[i].Row, -.5f));
+            for (var i = 0; i < selected.Count; i++) selectionLine.SetPosition(i, boardView.GetCellWorldPosition(selected[i]));
         }
 
         void Abandon()
@@ -393,12 +385,37 @@ namespace MathGame.Presentation.Unity
 
         IEnumerator RestartCleanly()
         {
-            restarting=true;
+            restarting = true;
             if (boardView != null) boardView.PlaybackCompleted -= PlaybackCompleted;
-            presentation?.Dispose(); fever?.Dispose();
-            if(bootstrap!=null)Destroy(bootstrap.gameObject);
+            presentation?.Dispose();
+            fever?.Dispose();
+            selected.Clear();
+            pointerDown = false;
+            targetRecoveryPending = false;
+            resolvingEnd = false;
+            if (selectionLine != null) Destroy(selectionLine.gameObject);
+            if (bootstrap != null) Destroy(bootstrap.gameObject);
             yield return null;
-            UnityEngine.SceneManagement.SceneManager.LoadScene("GameScene");
+
+            var controllerObject = new GameObject("GameController");
+            controllerObject.AddComponent<ApplicationLifecycleRelay>();
+            bootstrap = controllerObject.AddComponent<MathGameBootstrap>();
+            for (var i = 0; i < 120; i++)
+            {
+                if (bootstrap != null && bootstrap.StageController?.State == StageState.Ready) break;
+                yield return null;
+            }
+            if (bootstrap == null || bootstrap.StageController?.State != StageState.Ready)
+            {
+                status = "Restart bootstrap did not reach Ready.";
+                restarting = false;
+                yield break;
+            }
+
+            commandId = 1;
+            presentationId = 1;
+            Compose();
+            restarting = false;
         }
 
         void OnDestroy()

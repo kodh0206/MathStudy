@@ -30,12 +30,15 @@ namespace MathGame.Presentation.Unity
         Transform objectiveContainer;
         MathGamePrefabRegistry prefabRegistry;
         Camera boardCamera;
+        GameplayPresentationRoot boardView;
         Rect lastSafeArea;
 
-        public void Build(Camera camera, Action onContinue, Action onRetry, Action onAbandon, Action onTargetRetry,MathGamePrefabRegistry registry=null)
+        public void Build(Camera camera, GameplayPresentationRoot serializedBoardView, Action onContinue, Action onRetry, Action onAbandon, Action onTargetRetry,MathGamePrefabRegistry registry=null)
         {
             boardCamera = camera;
+            boardView = serializedBoardView;
             prefabRegistry=registry;
+            EnsureEventSystem();
             var existingCanvas = GetComponent<Canvas>();
             if (existingCanvas != null && transform.Find("SafeArea/TopSlot/HUD") != null)
             {
@@ -53,11 +56,6 @@ namespace MathGame.Presentation.Unity
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = .5f;
             gameObject.AddComponent<GraphicRaycaster>();
-            if (FindFirstObjectByType<EventSystem>() == null)
-            {
-                var events = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
-                events.transform.SetParent(transform.parent, false);
-            }
 
             safeArea = Rect("SafeArea", transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             var hud = Panel("HUD", safeArea, new Color(.035f, .055f, .09f, .96f),
@@ -104,6 +102,12 @@ namespace MathGame.Presentation.Unity
             targetRetryButton = Action(actions, "Retry Target", onTargetRetry);
             restartButton = Action(actions, "Restart", onRetry);
             ApplySafeArea(true);
+        }
+
+        void EnsureEventSystem()
+        {
+            if(FindFirstObjectByType<EventSystem>()!=null)return;
+            var events=new GameObject("EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));events.transform.SetParent(transform.parent,false);
         }
 
         void BindPrefabHierarchy(Action onContinue,Action onRetry,Action onAbandon,Action onTargetRetry)
@@ -180,12 +184,10 @@ namespace MathGame.Presentation.Unity
             safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
             if (boardCamera != null)
             {
+                if(boardCamera.GetComponent<PhysicsRaycaster>()==null)boardCamera.gameObject.AddComponent<PhysicsRaycaster>();
                 var normalizedSafe=new Rect(area.xMin/Screen.width,area.yMin/Screen.height,area.width/Screen.width,area.height/Screen.height);
                 boardCamera.rect=new Rect(normalizedSafe.x+.08f*normalizedSafe.width,normalizedSafe.y+.18f*normalizedSafe.height,.84f*normalizedSafe.width,.56f*normalizedSafe.height);
-                var viewportPixels = new Vector2(Screen.width * boardCamera.rect.width, Screen.height * boardCamera.rect.height);
-                var aspect = Mathf.Max(.1f, viewportPixels.x / viewportPixels.y);
-                boardCamera.orthographicSize = Mathf.Max(3f, 2.8f / aspect);
-                boardCamera.transform.position = new Vector3(2, 2, -10);
+                boardView?.FrameCamera(boardCamera);
             }
         }
 

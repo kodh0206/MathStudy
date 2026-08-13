@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using MathGame.Presentation.Unity;
 using UnityEditor;
@@ -9,7 +10,7 @@ namespace MathGame.Editor.SceneBuilder
 {
     public static class PrototypePrefabBuilder
     {
-        const int ContractVersion=1;
+        const int ContractVersion=3;
         public const string Root = "Assets/MathGame/Prefabs";
         public const string GameRootPath = Root + "/Core/GameRoot.prefab";
         public const string BoardPath = Root + "/Board/Board.prefab";
@@ -24,6 +25,30 @@ namespace MathGame.Editor.SceneBuilder
         [MenuItem("MathGame/Build Prototype Prefabs",priority=9)]
         public static void EnsurePrototypePrefabs()
         {
+            EnsurePrototypePrefabsForSceneBuild();
+        }
+
+        public static bool EnsurePrototypePrefabsForSceneBuild()
+        {
+            var legacy = FindLegacyManagedPrefabs();
+            if (legacy.Count > 0)
+            {
+                var message = "MathGame generated prefab contracts require migration from an earlier version:\n\n" +
+                              string.Join("\n", legacy) +
+                              "\n\nThis replaces only the managed prototype prefab set. Continue?";
+                if (!EditorUtility.DisplayDialog("Migrate MathGame prototype prefabs?", message, "Migrate", "Cancel"))
+                {
+                    Debug.LogWarning("MathGame prototype prefab migration was cancelled; the scene was not modified.");
+                    return false;
+                }
+                DeleteManagedPrefabSet();
+            }
+            BuildCurrentPrefabSet();
+            return true;
+        }
+
+        static void BuildCurrentPrefabSet()
+        {
             EnsureFolders();
             CreateIfMissing(BlockPath,CreateBlock);
             CreateIfMissing(CellPath,CreateCell);
@@ -34,9 +59,95 @@ namespace MathGame.Editor.SceneBuilder
             CreateIfMissing(HudPath,CreateHud);
             EnsureRegistry();
             CreateIfMissing(GameRootPath,CreateGameRoot);
+            EnsureGameRootOwnershipMarker();
             EnsureRegistry();
             AssetDatabase.SaveAssets();AssetDatabase.Refresh();
             Debug.Log("MathGame prototype prefabs are available. Existing prefab assets were preserved.");
+        }
+
+        [MenuItem("MathGame/Development/Recreate Prototype Prefabs",priority=100)]
+        public static void RecreatePrototypePrefabs()
+        {
+            if(!EditorUtility.DisplayDialog("Recreate MathGame prototype prefabs?","This replaces the managed prototype prefab set and discards visual edits in those assets. Use only for an explicit contract migration.","Recreate","Cancel"))return;
+            DeleteManagedPrefabSet();
+            BuildCurrentPrefabSet();
+            Debug.Log("MathGame prototype prefabs were explicitly recreated for contract version "+ContractVersion+".");
+        }
+
+        static List<string> FindLegacyManagedPrefabs()
+        {
+            var legacy = new List<string>();
+            foreach (var path in ManagedPrefabPaths())
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (prefab == null) continue;
+                var contract = prefab.GetComponent<PresentationPrefabContract>();
+                var expectedId = Path.GetFileNameWithoutExtension(path);
+                if (contract == null || contract.ContractId != expectedId)
+                {
+                    if (path == GameRootPath && IsProvablyManagedGameRootPrefab(prefab))
+                    {
+                        var marker = prefab.GetComponent<PrototypeGeneratedRoot>();
+                        if (marker != null && marker.IsMathGameOwned && marker.SchemaVersion == ContractVersion)
+                        {
+                            RepairCurrentGameRootContract();
+                            continue;
+                        }
+                        legacy.Add(path + " (legacy MathGame root -> v" + ContractVersion + ")");
+                        continue;
+                    }
+                    throw new InvalidOperationException(
+                        "An asset exists at a managed prototype path, but MathGame ownership could not be proven. " +
+                        "It was preserved: " + path);
+                }
+                if (contract.Version == ContractVersion) continue;
+                if (contract.Version > 0 && contract.Version < ContractVersion)
+                    legacy.Add(path + " (v" + contract.Version + " -> v" + ContractVersion + ")");
+                else
+                    throw new InvalidOperationException(
+                        "Existing managed prefab has an unsupported contract version and was preserved: " + path +
+                        " (v" + contract.Version + ").");
+            }
+            return legacy;
+        }
+
+        static bool IsProvablyManagedGameRootPrefab(GameObject root)
+        {
+            var marker = root.GetComponent<PrototypeGeneratedRoot>();
+            if (marker != null && marker.IsMathGameOwned) return true;
+            var gameplay = root.transform.Find("GameplayRoot");
+            var boardSlot = gameplay != null ? gameplay.Find("BoardSlot") : null;
+            return gameplay != null && boardSlot != null && root.transform.Find("UIRoot") != null &&
+                   root.GetComponentInChildren<GameplayPresentationRoot>(true) != null &&
+                   root.GetComponentInChildren<PrototypeUILayout>(true) != null;
+        }
+
+        static void RepairCurrentGameRootContract()
+        {
+            var contents = PrefabUtility.LoadPrefabContents(GameRootPath);
+            try
+            {
+                var contract = contents.GetComponent<PresentationPrefabContract>() ?? contents.AddComponent<PresentationPrefabContract>();
+                contract.Configure("GameRoot", ContractVersion);
+                PrefabUtility.SaveAsPrefabAsset(contents, GameRootPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(contents);
+            }
+        }
+
+        static string[] ManagedPrefabPaths() => new[]
+        {
+            GameRootPath, BoardPath, CellPath, BlockPath, HudPath, ObjectivePath,
+            FeverPath, RestorationPath
+        };
+
+        static void DeleteManagedPrefabSet()
+        {
+            foreach (var path in ManagedPrefabPaths()) AssetDatabase.DeleteAsset(path);
+            AssetDatabase.DeleteAsset(RegistryPath);
+            AssetDatabase.SaveAssets();
         }
 
         static void EnsureFolders()
@@ -53,6 +164,24 @@ namespace MathGame.Editor.SceneBuilder
             registry.HudPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(HudPath);registry.ObjectiveItemPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(ObjectivePath);
             registry.FeverGaugePrefab=AssetDatabase.LoadAssetAtPath<GameObject>(FeverPath);registry.RestorationGaugePrefab=AssetDatabase.LoadAssetAtPath<GameObject>(RestorationPath);
             EditorUtility.SetDirty(registry);
+        }
+
+        static void EnsureGameRootOwnershipMarker()
+        {
+            var contents = PrefabUtility.LoadPrefabContents(GameRootPath);
+            try
+            {
+                var marker = contents.GetComponent<PrototypeGeneratedRoot>();
+                if (marker != null && marker.IsMathGameOwned && marker.SchemaVersion == ContractVersion)
+                    return;
+                marker = marker ?? contents.AddComponent<PrototypeGeneratedRoot>();
+                marker.Configure(ContractVersion);
+                PrefabUtility.SaveAsPrefabAsset(contents, GameRootPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(contents);
+            }
         }
 
         static void CreateIfMissing(string path,Func<GameObject> create)
@@ -78,12 +207,24 @@ namespace MathGame.Editor.SceneBuilder
             return root;
         }
 
-        static GameObject CreateCell(){var root=GameObject.CreatePrimitive(PrimitiveType.Quad);root.name="Cell";UnityEngine.Object.DestroyImmediate(root.GetComponent<Collider>());root.transform.localScale=Vector3.one*.88f;return root;}
+        static GameObject CreateCell()
+        {
+            var root=GameObject.CreatePrimitive(PrimitiveType.Quad);root.name="Cell";root.AddComponent<PrototypeCellView>();root.transform.localScale=Vector3.one*.88f;
+            var block=new GameObject("BlockRoot");block.transform.SetParent(root.transform,false);var valueObject=new GameObject("ValueText");valueObject.transform.SetParent(block.transform,false);valueObject.transform.localPosition=Vector3.back*.08f;var value=valueObject.AddComponent<TextMesh>();value.anchor=TextAnchor.MiddleCenter;value.alignment=TextAlignment.Center;value.characterSize=.35f;value.fontSize=64;value.color=new Color(.035f,.055f,.09f,1f);value.GetComponent<MeshRenderer>().sortingOrder=20;
+            var obstacle=new GameObject("ObstacleRoot");obstacle.transform.SetParent(root.transform,false);var obstacleObject=new GameObject("ObstacleText");obstacleObject.transform.SetParent(obstacle.transform,false);obstacleObject.transform.localPosition=new Vector3(-.3f,.3f,-.1f);var obstacleText=obstacleObject.AddComponent<TextMesh>();obstacleText.anchor=TextAnchor.MiddleCenter;obstacleText.alignment=TextAlignment.Center;obstacleText.characterSize=.2f;obstacleText.fontSize=48;obstacleText.color=new Color(1f,.45f,.05f);obstacleText.GetComponent<MeshRenderer>().sortingOrder=30;
+            root.GetComponent<PrototypeCellView>().Configure(0,0,root.transform,value,obstacleText,block,obstacle);return root;
+        }
 
         static GameObject CreateBoard()
         {
             var root=new GameObject("BoardView",typeof(GameplayPresentationRoot),typeof(PlaceholderPresentationFeedback));
-            foreach(var name in new[]{"CellRoot","BlockRoot","EffectRoot"})new GameObject(name).transform.SetParent(root.transform,false);
+            var cells=new GameObject("CellRoot");cells.transform.SetParent(root.transform,false);new GameObject("BlockRoot").transform.SetParent(root.transform,false);new GameObject("EffectRoot").transform.SetParent(root.transform,false);
+            var cellPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(CellPath);
+            for(var row=0;row<8;row++)for(var column=0;column<8;column++)
+            {
+                var cell=PrefabUtility.InstantiatePrefab(cellPrefab) as GameObject;cell.name="Cell_"+column+"_"+row;cell.transform.SetParent(cells.transform,false);cell.transform.localPosition=new Vector3(column,row,0);
+                cell.GetComponent<PrototypeCellView>().Configure(column,row,cell.transform,cell.transform.Find("BlockRoot/ValueText")?.GetComponent<TextMesh>(),cell.transform.Find("ObstacleRoot/ObstacleText")?.GetComponent<TextMesh>(),cell.transform.Find("BlockRoot")?.gameObject,cell.transform.Find("ObstacleRoot")?.gameObject);
+            }
             return root;
         }
 
@@ -104,7 +245,8 @@ namespace MathGame.Editor.SceneBuilder
 
         static GameObject CreateGameRoot()
         {
-            var root=new GameObject("GameRoot",typeof(GamePresentationHost));
+            var root=new GameObject("GameRoot",typeof(GamePresentationHost),typeof(PrototypeGeneratedRoot));
+            root.GetComponent<PrototypeGeneratedRoot>().Configure(ContractVersion);
             var gameplay=new GameObject("GameplayRoot");gameplay.transform.SetParent(root.transform,false);
             var boardSlot=new GameObject("BoardSlot");boardSlot.transform.SetParent(gameplay.transform,false);
             var effectSlot=new GameObject("EffectSlot");effectSlot.transform.SetParent(gameplay.transform,false);

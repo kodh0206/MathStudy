@@ -5,11 +5,12 @@ The prototype is composed at runtime when `Assets/Scenes/GameScene.unity` loads.
 ## Launch
 
 1. Open the project with Unity `6000.3.6f1`.
-2. Select `MathGame > Build Prototype Scene`. The builder is idempotent and preserves existing camera/light objects and Build Settings entries.
-3. Open `Assets/Scenes/GameScene.unity` if it is not already open.
-4. Optionally select `MathGame > Validate Prototype Scene` and confirm the Console reports success.
-5. Wait for script compilation to finish with no Console errors, then enter Play Mode.
-6. Drag with the left mouse button across orthogonally adjacent number cells and release to submit. A touchscreen uses the primary touch in the same way.
+2. If the Console reports that existing managed prefabs use contract version 1, select `MathGame > Development > Recreate Prototype Prefabs` once and confirm the explicit destructive migration. This replaces only the prior generated prototype prefab set with the prebuilt-board version 2 contract.
+3. Select `MathGame > Build Prototype Scene`. The normal builder is idempotent and preserves compatible prefab edits, existing camera/light objects, and Build Settings entries.
+4. Open `Assets/Scenes/GameScene.unity` if it is not already open.
+5. Optionally select `MathGame > Validate Prototype Scene` and confirm the Console reports success.
+6. Wait for script compilation to finish with no Console errors, then enter Play Mode.
+7. Drag with the left mouse button across orthogonally adjacent number cells and release to submit. A touchscreen uses the primary touch in the same way.
 
 ## Scene entry objects
 
@@ -33,6 +34,10 @@ No prefab, texture, audio clip, save asset, backend, or manually assigned Inspec
 `MathGame > Build Prototype Prefabs` creates missing prototype assets under `Assets/MathGame/Prefabs` and never overwrites an existing prefab. `Build Prototype Scene` calls the same non-destructive check before instantiating `GameRoot.prefab`.
 
 `MathGamePrefabRegistry.asset` is the single presentation-asset registry. `GameRoot` provides stable `GameplayRoot/BoardSlot/EffectSlot`, `UIRoot` slots, and `PresentationRoot` extension points through `GamePresentationHost`. Objective rows are instantiated from `ObjectiveItem.prefab` based on the session snapshot rather than being fixed to two entries.
+
+`Board.prefab` contains an 8×8 pool of 64 serialized `PrototypeCellView` instances. Each view owns a stable row/column, background, reusable number label, obstacle label, and effect roots. Runtime board binding activates only positions present in the current topology, writes actual block values into existing labels, and disables unused capacity. It does not rebuild the cell hierarchy after a move.
+
+`BoardView` must already be serialized below `GameRoot/GameplayRoot/BoardSlot` before Play Mode. Runtime composition never instantiates `Board.prefab`, creates a replacement BoardView, or spawns fallback cells/blocks. A missing or incompatible serialized board is a scene validation error. Retry and prototype restart replace logical gameplay state while retaining this same BoardView instance.
 
 To add a later presentation feature, create its view and prefab, add it to the registry, and initialize it against `GamePresentationContext`/the appropriate stable slot. Domain assemblies and the scene hierarchy do not need to change. Designers can edit existing prefab layout, fonts, colors, sprites, spacing, and animations; normal builders reuse those assets unchanged.
 
