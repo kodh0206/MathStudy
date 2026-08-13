@@ -26,7 +26,14 @@ namespace MathGame.Presentation.Unity
                 var clip=GetClip(cue);
                 if(clip!=null)source.PlayOneShot(clip);
             }
-            if(hapticsEnabled&&Application.isMobilePlatform)Handheld.Vibrate();
+            VibrateIfSupported(hapticsEnabled);
+        }
+
+        static void VibrateIfSupported(bool enabled)
+        {
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+            if (enabled) Handheld.Vibrate();
+#endif
         }
         AudioClip GetClip(PresentationFeedbackCue cue)
         {
