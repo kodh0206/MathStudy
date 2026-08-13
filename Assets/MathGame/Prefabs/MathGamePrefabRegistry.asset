@@ -20,3 +20,4 @@ MonoBehaviour:
   ObjectiveItemPrefab: {fileID: 3089025840076147471, guid: 8dd984b554bb6af4386d0dfdbc991362, type: 3}
   FeverGaugePrefab: {fileID: 5257739891999365672, guid: eee1687f4dac8ac4988cf640a7fc12f0, type: 3}
   RestorationGaugePrefab: {fileID: 1896965400762272369, guid: b9d7ddc9c3423454a9dbf311eea96172, type: 3}
+  StageClearPopupPrefab: {fileID: 8252503407111402910, guid: c1657f8ddf41f4541b9b7be1951fa1a7, type: 3}

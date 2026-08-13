@@ -13,5 +13,6 @@ namespace MathGame.Presentation.Unity
         public GameObject ObjectiveItemPrefab;
         public GameObject FeverGaugePrefab;
         public GameObject RestorationGaugePrefab;
+        public GameObject StageClearPopupPrefab;
     }
 }

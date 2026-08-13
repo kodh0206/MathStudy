@@ -43,6 +43,7 @@ namespace MathGame.Presentation.Unity
         WorldRestorationProgress world;
         LineRenderer selectionLine;
         PrototypeUILayout uiLayout;
+        StageClearPopupView stageClearPopup;
         readonly List<BoardPosition> selected = new List<BoardPosition>();
         long commandId = 1;
         long presentationId = 1;
@@ -132,6 +133,14 @@ namespace MathGame.Presentation.Unity
             boardView.Configure(new PresentationTiming(0, 0, 0, 0, 0));
             boardView.ConfigureRegistry(presentationHost.Registry);
             var context = presentationHost.CreateContext();
+            stageClearPopup = context.OverlayRoot.GetComponentInChildren<StageClearPopupView>(true);
+            if (stageClearPopup == null)
+            {
+                status = "Serialized StageClearPopup is missing from OverlaySlot.";
+                return;
+            }
+            stageClearPopup.Bind(Restart, NextStageRequested, false);
+            stageClearPopup.Hide();
             boardView.ConfigureSlots(boardView.transform.Find("CellRoot"), boardView.transform.Find("BlockRoot"), context.EffectSlot);
             presentation = new GameplayPresentationCoordinator(commands, boardView);
             boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
@@ -273,6 +282,12 @@ namespace MathGame.Presentation.Unity
             var kind = presentation.ActiveEnvelope?.AcknowledgementKind ?? PresentationAcknowledgementKind.None;
             var ack = presentation.CompletePlayback();
             if (ack != PresentationAcknowledgementStatus.Accepted) { status = "Presentation acknowledgement: " + ack; return; }
+            if (kind == PresentationAcknowledgementKind.Terminal && stage.State == StageState.Success)
+            {
+                stageClearPopup?.Show();
+                status = "Stage clear. The next prototype stage is not available yet.";
+                return;
+            }
             if ((kind == PresentationAcknowledgementKind.Answer || kind == PresentationAcknowledgementKind.FeverEnd) &&
                 stage.State == StageState.PresentingTarget)
                 PreparePlan(new PresentationPlan(Envelope(PresentationAcknowledgementKind.TargetReady,
@@ -399,7 +414,13 @@ namespace MathGame.Presentation.Unity
 
         void Restart()
         {
+            stageClearPopup?.Hide();
             if(!restarting)StartCoroutine(RestartCleanly());
+        }
+
+        void NextStageRequested()
+        {
+            status = "The next prototype stage is not available yet.";
         }
 
         IEnumerator RestartCleanly()

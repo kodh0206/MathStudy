@@ -20,6 +20,7 @@ namespace MathGame.Editor.SceneBuilder
         public const string ObjectivePath = Root + "/UI/ObjectiveItem.prefab";
         public const string FeverPath = Root + "/UI/FeverGauge.prefab";
         public const string RestorationPath = Root + "/UI/RestorationGauge.prefab";
+        public const string StageClearPopupPath = Root + "/UI/StageClearPopup.prefab";
         public const string RegistryPath = Root + "/MathGamePrefabRegistry.asset";
 
         [MenuItem("MathGame/Build Prototype Prefabs",priority=9)]
@@ -56,10 +57,13 @@ namespace MathGame.Editor.SceneBuilder
             CreateIfMissing(ObjectivePath,()=>CreateLabelPanel("ObjectivePanel","Objective",26));
             CreateIfMissing(FeverPath,()=>CreateLabelPanel("FeverGauge","FEVER  0/50",29));
             CreateIfMissing(RestorationPath,()=>CreateLabelPanel("RestorationGauge","RESTORATION  0/100",29));
+            RepairBrokenStageClearPopupAsset();
+            CreateIfMissing(StageClearPopupPath,CreateStageClearPopup);
             CreateIfMissing(HudPath,CreateHud);
             UpgradeManagedHudLayout();
             EnsureRegistry();
             CreateIfMissing(GameRootPath,CreateGameRoot);
+            EnsureStageClearPopupInGameRoot();
             EnsureGameRootOwnershipMarker();
             EnsureRegistry();
             AssetDatabase.SaveAssets();AssetDatabase.Refresh();
@@ -79,7 +83,7 @@ namespace MathGame.Editor.SceneBuilder
                 if (resources != null) Set(resources, 0, 1, 1, 1, 24, -274, -24, -194);
                 if (objectives != null)
                 {
-                    Set(objectives, 0, 0, 1, 1, 24, 24, -24, 122);
+                    Set(objectives, 0, 0, 1, 0, 24, 11, -24, 109);
                     var layout = objectives.GetComponent<VerticalLayoutGroup>();
                     if (layout != null)
                     {
@@ -194,6 +198,7 @@ namespace MathGame.Editor.SceneBuilder
         {
             GameRootPath, BoardPath, CellPath, BlockPath, HudPath, ObjectivePath,
             FeverPath, RestorationPath
+            , StageClearPopupPath
         };
 
         static void DeleteManagedPrefabSet()
@@ -216,7 +221,43 @@ namespace MathGame.Editor.SceneBuilder
             registry.CellPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(CellPath);registry.BlockPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(BlockPath);
             registry.HudPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(HudPath);registry.ObjectiveItemPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(ObjectivePath);
             registry.FeverGaugePrefab=AssetDatabase.LoadAssetAtPath<GameObject>(FeverPath);registry.RestorationGaugePrefab=AssetDatabase.LoadAssetAtPath<GameObject>(RestorationPath);
+            registry.StageClearPopupPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(StageClearPopupPath);
             EditorUtility.SetDirty(registry);
+        }
+
+        static void EnsureStageClearPopupInGameRoot()
+        {
+            var contents = PrefabUtility.LoadPrefabContents(GameRootPath);
+            try
+            {
+                var overlay = contents.transform.Find("UIRoot/PrototypeCanvas/SafeArea/OverlaySlot");
+                if (overlay == null) throw new InvalidOperationException("Managed GameRoot OverlaySlot is missing.");
+                var existing = overlay.Find("StageClearPopup");
+                if (existing != null && existing.GetComponent<StageClearPopupView>() == null)
+                    UnityEngine.Object.DestroyImmediate(existing.gameObject);
+                if (overlay.GetComponentInChildren<StageClearPopupView>(true) == null)
+                {
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(StageClearPopupPath);
+                    var popup = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+                    popup.transform.SetParent(overlay, false);
+                    Stretch(popup.GetComponent<RectTransform>(), 0);
+                    popup.SetActive(false);
+                    PrefabUtility.SaveAsPrefabAsset(contents, GameRootPath);
+                }
+            }
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+        }
+
+        static void RepairBrokenStageClearPopupAsset()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(StageClearPopupPath);
+            if (prefab == null || prefab.GetComponent<StageClearPopupView>() != null) return;
+            var contract = prefab.GetComponent<PresentationPrefabContract>();
+            if (contract == null || contract.ContractId != "StageClearPopup")
+                throw new InvalidOperationException(
+                    "StageClearPopup asset is incompatible and MathGame ownership could not be proven. It was preserved: " + StageClearPopupPath);
+            AssetDatabase.DeleteAsset(StageClearPopupPath);
+            AssetDatabase.SaveAssets();
         }
 
         static void EnsureGameRootOwnershipMarker()
@@ -344,6 +385,19 @@ namespace MathGame.Editor.SceneBuilder
         }
 
         static GameObject CreateLabelPanel(string name,string value,int size){var root=UI(name,typeof(Image));root.GetComponent<Image>().color=new Color(.08f,.13f,.2f,1);Stretch(Text("Label",value,size,TextAnchor.MiddleCenter,root.transform).rectTransform,8);return root;}
+        static GameObject CreateStageClearPopup()
+        {
+            var root=UI("StageClearPopup",typeof(CanvasRenderer),typeof(Image),typeof(StageClearPopupView));
+            root.GetComponent<Image>().color=new Color(0,0,0,.72f);
+            var panel=UI("PopupPanel",typeof(CanvasRenderer),typeof(Image));panel.transform.SetParent(root.transform,false);panel.GetComponent<Image>().color=new Color(.06f,.10f,.17f,1);Set(panel.GetComponent<RectTransform>(),.1f,.32f,.9f,.68f,0,0,0,0);
+            var title=Text("Title","STAGE CLEAR!",48,TextAnchor.MiddleCenter,panel.transform);title.fontStyle=FontStyle.Bold;Set(title.rectTransform,0,1,1,1,24,-100,-24,-24);
+            var message=Text("Message","All objectives complete.",28,TextAnchor.MiddleCenter,panel.transform);Set(message.rectTransform,0,.3f,1,.78f,36,0,-36,0);
+            var row=UI("ButtonRow",typeof(HorizontalLayoutGroup));row.transform.SetParent(panel.transform,false);Set(row.GetComponent<RectTransform>(),0,0,1,.28f,28,24,-28,-8);var layout=row.GetComponent<HorizontalLayoutGroup>();layout.spacing=18;layout.childControlWidth=true;layout.childForceExpandWidth=true;
+            Button("RetryButton","Retry",row.transform);Button("NextStageButton","Next Stage",row.transform);
+            root.GetComponent<StageClearPopupView>().Configure(title,message,row.transform.Find("RetryButton").GetComponent<Button>(),row.transform.Find("NextStageButton").GetComponent<Button>());
+            root.SetActive(false);
+            return root;
+        }
         static GameObject UI(string name,params Type[] extra){var types=new Type[extra.Length+1];types[0]=typeof(RectTransform);Array.Copy(extra,0,types,1,extra.Length);return new GameObject(name,types);}
         static Text Text(string name,string value,int size,TextAnchor anchor,Transform parent){var text=UI(name,typeof(CanvasRenderer),typeof(Text)).GetComponent<Text>();text.transform.SetParent(parent,false);text.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");text.text=value;text.fontSize=size;text.alignment=anchor;text.color=Color.white;text.horizontalOverflow=HorizontalWrapMode.Wrap;text.verticalOverflow=VerticalWrapMode.Truncate;return text;}
         static void Button(string name,string label,Transform parent){var root=UI(name,typeof(CanvasRenderer),typeof(Image),typeof(Button));root.transform.SetParent(parent,false);root.GetComponent<Image>().color=new Color(.12f,.42f,.62f,1);Stretch(Text("Label",label,25,TextAnchor.MiddleCenter,root.transform).rectTransform,8);}

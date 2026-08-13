@@ -147,7 +147,8 @@ namespace MathGame.Presentation.Unity
             if (hud != null) SetRect(hud, new Vector2(0, 1), Vector2.one, new Vector2(24, -404), new Vector2(-24, -24));
             if (mainStats != null) SetRect(mainStats, new Vector2(0, 1), Vector2.one, new Vector2(24, -184), new Vector2(-24, -82));
             if (resources != null) SetRect(resources, new Vector2(0, 1), Vector2.one, new Vector2(24, -274), new Vector2(-24, -194));
-            if (objectiveRoot != null) SetRect(objectiveRoot, Vector2.zero, Vector2.one, new Vector2(24, 24), new Vector2(-24, 122));
+            // Fixed prototype HUD placement requested by design: centered at Y 60.
+            if (objectiveRoot != null) SetRect(objectiveRoot, Vector2.zero, new Vector2(1, 0), new Vector2(24, 11), new Vector2(-24, 109));
 
             var stats = mainStats != null ? mainStats.GetComponent<GridLayoutGroup>() : null;
             if (stats != null)
@@ -222,7 +223,7 @@ namespace MathGame.Presentation.Unity
                 {
                     var objective = snapshot.Objectives[i];
                     objectives[i].gameObject.SetActive(true);
-                    objectives[i].text = "OBJECTIVE " + (i + 1) + "   " + objective.Current + " / " + objective.Required +
+                    objectives[i].text = DescribeObjective(objective) + "   " + objective.Current + " / " + objective.Required +
                         (objective.IsComplete ? "   COMPLETE" : string.Empty);
                 }
                 else objectives[i].gameObject.SetActive(false);
@@ -233,6 +234,32 @@ namespace MathGame.Presentation.Unity
             targetRetryButton.gameObject.SetActive(targetRecovery);
             restartButton.gameObject.SetActive(!failedDecision && !targetRecovery && !terminal);
             ApplySafeArea(false);
+        }
+
+        static string DescribeObjective(ObjectiveProgressSnapshot objective)
+        {
+            var definition = objective.Definition;
+            switch (definition.Kind)
+            {
+                case StageObjectiveKind.RemoveNumberBlocks:
+                    return "Remove number blocks";
+                case StageObjectiveKind.CompleteTarget:
+                    return "Complete target " + definition.Target.Value;
+                case StageObjectiveKind.CompleteLongConnection:
+                    return "Make connections of " + definition.MinimumConnectionLength + "+ blocks";
+                case StageObjectiveKind.RemoveObstacle:
+                    return definition.ObstacleKind.HasValue
+                        ? "Destroy " + definition.ObstacleKind.Value + " obstacles"
+                        : "Destroy obstacles";
+                case StageObjectiveKind.EarnRestorationEnergy:
+                    return "Earn restoration energy";
+                case StageObjectiveKind.CreateSpecial:
+                    return "Create special blocks";
+                case StageObjectiveKind.UseSpecial:
+                    return "Use special blocks";
+                default:
+                    return "Complete objective";
+            }
         }
 
         public void SetSelectionSum(long value,int count)
