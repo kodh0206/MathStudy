@@ -1,5 +1,7 @@
 using MathGame.Answer;
+using MathGame.Board;
 using MathGame.SurvivalRun;
+using MathGame.Targets;
 using NUnit.Framework;
 
 namespace MathGame.Tests
@@ -96,6 +98,54 @@ namespace MathGame.Tests
             Assert.That(result.MaximumFeverCombo, Is.EqualTo(5));
             Assert.That(result.ActiveDuration, Is.EqualTo(2.5));
             Assert.That(result.HighestDifficultyTier, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void TemporaryP03BalanceIsCentralizedAndEveryTierHasAProvenTarget()
+        {
+            var config = SurvivalRunConfig.TemporaryPrototype;
+            Assert.That(config.InitialTime, Is.EqualTo(35));
+            Assert.That(config.MaximumTime, Is.EqualTo(45));
+            Assert.That(config.DrainPerSecond, Is.EqualTo(1));
+            Assert.That(config.NormalRecovery, Is.EqualTo(1.5));
+            Assert.That(config.FastRecovery, Is.EqualTo(2.75));
+            Assert.That(config.PerfectRecovery, Is.EqualTo(4));
+            Assert.That(config.CorrectCyclesPerTier, Is.EqualTo(6));
+            Assert.That(config.TargetRanges.Count, Is.EqualTo(5));
+
+            var board = new MathGame.Board.Board(BoardTopology.CreateRectangular(5, 5));
+            var nextId = 1;
+            foreach (var position in board.EnumerateActivePositions())
+                Assert.That(board.TryPlaceBlock(position, new NumberBlock(new BlockId(nextId++), 4)),
+                    Is.EqualTo(BoardMutationResult.Succeeded));
+
+            foreach (var range in config.TargetRanges)
+            {
+                var result = new TargetPathSearcher().Search(board,
+                    new TargetSearchConfig(range.Minimum, range.Maximum, 2, 4, 250000));
+                Assert.That(result.Status, Is.EqualTo(TargetSearchStatus.Succeeded),
+                    $"P03 tier {range.Minimum}-{range.Maximum} must retain a current-board witness.");
+                Assert.That(result.Solutions.Count, Is.GreaterThan(0));
+            }
+        }
+
+        [Test]
+        public void ProductionConfigRejectsInvalidTierIdentityAndOrdering()
+        {
+            var survival = new SurvivalTimeSettings(10, 20, 1);
+            var recovery = new TimingRecoverySettings(1, 2, 3);
+            Assert.Throws<System.ArgumentException>(() => new TimingRecoverySettings(2, 1, 3));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                new DifficultyTierConfig(1, 0, default));
+            Assert.Throws<System.ArgumentException>(() => new SurvivalRunConfig(survival, recovery, new[]
+            {
+                new DifficultyTierConfig(2, 0, new RunTargetRange(5, 9))
+            }));
+            Assert.Throws<System.ArgumentException>(() => new SurvivalRunConfig(survival, recovery, new[]
+            {
+                new DifficultyTierConfig(1, 0, new RunTargetRange(5, 9)),
+                new DifficultyTierConfig(2, 0, new RunTargetRange(7, 11))
+            }));
         }
 
         private static SurvivalRunConfig Config(double initial, double maximum, int cyclesPerTier = 5)

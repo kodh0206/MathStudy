@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.LocalSave",
+  "rootNamespace": "MathGame.LocalSave",
+  "references": ["MathGame.PlayerProgress"],
+  "autoReferenced": false,
+  "noEngineReferences": false
+}

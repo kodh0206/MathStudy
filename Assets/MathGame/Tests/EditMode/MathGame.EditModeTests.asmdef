@@ -18,7 +18,11 @@
     "MathGame.Restoration.Contracts",
     "MathGame.Restoration",
     "MathGame.Presentation.Contracts",
-    "MathGame.SurvivalRun"
+    "MathGame.SurvivalRun",
+    "MathGame.RunContent",
+    "MathGame.PlayerProgress",
+    "MathGame.LocalSave",
+    "MathGame.Editor.SceneBuilder"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

@@ -333,9 +333,9 @@ For a `DOMAIN_ONLY` STEP, `Unity Production: NOT APPLICABLE` is valid. Final sta
 
 The primary Production gameplay migration is now Continuous Run Speed Survival. Core and Unity composition are implemented with explicit legacy-stage compatibility, configurable Survival Time/recovery, correct-cycle target-range difficulty, serialized BoardView reuse, a Run HUD, and a Play Again result. Static core compilation is verified. Unity must regenerate the new assembly/prefab assets and execute Edit/Play/manual verification before runtime completion can be claimed.
 
-Temporary prototype balance is initial 30 seconds, maximum 60 seconds, drain 1 second per active second, Normal/Fast/Perfect recovery of 3/5/8 seconds, five committed correct cycles per tier, and target ranges 5-10, 8-15, and 10-20. These values remain configuration, not final balance.
+Temporary P03 playtest balance is initial 35 seconds, maximum 45 seconds, drain 1 second per active second, Normal/Fast/Perfect recovery of 1.5/2.75/4 seconds, six committed correct cycles per tier, and target ranges 5-9, 7-11, 9-13, 11-15, and 13-16. These values remain configuration, not final balance.
 
-Do not implement STEP 13 persistence or later gameplay steps. Current work is limited to validating and refining the launchable Continuous Run prototype.
+Production P07 and P08 are implemented as a narrow Continuous Run records/local-save slice. This does not authorize the broader STEP 13 stage/world/settings persistence design or any backend integration.
 
 STEP 10 is structurally accepted with no P0/P1 findings. Preserve its P2 Fever coordinator coverage debt and the Unity Edit/Play verification block caused by licensing initialization.
 
@@ -347,4 +347,4 @@ STEP 11 production integration is structurally complete: exact answer/Large-end 
 
 STEP 12 product decisions are approved and the scoped implementation is structurally integrated: deterministic footprint-derived Fever centers, logical touch/interpolation, fixed and Reduced Motion timings, placeholder identity views/HUD/feedback, portrait-only accessible state indicators, exact failure/success presentation, pause/cancellation reconciliation, and special-block deferral. Production, Edit-test, and Play-test assemblies compile statically. Unity Edit/Play execution remains blocked by licensing initialization and is recorded as verification debt, not a pass. STEP 13 remains unauthorized.
 
-STEP 13 design is documented but **BLOCKED BY PRODUCT DECISION**. The GDD does not define the stage/world catalog and unlock graph, persisted stage facts/rewards, exact settings defaults/ranges, interrupted-attempt policy, durability/navigation rule, corruption/future-version recovery, v1 migration meaning, or local save backend/identity policy. No STEP 13 production implementation is authorized until these decisions are approved and independently re-reviewed. STEP 14 remains unauthorized.
+P07 records finalize `BestScore`, active Survival duration, highest reached difficulty tier, best Fever combo, and total completed runs from authoritative `RunResult` data. P08 persists only those records and applied run IDs through a versioned JSON repository with backup recovery. Static assembly compilation passes; Unity Edit/Play execution and device/WebGL persistence behavior require manual verification. Stop after P08: backend SDKs and later Production work remain unauthorized.

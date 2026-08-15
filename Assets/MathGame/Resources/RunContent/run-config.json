@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "production-run-p06",
+  "initialTime": 35.0,
+  "maximumTime": 45.0,
+  "drainPerSecond": 1.0,
+  "normalRecovery": 1.5,
+  "fastRecovery": 2.75,
+  "perfectRecovery": 4.0,
+  "tiers": [
+    { "id": 1, "unlockCorrectCycles": 0, "targetMin": 5, "targetMax": 9 },
+    { "id": 2, "unlockCorrectCycles": 6, "targetMin": 7, "targetMax": 11 },
+    { "id": 3, "unlockCorrectCycles": 12, "targetMin": 9, "targetMax": 13 },
+    { "id": 4, "unlockCorrectCycles": 18, "targetMin": 11, "targetMax": 15 },
+    { "id": 5, "unlockCorrectCycles": 24, "targetMin": 13, "targetMax": 16 }
+  ]
+}

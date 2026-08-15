@@ -9,8 +9,9 @@ namespace MathGame.SurvivalRun
 
     public sealed class RunResult
     {
-        internal RunResult(double activeDuration, long score, int maximumFeverCombo, int highestDifficultyTier)
-        { ActiveDuration = activeDuration; Score = score; MaximumFeverCombo = maximumFeverCombo; HighestDifficultyTier = highestDifficultyTier; }
+        internal RunResult(string runId, double activeDuration, long score, int maximumFeverCombo, int highestDifficultyTier)
+        { RunId = runId; ActiveDuration = activeDuration; Score = score; MaximumFeverCombo = maximumFeverCombo; HighestDifficultyTier = highestDifficultyTier; }
+        public string RunId { get; }
         public double ActiveDuration { get; }
         public long Score { get; }
         public int MaximumFeverCombo { get; }
@@ -30,15 +31,20 @@ namespace MathGame.SurvivalRun
     public sealed class SurvivalRunSession
     {
         private readonly SurvivalRunConfig config;
+        private readonly string runId;
         private long version;
         private long lastCommittedCycleSourceId;
         private long score;
         private int maximumFeverCombo;
         private RunResult result;
 
-        public SurvivalRunSession(SurvivalRunConfig config)
+        public SurvivalRunSession(SurvivalRunConfig config) : this(config, Guid.NewGuid().ToString("N")) { }
+
+        public SurvivalRunSession(SurvivalRunConfig config, string runId)
         {
             this.config = config ?? throw new ArgumentNullException(nameof(config));
+            if (string.IsNullOrWhiteSpace(runId)) throw new ArgumentException("A run identity is required.", nameof(runId));
+            this.runId = runId;
             RemainingTime = config.InitialTime;
         }
 
@@ -46,10 +52,10 @@ namespace MathGame.SurvivalRun
         public double RemainingTime { get; private set; }
         public double ActiveDuration { get; private set; }
         public long CommittedCorrectCycles { get; private set; }
-        public int DifficultyTier => TierFor(CommittedCorrectCycles);
-        public RunTargetRange TargetRange => config.TargetRanges[DifficultyTier];
-        public RunTargetRange ProspectiveCorrectTargetRange => config.TargetRanges[TierFor(
-            CommittedCorrectCycles == long.MaxValue ? long.MaxValue : CommittedCorrectCycles + 1)];
+        public int DifficultyTier => config.TierIndexFor(CommittedCorrectCycles);
+        public RunTargetRange TargetRange => config.DifficultyTiers[DifficultyTier].TargetRange;
+        public RunTargetRange ProspectiveCorrectTargetRange => config.DifficultyTiers[config.TierIndexFor(
+            CommittedCorrectCycles == long.MaxValue ? long.MaxValue : CommittedCorrectCycles + 1)].TargetRange;
         public RunResult Result => result;
 
         // The caller supplies elapsed wall time only while the application is live. Paused/interrupted
@@ -107,12 +113,9 @@ namespace MathGame.SurvivalRun
             Status = SurvivalRunStatus.Ended;
             RemainingTime = 0;
             version++;
-            result = new RunResult(ActiveDuration, score, maximumFeverCombo, DifficultyTier);
+            result = new RunResult(runId, ActiveDuration, score, maximumFeverCombo, DifficultyTier);
             return result;
         }
 
-        private int TierFor(long committedCorrectCycles)
-            => Math.Min(config.TargetRanges.Count - 1,
-                (int)Math.Min(int.MaxValue, committedCorrectCycles / config.CorrectCyclesPerTier));
     }
 }

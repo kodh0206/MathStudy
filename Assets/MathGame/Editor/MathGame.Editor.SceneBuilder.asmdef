@@ -5,6 +5,7 @@
     "MathGame.App",
     "MathGame.Board",
     "MathGame.Presentation",
+    "MathGame.RunContent",
     "Unity.UGUI"
   ],
   "includePlatforms": ["Editor"],

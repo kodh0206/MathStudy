@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.PlayerProgress",
+  "rootNamespace": "MathGame.PlayerProgress",
+  "references": ["MathGame.SurvivalRun"],
+  "autoReferenced": false,
+  "noEngineReferences": true
+}

@@ -1,7 +1,7 @@
 {
   "name": "MathGame.Presentation",
   "rootNamespace": "MathGame.Presentation.Unity",
-  "references": ["MathGame.Presentation.Contracts", "MathGame.Board", "MathGame.BoardGeneration", "MathGame.Obstacles", "MathGame.BoardResolution", "MathGame.Connection", "MathGame.Answer", "MathGame.Targets", "MathGame.ObstacleFlow", "MathGame.Stage", "MathGame.StageSession", "MathGame.Fever", "MathGame.Restoration", "MathGame.Restoration.Contracts", "MathGame.SurvivalRun", "MathGame.Core", "MathGame.App", "Unity.InputSystem", "Unity.UGUI"],
+  "references": ["MathGame.Presentation.Contracts", "MathGame.Board", "MathGame.BoardGeneration", "MathGame.Obstacles", "MathGame.BoardResolution", "MathGame.Connection", "MathGame.Answer", "MathGame.Targets", "MathGame.ObstacleFlow", "MathGame.Stage", "MathGame.StageSession", "MathGame.Fever", "MathGame.Restoration", "MathGame.Restoration.Contracts", "MathGame.SurvivalRun", "MathGame.RunContent", "MathGame.PlayerProgress", "MathGame.LocalSave", "MathGame.Core", "MathGame.App", "Unity.InputSystem", "Unity.UGUI"],
   "autoReferenced": false,
   "noEngineReferences": false
 }

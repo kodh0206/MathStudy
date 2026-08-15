@@ -1,6 +1,6 @@
 # MathGame Architecture (Current)
 
-Last inspected: 2026-08-08
+Last inspected: 2026-08-15
 
 This file describes only code present in the repository. Proposed gameplay architecture belongs in the relevant STEP design until it is approved and implemented.
 
@@ -32,7 +32,9 @@ This workflow boundary does not change runtime assembly ownership or transfer ga
 
 ```text
 MathGame.Core        (no custom assembly dependency)
-MathGame.Save        (no custom assembly dependency)
+MathGame.Save        (legacy schema shell; no custom assembly dependency)
+MathGame.PlayerProgress ---> MathGame.SurvivalRun (no UnityEngine reference)
+MathGame.LocalSave   ---> MathGame.PlayerProgress (Unity-facing path/JSON/file infrastructure)
 MathGame.Board       (no custom assembly dependency; no UnityEngine reference)
 MathGame.BoardGeneration ---> MathGame.Board, MathGame.Core (no UnityEngine reference)
 MathGame.Connection  ---> MathGame.Board (no UnityEngine reference)
@@ -78,8 +80,12 @@ The domain feature assemblies and test assemblies are not auto-referenced. Unity
 
 ### Persistence seam
 
-- `SaveData` contains only schema version 1.
-- `ISaveRepository` defines load/save operations. No implementation, migration, validation, or progression model exists.
+- The older `SaveData`/`ISaveRepository` shell remains for compatibility and is not used by Continuous Run records.
+- `MathGame.PlayerProgress` owns immutable `RunRecords`, applied-run identity history, deterministic personal-best comparison, and `IPlayerProgressRepository`. It is Unity-independent.
+- A finalized `RunResult` carries a stable run identity. `PlayerProgressService` applies each identity at most once and returns truthful personal-best flags without Presentation comparisons.
+- `MathGame.LocalSave` maps progress to schema-version 1 JSON under `Application.persistentDataPath`. It writes a verified temporary file, preserves the previous valid primary as backup, and recovers primary -> backup -> new-player default.
+- `PrototypeGameSceneController` is the outer composition point. It loads progress when composing a run and applies/saves the terminal `RunResult` before Play Again. Save failure is observable and blocks restart until a retry succeeds.
+- Backend/account synchronization, conflict resolution, cloud migration, currencies, inventory, achievements, and meta progression remain outside this local prototype repository.
 
 ### Board domain
 
@@ -211,3 +217,6 @@ Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 9: Edit Mode 208/208 and
 - Difficulty changes only the proven target range. The prospective range is supplied to target recovery for the threshold-crossing correct cycle; number generation, obstacles, and Fever remain unchanged.
 - The Production composition reuses the serialized `GameplayRoot/BoardSlot/BoardView`. Run HUD and Run Result are presentation-owned; no BoardView is instantiated during a run or Play Again.
 - Legacy Stage Clear, moves, objectives, restoration, Continue, and stage progression code remains available but is not composed into the primary Continuous Run UI.
+- P04 separates immutable Survival Time, timing recovery, and ordered explicit difficulty-tier configuration. Tier lookup caps at the final configured tier.
+- P05 adds a one-way authoring boundary: Editor CSV conversion -> validated generated JSON -> runtime `IRunConfigRepository` -> `SurvivalRunConfig`. Survival domain code has no CSV, file, AssetDatabase, or Unity dependency.
+- P06 runtime composition requires the generated JSON resource. Invalid/missing content fails composition explicitly rather than silently selecting fallback balance.

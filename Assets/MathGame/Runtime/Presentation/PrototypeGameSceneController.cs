@@ -8,11 +8,14 @@ using MathGame.BoardGeneration;
 using MathGame.BoardResolution;
 using MathGame.Core.Random;
 using MathGame.Fever;
+using MathGame.LocalSave;
 using MathGame.ObstacleFlow;
 using MathGame.Obstacles;
+using MathGame.PlayerProgress;
 using MathGame.Presentation;
 using MathGame.Restoration;
 using MathGame.Restoration.Contracts;
+using MathGame.RunContent;
 using MathGame.Stage;
 using MathGame.StageSession;
 using MathGame.SurvivalRun;
@@ -47,6 +50,9 @@ namespace MathGame.Presentation.Unity
         StageClearPopupView stageClearPopup;
         RunResultPopupView runResultPopup;
         SurvivalRunSession run;
+        IPlayerProgressRepository progressRepository;
+        PlayerProgressService progressService;
+        bool terminalProgressHandled;
         readonly List<BoardPosition> selected = new List<BoardPosition>();
         long commandId = 1;
         long presentationId = 1;
@@ -75,6 +81,7 @@ namespace MathGame.Presentation.Unity
 
         void Compose()
         {
+            terminalProgressHandled = false;
             if (presentationHost == null || !presentationHost.HasValidContext)
             {
                 status = "Serialized GamePresentationHost context is missing or incomplete.";
@@ -103,7 +110,14 @@ namespace MathGame.Presentation.Unity
             if (Session.TryCreate(definition, new StageRunId(1), out session) != StageSessionCreateStatus.Succeeded)
             { status = "StageSession creation failed."; return; }
 
-            run = new SurvivalRunSession(SurvivalRunConfig.TemporaryPrototype);
+            var runContent = new RunConfigJsonRepository("RunContent/run-config").Load();
+            if (!runContent.Succeeded) { status = "Run content failed: " + runContent.Error; return; }
+            run = new SurvivalRunSession(runContent.Config, Guid.NewGuid().ToString("N"));
+            progressRepository = LocalPlayerProgressRepository.ForUnityPersistentData();
+            var loadedProgress = progressRepository.Load();
+            progressService = new PlayerProgressService(loadedProgress.Progress);
+            if (loadedProgress.Status is ProgressLoadStatus.InvalidDataFallback or ProgressLoadStatus.ReadFailedFallback)
+                Debug.LogWarning("[MathGame][Progress] Local progress fallback: " + loadedProgress.Diagnostic);
             FeverController.TryCreate(new FeverConfig(50, 8), stage, session, bootstrap.TimeProvider, out fever);
             targets = new TargetRecoveryCoordinator(random);
             targetConfig = new TargetRecoveryConfig(new TargetSearchConfig(5, 10, 2, 4, 250000), new TargetSelectionPolicy(1), 5);
@@ -175,6 +189,10 @@ namespace MathGame.Presentation.Unity
         void Update()
         {
             if (commands == null) return;
+            // Synchronize authoritative committed statistics before expiry can freeze RunResult.
+            var currentSnapshot = session.CreateSnapshot();
+            var currentCombo = fever.SessionSnapshot?.CurrentCombo ?? 0;
+            run?.RecordStatistics(currentSnapshot.Score, currentCombo);
             // Expiry is sampled before input. All live Stage phases drain; only an actual
             // lifecycle pause/interruption stops the clock.
             if (run != null && run.Status == SurvivalRunStatus.Active &&
@@ -185,11 +203,9 @@ namespace MathGame.Presentation.Unity
                 UpdateLine();
                 stage.EndRun();
                 status = "RUN OVER";
+                ApplyAndSaveProgress(run.Result);
                 runResultPopup.Show(run.Result);
             }
-            var currentSnapshot=session.CreateSnapshot();
-            var currentCombo = fever.SessionSnapshot?.CurrentCombo ?? 0;
-            run?.RecordStatistics(currentSnapshot.Score, currentCombo);
             uiLayout?.RefreshRun(currentSnapshot, target.Value, fever.Gauge, 50, status,
                 run?.RemainingTime ?? 0, run?.DifficultyTier ?? 0, currentCombo,
                 run?.Status == SurvivalRunStatus.Ended, targetRecoveryPending);
@@ -471,9 +487,41 @@ namespace MathGame.Presentation.Unity
 
         void Restart()
         {
+            if (run?.Result != null && !terminalProgressHandled) ApplyAndSaveProgress(run.Result);
+            if (run?.Result != null && !terminalProgressHandled)
+            {
+                status = "Local progress is not saved. Please try Play Again once more.";
+                return;
+            }
             stageClearPopup?.Hide();
             runResultPopup?.Hide();
             if(!restarting)StartCoroutine(RestartCleanly());
+        }
+
+        void ApplyAndSaveProgress(RunResult result)
+        {
+            if (terminalProgressHandled || progressService == null || progressRepository == null) return;
+            var update = progressService.ApplyCompletedRun(result);
+            if (update.Status == ProgressUpdateStatus.DuplicateRun)
+            {
+                var duplicateSave = progressRepository.Save(progressService.Current);
+                terminalProgressHandled = duplicateSave.Succeeded;
+                if (!duplicateSave.Succeeded) Debug.LogError("[MathGame][Progress] Local save retry failed: " + duplicateSave.Diagnostic);
+                return;
+            }
+            if (update.Status != ProgressUpdateStatus.Applied)
+            {
+                status = "RUN OVER - progress update failed: " + update.Status;
+                Debug.LogError("[MathGame][Progress] Run result was not applied: " + update.Status);
+                return;
+            }
+            var saved = progressRepository.Save(update.After);
+            if (!saved.Succeeded)
+            {
+                status = "RUN OVER - local save failed";
+                Debug.LogError("[MathGame][Progress] Local save failed: " + saved.Diagnostic);
+            }
+            else terminalProgressHandled = true;
         }
 
         void TogglePause()

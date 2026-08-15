@@ -204,11 +204,19 @@ Stable presentation hierarchies are Prefab/Scene-owned and runtime-bound. Unity 
 
 Difficulty advances monotonically by committed correct-answer cycles and initially changes only the proven target range at challenge boundaries. Fever has no additional Time modifier. Run End is exactly-once at Time zero and freezes score, active elapsed duration, run-wide maximum Fever combo, and highest difficulty for a Play Again result. Stable BoardView/UI roots remain serialized and reused.
 
-**Temporary prototype tuning:** initial 30 seconds, maximum 60 seconds, drain 1 second per active second, Normal +3 seconds, Fast +5 seconds, Perfect +8 seconds, one tier per five committed correct cycles, with target ranges 5–10, 8–15, and 10–20 capped at the last tier. These values are configuration data and are not final balance.
+**Temporary P03 playtest tuning:** initial 35 seconds, maximum 45 seconds, drain 1 second per active second, Normal +1.5 seconds, Fast +2.75 seconds, Perfect +4 seconds, one tier per six committed correct cycles, with target ranges 5-9, 7-11, 9-13, 11-15, and 13-16 capped at the last tier. These values are configuration data and are not final balance. `Docs/P03_SURVIVAL_DIFFICULTY_BALANCE.md` records the economy analysis and playtest risks.
 
 **Rationale:** A distinct mode preserves tested Stage compatibility and transaction boundaries while preventing dummy moves/objectives from creating hidden terminal behavior. Explicit tuning and ordering make the survival clock deterministic and testable without transferring time authority to Unity UI.
 
 ## Tracked ambiguities for later STEP designs
+
+### ADR-035: Run content is authored as CSV and consumed as validated JSON
+
+**Status:** Accepted for P04-P06
+
+**Decision:** Survival Time, grade recovery, and ordered difficulty tiers are separate immutable runtime configuration facts. Designers author one Run CSV and one Difficulty CSV. Editor tooling validates and emits schema-versioned JSON; runtime loads only JSON through a repository and resolves the same domain configuration. Missing or invalid content blocks composition. Maximum difficulty remains at the last configured tier. P06 progresses target range only and leaves obstacles, number range, Fever, and drain behavior unchanged.
+
+**Rationale:** This centralizes balance without coupling gameplay to authoring formats, preserves deterministic target proof, and provides a small production pipeline without prematurely building a broad content framework.
 
 - Precise touch tolerance for backtracking/cancellation.
 - Target weighting and the numerical limit on consecutive identical targets.
@@ -244,6 +252,16 @@ Exactly-once across restart additionally requires a product-approved durable pro
 - Save-on-background, interrupted-stage restoration, and corruption/migration policies.
 - Analytics payload schemas and once-only delivery rules.
 - Concrete ad spacing, consent flow, provider callback policy, and post-ad resume behavior.
+
+### ADR-036: Continuous Run records use a narrow backend-neutral local repository
+
+**Status:** Implemented for Production P07-P08
+
+**Decision:** A finalized Continuous Run result carries a stable run identity and is the only input to `PlayerProgressService`. Persistent records are Best Score, best active Survival duration, highest reached difficulty tier, best Fever combo, total completed runs, and the applied run identities needed for exactly-once replay protection. Presentation does not calculate records.
+
+`IPlayerProgressRepository` belongs to the Unity-independent progress boundary. The prototype implementation stores schema-version 1 JSON beneath `Application.persistentDataPath`, verifies a temporary write, preserves the previous valid primary as a backup, validates parsed invariants, and loads primary then backup then a new-player default. Missing data is normal; malformed data never blocks startup; write failures remain observable and prevent Play Again from silently discarding the in-memory update.
+
+**Scope:** This is temporary/offline prototype storage for Run records only. It does not implement or authorize the broader STEP 13 stage/world/settings model, backend SDK integration, accounts, synchronization, conflict resolution, remote migration, leaderboards, achievements, economy, or meta progression. A future backend can replace the repository implementation without changing Run gameplay or record rules.
 
 ## Deferred decisions
 

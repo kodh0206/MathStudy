@@ -1,0 +1,7 @@
+{
+  "name": "MathGame.RunContent",
+  "rootNamespace": "MathGame.RunContent",
+  "references": ["MathGame.SurvivalRun"],
+  "autoReferenced": false,
+  "noEngineReferences": false
+}
