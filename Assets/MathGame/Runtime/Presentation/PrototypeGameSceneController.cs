@@ -22,6 +22,7 @@ using MathGame.SurvivalRun;
 using MathGame.Targets;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Localization.Settings;
 using DomainBoard = MathGame.Board.Board;
 using Session = MathGame.StageSession.StageSession;
 
@@ -65,6 +66,7 @@ namespace MathGame.Presentation.Unity
 
         IEnumerator Start()
         {
+            yield return LocalizationSettings.InitializationOperation;
             for (var i = 0; i < 120; i++)
             {
                 bootstrap = FindFirstObjectByType<MathGameBootstrap>();
@@ -116,6 +118,13 @@ namespace MathGame.Presentation.Unity
             progressRepository = LocalPlayerProgressRepository.ForUnityPersistentData();
             var loadedProgress = progressRepository.Load();
             progressService = new PlayerProgressService(loadedProgress.Progress);
+            var localeCode = MathGameLocalization.ResolveSupportedCode(
+                progressService.Current.Settings.LocaleCode, Application.systemLanguage);
+            if (!MathGameLocalization.Select(localeCode))
+            {
+                status = "Required Korean/English localization assets are missing.";
+                return;
+            }
             if (loadedProgress.Status is ProgressLoadStatus.InvalidDataFallback or ProgressLoadStatus.ReadFailedFallback)
                 Debug.LogWarning("[MathGame][Progress] Local progress fallback: " + loadedProgress.Diagnostic);
             FeverController.TryCreate(new FeverConfig(50, 8), stage, session, bootstrap.TimeProvider, out fever);
@@ -178,12 +187,12 @@ namespace MathGame.Presentation.Unity
                 camera.backgroundColor = new Color(.07f, .09f, .13f);
             }
             uiLayout = presentationHost.UILayout;
-            uiLayout.Build(camera, boardView, Continue, TogglePause, Abandon, RetryTarget, presentationHost.Registry);
+            uiLayout.Build(camera, boardView, Continue, TogglePause, Abandon, RetryTarget, ToggleLanguage, presentationHost.Registry);
             uiLayout.SetRunMode(true);
             stage.BeginTargetPresentation();
             stage.EnablePlayerInput();
             targetStarted = Time.unscaledTime;
-            status = "Drag across orthogonally adjacent cells, then release.";
+            status = MathGameLocalization.Get("Gameplay", "gameplay.ready");
         }
 
         void Update()
@@ -202,7 +211,7 @@ namespace MathGame.Presentation.Unity
                 selected.Clear();
                 UpdateLine();
                 stage.EndRun();
-                status = "RUN OVER";
+                status = MathGameLocalization.Get("Gameplay", "gameplay.run_over");
                 ApplyAndSaveProgress(run.Result);
                 runResultPopup.Show(run.Result);
             }
@@ -216,7 +225,7 @@ namespace MathGame.Presentation.Unity
             if (stage.State == StageState.EnteringFever)
             {
                 if (fever.CompleteEntry() == FeverControllerCommandResult.Succeeded)
-                { status = "FEVER: answers cost no moves for 8 interactive seconds."; targetStarted = Time.unscaledTime; }
+                { status = MathGameLocalization.Get("Gameplay", "gameplay.fever_active"); targetStarted = Time.unscaledTime; }
             }
             if (fever.State == FeverState.Active)
             {
@@ -303,7 +312,7 @@ namespace MathGame.Presentation.Unity
             { status = "Submission rejected: " + result?.Status; return; }
             if (!result.Answer.IsCorrect)
             {
-                status = "MISS — no move spent.";
+                status = MathGameLocalization.Get("Gameplay", "gameplay.miss");
                 PreparePlan(ObstaclePresentationPlanBuilder.ForMiss(Envelope(PresentationAcknowledgementKind.Answer,
                     session.CreateSnapshot().NextExpectedAttemptId.Value - 1), Settings()));
                 return;
@@ -327,7 +336,8 @@ namespace MathGame.Presentation.Unity
             if (result.AnswerFlow?.History != null) history = result.AnswerFlow.History;
             if (result.AnswerFlow?.SelectedTarget != null) target = result.AnswerFlow.SelectedTarget.Target;
             boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
-            status = result.Answer.Grade + " — board resolved.";
+            status = MathGameLocalization.Get("Gameplay", "gameplay.resolved",
+                MathGameLocalization.Get("Gameplay", "gameplay.grade." + result.Answer.Grade.ToString().ToLowerInvariant()));
 
             if (result.AnswerFlow?.Status == ObstacleAnswerFlowStatus.StageTerminal)
             {
@@ -344,7 +354,7 @@ namespace MathGame.Presentation.Unity
                 return;
             }
             if (!result.AnswerFlow.IsInputReady)
-            { targetRecoveryPending = true; status = "Target recovery pending. Use Retry Target."; return; }
+            { targetRecoveryPending = true; status = MathGameLocalization.Get("Gameplay", "gameplay.target_pending"); return; }
             targetRecoveryPending = false;
             PreparePlan(ObstaclePresentationPlanBuilder.ForAnswer(Envelope(PresentationAcknowledgementKind.Answer,
                 result.AnswerFlow.GameplayToken.SourceId), Settings(), result.AnswerFlow));
@@ -490,7 +500,7 @@ namespace MathGame.Presentation.Unity
             if (run?.Result != null && !terminalProgressHandled) ApplyAndSaveProgress(run.Result);
             if (run?.Result != null && !terminalProgressHandled)
             {
-                status = "Local progress is not saved. Please try Play Again once more.";
+                status = MathGameLocalization.Get("Gameplay", "gameplay.save_failed");
                 return;
             }
             stageClearPopup?.Hide();
@@ -518,7 +528,7 @@ namespace MathGame.Presentation.Unity
             var saved = progressRepository.Save(update.After);
             if (!saved.Succeeded)
             {
-                status = "RUN OVER - local save failed";
+                status = MathGameLocalization.Get("Gameplay", "gameplay.save_failed");
                 Debug.LogError("[MathGame][Progress] Local save failed: " + saved.Diagnostic);
             }
             else terminalProgressHandled = true;
@@ -536,7 +546,7 @@ namespace MathGame.Presentation.Unity
                     return;
                 }
                 uiLayout?.SetPauseState(false);
-                status = "Run resumed.";
+                status = MathGameLocalization.Get("Gameplay", "gameplay.resumed");
             }
             else
             {
@@ -546,8 +556,24 @@ namespace MathGame.Presentation.Unity
                     return;
                 }
                 uiLayout?.SetPauseState(true);
-                status = "Run paused.";
+                status = MathGameLocalization.Get("Gameplay", "gameplay.paused");
             }
+        }
+
+        void ToggleLanguage()
+        {
+            if (progressService == null || progressRepository == null) return;
+            var next = MathGameLocalization.SelectedCode == MathGameLocalization.Korean
+                ? MathGameLocalization.English : MathGameLocalization.Korean;
+            if (!MathGameLocalization.Select(next))
+            {
+                Debug.LogError("[MathGame][Localization] Supported locale asset is missing: " + next);
+                return;
+            }
+            var updated = progressService.SetLocale(next);
+            var saved = progressRepository.Save(updated);
+            if (!saved.Succeeded) Debug.LogError("[MathGame][Localization] Locale preference save failed: " + saved.Diagnostic);
+            status = MathGameLocalization.Get("Settings", "settings.language_changed");
         }
 
         void NextStageRequested()

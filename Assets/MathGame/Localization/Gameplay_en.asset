@@ -1,0 +1,133 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Gameplay_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 14bce5619b20a17459f41d3372e119d7, type: 2}
+  m_Metadata:
+    m_Items:
+    - rid: 8260650990455750912
+  m_TableData:
+  - m_Id: 1702965248
+    m_Localized: 'TIME
+
+      {0:0.0}s'
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 1778462720
+    m_Localized: 'TARGET
+
+      {0}'
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 1778462721
+    m_Localized: 'SCORE
+
+      {0:N0}'
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 1778462722
+    m_Localized: 'COMBO
+
+      x{0}'
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 1782657024
+    m_Localized: 'FEVER
+
+      {0}/{1}'
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 1782657025
+    m_Localized: 'TIER
+
+      {0}'
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 1782657026
+    m_Localized: SELECTED SUM  {0}
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 1782657027
+    m_Localized: Drag across adjacent cells, then release.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657028
+    m_Localized: RUN OVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657029
+    m_Localized: FEVER ACTIVE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657030
+    m_Localized: "MISS \u2014 no penalty."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657031
+    m_Localized: "{0} \u2014 board resolved."
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 1782657032
+    m_Localized: "Finding a playable target\u2026"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657033
+    m_Localized: Run paused.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657034
+    m_Localized: Run resumed.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657035
+    m_Localized: Local save failed. Please try again.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657036
+    m_Localized: NORMAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657037
+    m_Localized: FAST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1782657038
+    m_Localized: PERFECT
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 8260650990455750912
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 1702965248
+        - id: 1778462720
+        - id: 1778462721
+        - id: 1778462722
+        - id: 1782657024
+        - id: 1782657025
+        - id: 1782657026
+        - id: 1782657031

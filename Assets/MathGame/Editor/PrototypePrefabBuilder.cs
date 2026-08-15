@@ -10,7 +10,7 @@ namespace MathGame.Editor.SceneBuilder
 {
     public static class PrototypePrefabBuilder
     {
-        const int ContractVersion=6;
+        const int ContractVersion=7;
         public const string Root = "Assets/MathGame/Prefabs";
         public const string GameRootPath = Root + "/Core/GameRoot.prefab";
         public const string BoardPath = Root + "/Board/Board.prefab";
@@ -32,6 +32,7 @@ namespace MathGame.Editor.SceneBuilder
 
         public static bool EnsurePrototypePrefabsForSceneBuild()
         {
+            MathGameLocalizationBuilder.Build();
             var legacy = FindLegacyManagedPrefabs();
             if (legacy.Count > 0)
             {
@@ -405,7 +406,7 @@ namespace MathGame.Editor.SceneBuilder
             var status=Text("Status","Starting prototype...",26,TextAnchor.UpperCenter,bottom.transform);Set(status.rectTransform,0,1,1,1,24,-104,-24,-16);
             var selectionSum=Text("SelectionSum","SELECTED SUM  0",30,TextAnchor.MiddleCenter,bottom.transform);Set(selectionSum.rectTransform,0,1,1,1,24,-154,-24,-104);
             var actions=UI("Actions",typeof(HorizontalLayoutGroup));actions.transform.SetParent(bottom.transform,false);Set(actions.GetComponent<RectTransform>(),0,0,1,1,20,18,-20,-116);var row=actions.GetComponent<HorizontalLayoutGroup>();row.spacing=12;row.childControlWidth=true;row.childForceExpandWidth=true;
-            foreach(var pair in new[]{("Continue","Continue +5"),("Retry","Retry"),("Abandon","Abandon"),("RetryTarget","Retry Target"),("Restart","Restart")})Button(pair.Item1,pair.Item2,actions.transform);
+            foreach(var pair in new[]{("Continue","Continue +5"),("Retry","Retry"),("Abandon","Abandon"),("RetryTarget","Retry Target"),("Restart","Restart"),("Language","English / 한국어")})Button(pair.Item1,pair.Item2,actions.transform);
             var presentation=new GameObject("PresentationRoot");presentation.transform.SetParent(root.transform,false);
             root.GetComponent<GamePresentationHost>().Configure(AssetDatabase.LoadAssetAtPath<MathGamePrefabRegistry>(RegistryPath),gameplay.transform,boardSlot.transform,effectSlot.transform,topSlot.transform,centerSlot.transform,bottomSlot.transform,overlaySlot.transform,presentation.transform,board.GetComponent<GameplayPresentationRoot>(),canvasObject.GetComponent<PrototypeUILayout>());
             return root;

@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Settings Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: Settings
+  m_TableCollectionNameGuidString: d09cca82c89471c4d9559cf7bde3ed04
+  m_Entries:
+  - m_Id: 557920256
+    m_Key: settings.language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 629223424
+    m_Key: settings.language_button
+    m_Metadata:
+      m_Items: []
+  - m_Id: 629223425
+    m_Key: settings.language_changed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 629223426
+    m_Key: settings.korean
+    m_Metadata:
+      m_Items: []
+  - m_Id: 629223427
+    m_Key: settings.english
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 8260650990455750909
+  references:
+    version: 2
+    RefIds:
+    - rid: 8260650990455750909
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1786771568239

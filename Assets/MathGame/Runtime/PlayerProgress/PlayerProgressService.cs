@@ -39,7 +39,7 @@ namespace MathGame.PlayerProgress
                     Math.Max(old.HighestDifficultyReached, result.HighestDifficultyTier),
                     Math.Max(old.BestCombo, result.MaximumFeverCombo), checked(old.TotalRuns + 1));
                 var ids = new List<string>(before.AppliedRunIds) { result.RunId };
-                current = new PlayerProgress(records, ids);
+                current = new PlayerProgress(records, ids, before.Settings);
                 return new ProgressUpdateResult(ProgressUpdateStatus.Applied, before, current,
                     scoreBest, durationBest, difficultyBest, comboBest);
             }
@@ -47,6 +47,12 @@ namespace MathGame.PlayerProgress
             {
                 return Result(ProgressUpdateStatus.Overflow, before, before);
             }
+        }
+
+        public PlayerProgress SetLocale(string localeCode)
+        {
+            current = current.WithLocale(localeCode);
+            return current;
         }
 
         private static ProgressUpdateResult Result(ProgressUpdateStatus status, PlayerProgress before, PlayerProgress after) =>

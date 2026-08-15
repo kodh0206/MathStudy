@@ -2,6 +2,8 @@ using System;
 using MathGame.SurvivalRun;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 namespace MathGame.Presentation.Unity
 {
@@ -10,6 +12,11 @@ namespace MathGame.Presentation.Unity
     {
         [SerializeField] Text resultText;
         [SerializeField] Button playAgainButton;
+        RunResult current;
+
+        void OnEnable() => LocalizationSettings.SelectedLocaleChanged += LocaleChanged;
+        void OnDisable() => LocalizationSettings.SelectedLocaleChanged -= LocaleChanged;
+        void LocaleChanged(Locale _) { if (current != null) Render(); }
 
         public void Bind(Action playAgain)
         {
@@ -20,15 +27,21 @@ namespace MathGame.Presentation.Unity
         public void Show(RunResult result)
         {
             if (result == null) return;
-            resultText.text = "RUN OVER\n\nSCORE  " + result.Score +
-                "\nTIME  " + result.ActiveDuration.ToString("0.0") + "s" +
-                "\nMAX COMBO  " + result.MaximumFeverCombo +
-                "\nDIFFICULTY  " + (result.HighestDifficultyTier + 1);
+            current = result;
+            Render();
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
         }
 
-        public void Hide() => gameObject.SetActive(false);
+        void Render()
+        {
+            resultText.text = MathGameLocalization.Get("Result", "result.summary", current.Score,
+                current.ActiveDuration, current.MaximumFeverCombo, current.HighestDifficultyTier + 1);
+            var label = playAgainButton.GetComponentInChildren<Text>();
+            if (label != null) label.text = MathGameLocalization.Get("Result", "result.play_again");
+        }
+
+        public void Hide() { current = null; gameObject.SetActive(false); }
 
 #if UNITY_EDITOR
         public void Configure(Text value, Button playAgain)

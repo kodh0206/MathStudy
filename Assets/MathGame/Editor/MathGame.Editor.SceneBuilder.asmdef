@@ -6,6 +6,8 @@
     "MathGame.Board",
     "MathGame.Presentation",
     "MathGame.RunContent",
+    "Unity.Localization",
+    "Unity.Localization.Editor",
     "Unity.UGUI"
   ],
   "includePlatforms": ["Editor"],

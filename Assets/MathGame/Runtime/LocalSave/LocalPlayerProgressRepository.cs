@@ -31,7 +31,11 @@ namespace MathGame.LocalSave
         public int version;
         public RunRecordsSaveData runRecords;
         public string[] appliedRunIds;
+        public PlayerSettingsSaveData settings;
     }
+
+    [Serializable]
+    internal sealed class PlayerSettingsSaveData { public string localeCode; }
 
     [Serializable]
     internal sealed class RunRecordsSaveData
@@ -45,7 +49,7 @@ namespace MathGame.LocalSave
 
     public sealed class LocalPlayerProgressRepository : IPlayerProgressRepository
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
         public const string PrimaryFileName = "player_progress.json";
         public const string BackupFileName = "player_progress.backup.json";
         private readonly IProgressFileStore files;
@@ -118,13 +122,16 @@ namespace MathGame.LocalSave
             PlayerProgressSaveData data;
             try { data = JsonUtility.FromJson<PlayerProgressSaveData>(json); }
             catch (Exception exception) { error = "Malformed JSON: " + exception.Message; return false; }
-            if (data == null || data.version != CurrentVersion) { error = "Unsupported save version."; return false; }
+            if (data == null || data.version < 1 || data.version > CurrentVersion) { error = "Unsupported save version."; return false; }
             if (data.runRecords == null || data.appliedRunIds == null) { error = "Required save fields are missing."; return false; }
             try
             {
                 var records = new RunRecords(data.runRecords.bestScore, data.runRecords.bestSurvivalDuration,
                     data.runRecords.highestDifficultyReached, data.runRecords.bestCombo, data.runRecords.totalRuns);
-                progress = new MathGame.PlayerProgress.PlayerProgress(records, data.appliedRunIds);
+                var settings = data.version >= 2 && data.settings != null
+                    ? new PlayerSettings(data.settings.localeCode)
+                    : PlayerSettings.Default;
+                progress = new MathGame.PlayerProgress.PlayerProgress(records, data.appliedRunIds, settings);
                 if (progress.AppliedRunIds.Count > records.TotalRuns) { error = "Applied run count exceeds total runs."; progress = null; return false; }
                 return true;
             }
@@ -148,7 +155,8 @@ namespace MathGame.LocalSave
                         highestDifficultyReached = records.HighestDifficultyReached, bestCombo = records.BestCombo,
                         totalRuns = records.TotalRuns
                     },
-                    appliedRunIds = new string[progress.AppliedRunIds.Count]
+                    appliedRunIds = new string[progress.AppliedRunIds.Count],
+                    settings = new PlayerSettingsSaveData { localeCode = progress.Settings.LocaleCode }
                 };
                 for (var i = 0; i < data.appliedRunIds.Length; i++) data.appliedRunIds[i] = progress.AppliedRunIds[i];
                 return true;

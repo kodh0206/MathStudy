@@ -18,6 +18,7 @@
     "MathGame.Restoration.Contracts",
     "MathGame.Restoration",
     "MathGame.Presentation.Contracts",
+    "MathGame.Presentation",
     "MathGame.SurvivalRun",
     "MathGame.RunContent",
     "MathGame.PlayerProgress",

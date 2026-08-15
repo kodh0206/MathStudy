@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Result_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: ae569781f3f819544a0adc85716e68ac, type: 2}
+  m_Metadata:
+    m_Items:
+    - rid: 8260650990455750910
+  m_TableData:
+  - m_Id: 495005696
+    m_Localized: 'RUN OVER
+
+
+      SCORE  {0:N0}
+
+      SURVIVAL TIME  {1:0.0}s
+
+      MAX
+      COMBO  {2}
+
+      HIGHEST DIFFICULTY  {3}'
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750910
+  - m_Id: 574697472
+    m_Localized: PLAY AGAIN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 574697473
+    m_Localized: BEST SCORE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 574697474
+    m_Localized: NEW BEST!
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 8260650990455750910
+      type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
+      data:
+        m_Entries: 
+        m_SharedEntries:
+        - id: 495005696

@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 
 namespace MathGame.Presentation.Unity
 {
@@ -33,13 +35,29 @@ namespace MathGame.Presentation.Unity
         Button abandonButton;
         Button targetRetryButton;
         Button restartButton;
+        Button languageButton;
         Transform objectiveContainer;
         MathGamePrefabRegistry prefabRegistry;
         Camera boardCamera;
         GameplayPresentationRoot boardView;
         Rect lastSafeArea;
+        bool runMode;
+        bool pauseState;
 
-        public void Build(Camera camera, GameplayPresentationRoot serializedBoardView, Action onContinue, Action onRetry, Action onAbandon, Action onTargetRetry,MathGamePrefabRegistry registry=null)
+        void OnEnable() => LocalizationSettings.SelectedLocaleChanged += LocaleChanged;
+        void OnDisable() => LocalizationSettings.SelectedLocaleChanged -= LocaleChanged;
+        void LocaleChanged(Locale _) => RefreshLocalizedControls();
+
+        void RefreshLocalizedControls()
+        {
+            var pauseLabel = restartButton?.GetComponentInChildren<Text>();
+            if (pauseLabel != null) pauseLabel.text = MathGameLocalization.Get("Common",
+                runMode ? (pauseState ? "common.resume" : "common.pause") : "common.restart");
+            var languageLabel = languageButton?.GetComponentInChildren<Text>();
+            if (languageLabel != null) languageLabel.text = MathGameLocalization.Get("Settings", "settings.language_button");
+        }
+
+        public void Build(Camera camera, GameplayPresentationRoot serializedBoardView, Action onContinue, Action onRetry, Action onAbandon, Action onTargetRetry, Action onLanguage, MathGamePrefabRegistry registry=null)
         {
             boardCamera = camera;
             boardView = serializedBoardView;
@@ -48,7 +66,7 @@ namespace MathGame.Presentation.Unity
             var existingCanvas = GetComponent<Canvas>();
             if (existingCanvas != null && transform.Find("SafeArea/TopSlot/HUD") != null)
             {
-                BindPrefabHierarchy(onContinue,onRetry,onAbandon,onTargetRetry);
+                BindPrefabHierarchy(onContinue,onRetry,onAbandon,onTargetRetry,onLanguage);
                 ValidateBoundHierarchy();
                 ConfigureResponsiveHud();
                 ApplySafeArea(true);
@@ -110,6 +128,7 @@ namespace MathGame.Presentation.Unity
             abandonButton = Action(actions, "Abandon", onAbandon);
             targetRetryButton = Action(actions, "Retry Target", onTargetRetry);
             restartButton = Action(actions, "Restart", onRetry);
+            languageButton = Action(actions, "Language", onLanguage);
             ApplySafeArea(true);
         }
 
@@ -119,7 +138,7 @@ namespace MathGame.Presentation.Unity
             var events=new GameObject("EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));events.transform.SetParent(transform.parent,false);
         }
 
-        void BindPrefabHierarchy(Action onContinue,Action onRetry,Action onAbandon,Action onTargetRetry)
+        void BindPrefabHierarchy(Action onContinue,Action onRetry,Action onAbandon,Action onTargetRetry,Action onLanguage)
         {
             canvas=GetComponent<Canvas>();safeArea=transform.Find("SafeArea") as RectTransform;
             target=FindText("SafeArea/TopSlot/HUD/MainStats/Target/Value");moves=FindText("SafeArea/TopSlot/HUD/MainStats/Moves/Value");
@@ -136,7 +155,8 @@ namespace MathGame.Presentation.Unity
             continueButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Continue");retryButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Retry");
             abandonButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Abandon");targetRetryButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/RetryTarget");
             restartButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Restart");
-            Wire(continueButton,onContinue);Wire(retryButton,onRetry);Wire(abandonButton,onAbandon);Wire(targetRetryButton,onTargetRetry);Wire(restartButton,onRetry);
+            languageButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Language");
+            Wire(continueButton,onContinue);Wire(retryButton,onRetry);Wire(abandonButton,onAbandon);Wire(targetRetryButton,onTargetRetry);Wire(restartButton,onRetry);Wire(languageButton,onLanguage);
         }
 
         Text FindText(string path)=>transform.Find(path)?.GetComponent<Text>();
@@ -144,7 +164,7 @@ namespace MathGame.Presentation.Unity
         static void Wire(Button button,Action callback){if(button==null)return;button.onClick.RemoveAllListeners();if(callback!=null)button.onClick.AddListener(()=>callback());}
         void ValidateBoundHierarchy()
         {
-            if(safeArea==null||target==null||moves==null||score==null||restoration==null||fever==null||status==null||selectionSum==null||objectiveContainer==null||continueButton==null||retryButton==null||abandonButton==null||targetRetryButton==null||restartButton==null||runStats==null||runTime==null||runFever==null||runCombo==null||runTier==null)
+            if(safeArea==null||target==null||moves==null||score==null||restoration==null||fever==null||status==null||selectionSum==null||objectiveContainer==null||continueButton==null||retryButton==null||abandonButton==null||targetRetryButton==null||restartButton==null||languageButton==null||runStats==null||runTime==null||runFever==null||runCombo==null||runTier==null)
                 throw new InvalidOperationException("GameRoot/HUD prefab contract is incomplete. Rebuild or migrate the presentation prefab explicitly.");
         }
 
@@ -274,11 +294,12 @@ namespace MathGame.Presentation.Unity
 
         public void SetSelectionSum(long value,int count)
         {
-            if(selectionSum!=null)selectionSum.text=count>0?"SELECTED SUM  "+value:"SELECTED SUM  0";
+            if(selectionSum!=null)selectionSum.text=MathGameLocalization.Get("Gameplay","gameplay.selected_sum",value);
         }
 
         public void SetRunMode(bool active)
         {
+            runMode = active;
             moves?.transform.parent.gameObject.SetActive(!active);
             restoration?.gameObject.SetActive(!active);
             fever?.gameObject.SetActive(!active);
@@ -298,20 +319,19 @@ namespace MathGame.Presentation.Unity
                     value.resizeTextMaxSize = 25;
                 }
             }
-            var label = restartButton?.GetComponentInChildren<Text>();
-            if (label != null) label.text = active ? "PAUSE" : "RESTART";
+            RefreshLocalizedControls();
         }
 
         public void RefreshRun(StageSessionSnapshot snapshot, int targetValue, int gauge, int maximumGauge,
             string message, double remainingTime, int difficultyTier, int combo, bool ended, bool targetRecovery)
         {
             if (snapshot == null) return;
-            target.text = "TARGET\n" + targetValue;
-            score.text = "SCORE\n" + snapshot.Score;
-            runTime.text = "TIME\n" + remainingTime.ToString("0.0") + "s";
-            runFever.text = "FEVER\n" + gauge + "/" + maximumGauge;
-            runCombo.text = "COMBO\nx" + combo;
-            runTier.text = "TIER\n" + (difficultyTier + 1);
+            target.text = MathGameLocalization.Get("Gameplay", "gameplay.target", targetValue);
+            score.text = MathGameLocalization.Get("Gameplay", "gameplay.score", snapshot.Score);
+            runTime.text = MathGameLocalization.Get("Gameplay", "gameplay.time", remainingTime);
+            runFever.text = MathGameLocalization.Get("Gameplay", "gameplay.fever", gauge, maximumGauge);
+            runCombo.text = MathGameLocalization.Get("Gameplay", "gameplay.combo", combo);
+            runTier.text = MathGameLocalization.Get("Gameplay", "gameplay.tier", difficultyTier + 1);
             status.text = message ?? string.Empty;
             restartButton.gameObject.SetActive(!ended);
             targetRetryButton.gameObject.SetActive(!ended && targetRecovery);
@@ -320,8 +340,8 @@ namespace MathGame.Presentation.Unity
 
         public void SetPauseState(bool paused)
         {
-            var label = restartButton?.GetComponentInChildren<Text>();
-            if (label != null) label.text = paused ? "RESUME" : "PAUSE";
+            pauseState = paused;
+            RefreshLocalizedControls();
         }
 
         void EnsureObjectiveCount(int count)

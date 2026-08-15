@@ -263,6 +263,14 @@ Exactly-once across restart additionally requires a product-approved durable pro
 
 **Scope:** This is temporary/offline prototype storage for Run records only. It does not implement or authorize the broader STEP 13 stage/world/settings model, backend SDK integration, accounts, synchronization, conflict resolution, remote migration, leaderboards, achievements, economy, or meta progression. A future backend can replace the repository implementation without changing Run gameplay or record rules.
 
+### ADR-037: P09 uses official Unity Localization with persisted en/ko selection
+
+**Status:** Implemented; Unity asset migration and Play verification required
+
+**Decision:** Primary Continuous Run HUD/result/common/settings text uses Unity Localization 1.5.12 String Tables. English and Korean are the only supported locales. A saved supported code wins at startup; otherwise Korean devices use Korean and all other devices fall back to English. Language changes update `LocalizationSettings.SelectedLocale` and save an optional locale code in the version-2 P08 DTO without modifying Run records.
+
+Managed presentation contract v7 adds a serialized language button. Editor tooling owns creation/update of the four localization collections and validates missing values visibly at runtime. Domain gameplay remains localization-free.
+
 ## Deferred decisions
 
 - Path rules, gravity, and obstacle layering remain deferred to their owning STEP designs.

@@ -3,6 +3,8 @@ using MathGame.Answer;
 using MathGame.LocalSave;
 using MathGame.PlayerProgress;
 using MathGame.SurvivalRun;
+using MathGame.Presentation.Unity;
+using UnityEngine;
 using NUnit.Framework;
 using ProgressModel = MathGame.PlayerProgress.PlayerProgress;
 
@@ -54,7 +56,7 @@ namespace MathGame.Tests
             var service = new PlayerProgressService(ProgressModel.NewPlayer);
             var progress = service.ApplyCompletedRun(Result("saved", 250, 17, 4, 2)).After;
             Assert.That(repository.Save(progress).Status, Is.EqualTo(ProgressSaveStatus.Saved));
-            Assert.That(files.Values["test\\player_progress.json"], Does.Contain("\"version\": 1"));
+            Assert.That(files.Values["test\\player_progress.json"], Does.Contain("\"version\": 2"));
             var loaded = new LocalPlayerProgressRepository("test", files).Load();
             Assert.That(loaded.Status, Is.EqualTo(ProgressLoadStatus.LoadedPrimary));
             Assert.That(loaded.Progress.RunRecords.BestScore, Is.EqualTo(250));
@@ -118,6 +120,37 @@ namespace MathGame.Tests
             var recovered = repository.Load();
             Assert.That(recovered.Status, Is.EqualTo(ProgressLoadStatus.LoadedBackup));
             Assert.That(recovered.Progress.RunRecords.TotalRuns, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void LocalePolicySupportsSavedChoiceDeviceFallbackAndLegacyVersionOne()
+        {
+            Assert.That(MathGameLocalization.ResolveSupportedCode("ko", SystemLanguage.English), Is.EqualTo("ko"));
+            Assert.That(MathGameLocalization.ResolveSupportedCode("fr", SystemLanguage.Korean), Is.EqualTo("ko"));
+            Assert.That(MathGameLocalization.ResolveSupportedCode(null, SystemLanguage.French), Is.EqualTo("en"));
+
+            var files = new MemoryFiles();
+            files.Values["test\\player_progress.json"] =
+                "{\"version\":1,\"runRecords\":{\"bestScore\":9,\"bestSurvivalDuration\":2.5,\"highestDifficultyReached\":1,\"bestCombo\":2,\"totalRuns\":1},\"appliedRunIds\":[\"legacy\"]}";
+            var loaded = new LocalPlayerProgressRepository("test", files).Load();
+            Assert.That(loaded.Status, Is.EqualTo(ProgressLoadStatus.LoadedPrimary));
+            Assert.That(loaded.Progress.RunRecords.BestScore, Is.EqualTo(9));
+            Assert.That(loaded.Progress.Settings.LocaleCode, Is.Null);
+        }
+
+        [Test]
+        public void LocalePreferenceRoundTripsWithoutChangingRunRecords()
+        {
+            var files = new MemoryFiles();
+            var repository = new LocalPlayerProgressRepository("test", files);
+            var service = new PlayerProgressService(ProgressModel.NewPlayer);
+            service.ApplyCompletedRun(Result("locale-run", 99, 5, 3, 2));
+            var before = service.Current.RunRecords;
+            repository.Save(service.SetLocale("ko"));
+            var loaded = repository.Load().Progress;
+            Assert.That(loaded.Settings.LocaleCode, Is.EqualTo("ko"));
+            Assert.That(loaded.RunRecords.BestScore, Is.EqualTo(before.BestScore));
+            Assert.That(loaded.RunRecords.TotalRuns, Is.EqualTo(before.TotalRuns));
         }
 
         private static RunResult Result(string id, long score, double duration, int combo, int tier)

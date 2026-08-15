@@ -86,6 +86,7 @@ The domain feature assemblies and test assemblies are not auto-referenced. Unity
 - `MathGame.LocalSave` maps progress to schema-version 1 JSON under `Application.persistentDataPath`. It writes a verified temporary file, preserves the previous valid primary as backup, and recovers primary -> backup -> new-player default.
 - `PrototypeGameSceneController` is the outer composition point. It loads progress when composing a run and applies/saves the terminal `RunResult` before Play Again. Save failure is observable and blocks restart until a retry succeeds.
 - Backend/account synchronization, conflict resolution, cloud migration, currencies, inventory, achievements, and meta progression remain outside this local prototype repository.
+- `MathGame.Presentation` references the official Unity Localization and Resource Manager assemblies. It selects only supported `en`/`ko` Locale assets, reads semantic String Table keys, and persists the selected locale through P08 settings. No gameplay/domain assembly references Localization.
 
 ### Board domain
 

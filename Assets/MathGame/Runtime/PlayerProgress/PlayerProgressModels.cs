@@ -31,9 +31,9 @@ namespace MathGame.PlayerProgress
 
     public sealed class PlayerProgress
     {
-        public static PlayerProgress NewPlayer => new PlayerProgress(RunRecords.Empty, Array.Empty<string>());
+        public static PlayerProgress NewPlayer => new PlayerProgress(RunRecords.Empty, Array.Empty<string>(), PlayerSettings.Default);
 
-        public PlayerProgress(RunRecords runRecords, IEnumerable<string> appliedRunIds)
+        public PlayerProgress(RunRecords runRecords, IEnumerable<string> appliedRunIds, PlayerSettings settings = null)
         {
             RunRecords = runRecords ?? throw new ArgumentNullException(nameof(runRecords));
             if (appliedRunIds == null) throw new ArgumentNullException(nameof(appliedRunIds));
@@ -41,10 +41,25 @@ namespace MathGame.PlayerProgress
             if (ids.Any(string.IsNullOrWhiteSpace) || ids.Distinct(StringComparer.Ordinal).Count() != ids.Length)
                 throw new ArgumentException("Applied run identities must be non-empty and unique.", nameof(appliedRunIds));
             AppliedRunIds = new ReadOnlyCollection<string>(ids);
+            Settings = settings ?? PlayerSettings.Default;
         }
 
         public RunRecords RunRecords { get; }
         public IReadOnlyList<string> AppliedRunIds { get; }
+        public PlayerSettings Settings { get; }
+        public PlayerProgress WithLocale(string localeCode) =>
+            new PlayerProgress(RunRecords, AppliedRunIds, new PlayerSettings(localeCode));
+    }
+
+    public sealed class PlayerSettings
+    {
+        public static readonly PlayerSettings Default = new PlayerSettings(null);
+        public PlayerSettings(string localeCode)
+        {
+            if (localeCode != null && string.IsNullOrWhiteSpace(localeCode)) throw new ArgumentException("Locale code cannot be whitespace.", nameof(localeCode));
+            LocaleCode = localeCode;
+        }
+        public string LocaleCode { get; }
     }
 
     public enum ProgressUpdateStatus { Applied = 0, DuplicateRun = 1, MissingResult = 2, InvalidResult = 3, Overflow = 4 }

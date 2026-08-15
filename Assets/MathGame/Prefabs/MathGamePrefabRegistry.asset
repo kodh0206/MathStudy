@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74dce93583b742388be057fcfc7ac8d7, type: 3}
   m_Name: MathGamePrefabRegistry
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.MathGamePrefabRegistry
-  GameRootPrefab: {fileID: 6164131058789913670, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
-  BoardPrefab: {fileID: 7547578203812169478, guid: ab1103e31f7458248b7502c3310a0cd4, type: 3}
-  CellPrefab: {fileID: 2835659535180335941, guid: 5cee45328eedc364ab235b5e48d182bb, type: 3}
-  BlockPrefab: {fileID: 7858235755731506706, guid: ad7ac33e890bab546a48d4ed4a0365b2, type: 3}
-  HudPrefab: {fileID: 2229074695686586606, guid: 7a0d1a380bc9468428b13fe08c31ef2b, type: 3}
-  ObjectiveItemPrefab: {fileID: 5902822927660640333, guid: 8dd984b554bb6af4386d0dfdbc991362, type: 3}
-  FeverGaugePrefab: {fileID: 3640053584219832525, guid: eee1687f4dac8ac4988cf640a7fc12f0, type: 3}
-  RestorationGaugePrefab: {fileID: 325267634913647768, guid: b9d7ddc9c3423454a9dbf311eea96172, type: 3}
-  StageClearPopupPrefab: {fileID: 6925750551036740892, guid: c1657f8ddf41f4541b9b7be1951fa1a7, type: 3}
-  RunResultPopupPrefab: {fileID: 8944336213775941536, guid: 02bbbdbdb4945e64e88f2288eb3d1f94, type: 3}
+  GameRootPrefab: {fileID: 4685007961674731215, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
+  BoardPrefab: {fileID: 362201674385496240, guid: ab1103e31f7458248b7502c3310a0cd4, type: 3}
+  CellPrefab: {fileID: 6531439821401011555, guid: 5cee45328eedc364ab235b5e48d182bb, type: 3}
+  BlockPrefab: {fileID: 1751187331457035607, guid: ad7ac33e890bab546a48d4ed4a0365b2, type: 3}
+  HudPrefab: {fileID: 8012752457760047532, guid: 7a0d1a380bc9468428b13fe08c31ef2b, type: 3}
+  ObjectiveItemPrefab: {fileID: 765537884406063569, guid: 8dd984b554bb6af4386d0dfdbc991362, type: 3}
+  FeverGaugePrefab: {fileID: 3305643594054481619, guid: eee1687f4dac8ac4988cf640a7fc12f0, type: 3}
+  RestorationGaugePrefab: {fileID: 3779349327831654651, guid: b9d7ddc9c3423454a9dbf311eea96172, type: 3}
+  StageClearPopupPrefab: {fileID: 7869812185683083841, guid: c1657f8ddf41f4541b9b7be1951fa1a7, type: 3}
+  RunResultPopupPrefab: {fileID: 4852848889435920081, guid: 02bbbdbdb4945e64e88f2288eb3d1f94, type: 3}
