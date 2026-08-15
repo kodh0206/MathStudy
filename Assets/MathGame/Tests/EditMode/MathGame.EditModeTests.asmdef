@@ -17,7 +17,8 @@
     "MathGame.ObstacleFlow",
     "MathGame.Restoration.Contracts",
     "MathGame.Restoration",
-    "MathGame.Presentation.Contracts"
+    "MathGame.Presentation.Contracts",
+    "MathGame.SurvivalRun"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

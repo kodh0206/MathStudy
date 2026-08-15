@@ -130,6 +130,20 @@ namespace MathGame.Tests.EditMode
         }
 
         [Test]
+        public void EndRunFromLivePhaseIsTerminalAndExactlyOnce()
+        {
+            EnterReady();
+            _controller.BeginTargetPresentation();
+            _controller.EnablePlayerInput();
+
+            Assert.That(_controller.EndRun(), Is.EqualTo(TransitionResult.Succeeded));
+            Assert.That(_controller.State, Is.EqualTo(StageState.RunEnded));
+            Assert.That(_controller.IsTerminal, Is.True);
+            Assert.That(_controller.EndRun(), Is.EqualTo(TransitionResult.StageAlreadyTerminated));
+            Assert.That(_controller.BeginAnswerResolution(), Is.EqualTo(TransitionResult.StageAlreadyTerminated));
+        }
+
+        [Test]
         public void InvalidTransition_DoesNotChangeStateOrRaiseEvent()
         {
             int transitionCount = 0;

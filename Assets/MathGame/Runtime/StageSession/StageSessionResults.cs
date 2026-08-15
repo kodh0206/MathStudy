@@ -41,6 +41,7 @@ namespace MathGame.StageSession
             ProvisionalRestoration = session.ProvisionalRestoration; GrossRestorationEarned = session.GrossRestoration;
             DiscardedRestorationExcess = session.DiscardedRestoration;
             ContinueUsed = session.ContinueUsed;
+            Mode = session.Definition.Mode;
         }
         public StageDefinitionId DefinitionId { get; } public StageSessionStatus Status { get; } public int InitialMoves { get; }
         public int RemainingMoves { get; } public int SpentMoves { get; } public long Score { get; } public StageAttemptId NextExpectedAttemptId { get; }
@@ -57,6 +58,7 @@ namespace MathGame.StageSession
         public long GrossRestorationEarned { get; }
         public long DiscardedRestorationExcess { get; }
         public bool ContinueUsed { get; }
+        public StageSessionMode Mode { get; }
     }
     public sealed class StageAttemptResult
     {

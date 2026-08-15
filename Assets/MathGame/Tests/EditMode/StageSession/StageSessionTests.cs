@@ -96,6 +96,40 @@ namespace MathGame.Tests.StageSession
         }
 
         [Test]
+        public void ContinuousRunTracksProgressButNeverConsumesMovesOrTerminalizesFromObjectives()
+        {
+            var legacy = Definition(1, Remove(2));
+            var runDefinition = new StageDefinition(legacy.Id, legacy.InitialMoves, legacy.Objectives,
+                legacy.ScoreConfig, null, StageSessionMode.ContinuousRun);
+            var session = Create(runDefinition);
+
+            var result = session.ApplyAttempt(CorrectAttempt(1, SpeedGrade.Perfect, 2));
+
+            Assert.That(result.Status, Is.EqualTo(StageAttemptApplyStatus.AppliedContinue));
+            Assert.That(result.MoveCost, Is.Zero);
+            Assert.That(result.After.Mode, Is.EqualTo(StageSessionMode.ContinuousRun));
+            Assert.That(result.After.RemainingMoves, Is.EqualTo(1));
+            Assert.That(result.After.SpentMoves, Is.Zero);
+            Assert.That(result.After.Objectives[0].IsComplete, Is.True);
+            Assert.That(result.After.Status, Is.EqualTo(StageSessionStatus.Active));
+            Assert.That(result.Events.Any(e => e.Kind is StageSessionEventKind.MoveConsumed or StageSessionEventKind.StageSucceeded), Is.False);
+        }
+
+        [Test]
+        public void ContinuousRunPermitsNoObjectivesWhileLegacyStageStillRequiresOne()
+        {
+            var score = Definition(1, Remove(2)).ScoreConfig;
+            var run = new StageDefinition(new StageDefinitionId(1), 1,
+                Array.Empty<StageObjectiveDefinition>(), score, null, StageSessionMode.ContinuousRun);
+            var legacy = new StageDefinition(new StageDefinitionId(1), 1,
+                Array.Empty<StageObjectiveDefinition>(), score);
+
+            Assert.That(Session.TryCreate(run, out var session), Is.EqualTo(StageSessionCreateStatus.Succeeded));
+            Assert.That(session.CreateSnapshot().Objectives, Is.Empty);
+            Assert.That(Session.TryCreate(legacy, out _), Is.EqualTo(StageSessionCreateStatus.InvalidObjectiveCount));
+        }
+
+        [Test]
         public void AttemptOrderingAndUnexpectedResolutionRejectAtomically()
         {
             var session = Create(Definition(3, Remove(99)));

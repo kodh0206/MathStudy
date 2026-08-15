@@ -202,3 +202,12 @@ Verified with Unity 6000.3.6f1 on 2026-08-08 after STEP 9: Edit Mode 208/208 and
 - `ObstacleGameplayPresentationPort` delegates normal/Fever answers, target retries, Fever end effects, and failed decisions to the existing STEP 10/11 authorities. Miss and committed-answer presentation remain noninteractive until their exact token/source acknowledgement.
 - Animation cancellation stops the active coroutine, reconciles the authoritative snapshot once, and requires explicit acknowledgement. Stale tokens never replay gameplay commands.
 - Static Production/Edit/Play assembly compilation is verified. Unity Edit/Play execution remains environment-blocked by licensing initialization and is not recorded as a runtime pass.
+
+### Continuous Run production mode
+
+- `MathGame.StageSession` supports explicit `LegacyStage` and `ContinuousRun` modes. Legacy stages retain move/objective terminal behavior. Continuous runs accept zero objectives, spend no moves, and cannot succeed or fail from objectives or move exhaustion; score, attempt correlation, obstacle evidence, and Fever facts still use the established transaction.
+- `MathGame.SurvivalRun` owns configurable time capacity, all-live-phase drain, active duration, grade recovery, committed-correct-cycle difficulty, run-wide statistics, and the immutable exactly-once Run result. Recovery plans correlate to increasing committed Stage attempt IDs, allowing gaps created by misses.
+- `StageController.RunEnded` is the dedicated continuous-run terminal state. Unity ticks Survival Time before accepting pointer input, so observed expiry wins before a new answer. An answer already committed may apply its prepared recovery once.
+- Difficulty changes only the proven target range. The prospective range is supplied to target recovery for the threshold-crossing correct cycle; number generation, obstacles, and Fever remain unchanged.
+- The Production composition reuses the serialized `GameplayRoot/BoardSlot/BoardView`. Run HUD and Run Result are presentation-owned; no BoardView is instantiated during a run or Play Again.
+- Legacy Stage Clear, moves, objectives, restoration, Continue, and stage progression code remains available but is not composed into the primary Continuous Run UI.

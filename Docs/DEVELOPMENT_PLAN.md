@@ -331,6 +331,12 @@ For a `DOMAIN_ONLY` STEP, `Unity Production: NOT APPLICABLE` is valid. Final sta
 
 ## Immediate next action
 
+The primary Production gameplay migration is now Continuous Run Speed Survival. Core and Unity composition are implemented with explicit legacy-stage compatibility, configurable Survival Time/recovery, correct-cycle target-range difficulty, serialized BoardView reuse, a Run HUD, and a Play Again result. Static core compilation is verified. Unity must regenerate the new assembly/prefab assets and execute Edit/Play/manual verification before runtime completion can be claimed.
+
+Temporary prototype balance is initial 30 seconds, maximum 60 seconds, drain 1 second per active second, Normal/Fast/Perfect recovery of 3/5/8 seconds, five committed correct cycles per tier, and target ranges 5-10, 8-15, and 10-20. These values remain configuration, not final balance.
+
+Do not implement STEP 13 persistence or later gameplay steps. Current work is limited to validating and refining the launchable Continuous Run prototype.
+
 STEP 10 is structurally accepted with no P0/P1 findings. Preserve its P2 Fever coordinator coverage debt and the Unity Edit/Play verification block caused by licensing initialization.
 
 STEP 11 product rules are approved: base 10, exact length factors, Fever ×2 without combo, one final floor, Large-end +50, rational 25/50/75/100 milestones, clamped/discarded excess, stage-local provisional lifecycle, and Success-only world commit. Concrete assets remain a STEP 12 presentation concern.

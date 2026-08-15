@@ -196,6 +196,18 @@ Stable presentation hierarchies are Prefab/Scene-owned and runtime-bound. Unity 
 
 **Rationale:** Deterministic core tests establish gameplay correctness without Unity lifecycle noise, while an explicit production phase establishes that the same feature is actually composed and usable in Unity. The split preserves Domain independence, designer-friendly Prefabs, explicit Scene ownership, faster automated development, and clearer human Play Mode acceptance.
 
+### ADR-034: Continuous Run is the primary Production gameplay mode
+
+**Status:** Approved for implementation
+
+**Decision:** Preserve legacy finite Stage behavior, but introduce an explicit Continuous Run mode for primary Production gameplay. Continuous Run uses Time as its sole terminal survival resource; normal correct answers cost no moves, objectives do not cause Success, and restoration/world progression is not composed into the primary Run. Time drains throughout every live non-paused Run phase, clamps to a configurable maximum, and recovers exactly once from an already-committed Correct according to configurable Normal/Fast/Perfect values. Expiry observed before commit wins; a prior atomic commit may recover before expiry is observed.
+
+Difficulty advances monotonically by committed correct-answer cycles and initially changes only the proven target range at challenge boundaries. Fever has no additional Time modifier. Run End is exactly-once at Time zero and freezes score, active elapsed duration, run-wide maximum Fever combo, and highest difficulty for a Play Again result. Stable BoardView/UI roots remain serialized and reused.
+
+**Temporary prototype tuning:** initial 30 seconds, maximum 60 seconds, drain 1 second per active second, Normal +3 seconds, Fast +5 seconds, Perfect +8 seconds, one tier per five committed correct cycles, with target ranges 5–10, 8–15, and 10–20 capped at the last tier. These values are configuration data and are not final balance.
+
+**Rationale:** A distinct mode preserves tested Stage compatibility and transaction boundaries while preventing dummy moves/objectives from creating hidden terminal behavior. Explicit tuning and ordering make the survival clock deterministic and testable without transferring time authority to Unity UI.
+
 ## Tracked ambiguities for later STEP designs
 
 - Precise touch tolerance for backtracking/cancellation.

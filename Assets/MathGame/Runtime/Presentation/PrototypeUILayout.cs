@@ -23,6 +23,11 @@ namespace MathGame.Presentation.Unity
         Text fever;
         Text status;
         Text selectionSum;
+        Text runTime;
+        Text runFever;
+        Text runCombo;
+        Text runTier;
+        GameObject runStats;
         Button continueButton;
         Button retryButton;
         Button abandonButton;
@@ -120,6 +125,11 @@ namespace MathGame.Presentation.Unity
             target=FindText("SafeArea/TopSlot/HUD/MainStats/Target/Value");moves=FindText("SafeArea/TopSlot/HUD/MainStats/Moves/Value");
             score=FindText("SafeArea/TopSlot/HUD/MainStats/Score/Value");restoration=FindText("SafeArea/TopSlot/HUD/Resources/Restoration");
             fever=FindText("SafeArea/TopSlot/HUD/Resources/Fever");status=FindText("SafeArea/BottomSlot/BottomHUD/Status");
+            runStats=transform.Find("SafeArea/TopSlot/HUD/RunStats")?.gameObject;
+            runTime=FindText("SafeArea/TopSlot/HUD/RunStats/Time/Value");
+            runFever=FindText("SafeArea/TopSlot/HUD/RunStats/Fever/Value");
+            runCombo=FindText("SafeArea/TopSlot/HUD/RunStats/Combo/Value");
+            runTier=FindText("SafeArea/TopSlot/HUD/RunStats/Tier/Value");
             selectionSum=FindText("SafeArea/BottomSlot/BottomHUD/SelectionSum");
             objectiveContainer=transform.Find("SafeArea/TopSlot/HUD/Objectives");objectives.Clear();
             if(objectiveContainer!=null)foreach(Transform child in objectiveContainer){var value=child.GetComponent<Text>()??child.GetComponentInChildren<Text>();if(value!=null)objectives.Add(value);}
@@ -134,7 +144,7 @@ namespace MathGame.Presentation.Unity
         static void Wire(Button button,Action callback){if(button==null)return;button.onClick.RemoveAllListeners();if(callback!=null)button.onClick.AddListener(()=>callback());}
         void ValidateBoundHierarchy()
         {
-            if(safeArea==null||target==null||moves==null||score==null||restoration==null||fever==null||status==null||selectionSum==null||objectiveContainer==null||continueButton==null||retryButton==null||abandonButton==null||targetRetryButton==null||restartButton==null)
+            if(safeArea==null||target==null||moves==null||score==null||restoration==null||fever==null||status==null||selectionSum==null||objectiveContainer==null||continueButton==null||retryButton==null||abandonButton==null||targetRetryButton==null||restartButton==null||runStats==null||runTime==null||runFever==null||runCombo==null||runTier==null)
                 throw new InvalidOperationException("GameRoot/HUD prefab contract is incomplete. Rebuild or migrate the presentation prefab explicitly.");
         }
 
@@ -265,6 +275,53 @@ namespace MathGame.Presentation.Unity
         public void SetSelectionSum(long value,int count)
         {
             if(selectionSum!=null)selectionSum.text=count>0?"SELECTED SUM  "+value:"SELECTED SUM  0";
+        }
+
+        public void SetRunMode(bool active)
+        {
+            moves?.transform.parent.gameObject.SetActive(!active);
+            restoration?.gameObject.SetActive(!active);
+            fever?.gameObject.SetActive(!active);
+            objectiveContainer?.gameObject.SetActive(!active);
+            runStats?.SetActive(active);
+            continueButton?.gameObject.SetActive(false);
+            abandonButton?.gameObject.SetActive(false);
+            retryButton?.gameObject.SetActive(false);
+            if (active && target != null)
+            {
+                var stats = target.transform.parent.parent.GetComponent<GridLayoutGroup>();
+                if (stats != null) { stats.constraintCount = 2; stats.cellSize = new Vector2(480, 92); }
+                foreach (var value in new[] { runTime, runFever, runCombo, runTier })
+                {
+                    value.resizeTextForBestFit = true;
+                    value.resizeTextMinSize = 16;
+                    value.resizeTextMaxSize = 25;
+                }
+            }
+            var label = restartButton?.GetComponentInChildren<Text>();
+            if (label != null) label.text = active ? "PAUSE" : "RESTART";
+        }
+
+        public void RefreshRun(StageSessionSnapshot snapshot, int targetValue, int gauge, int maximumGauge,
+            string message, double remainingTime, int difficultyTier, int combo, bool ended, bool targetRecovery)
+        {
+            if (snapshot == null) return;
+            target.text = "TARGET\n" + targetValue;
+            score.text = "SCORE\n" + snapshot.Score;
+            runTime.text = "TIME\n" + remainingTime.ToString("0.0") + "s";
+            runFever.text = "FEVER\n" + gauge + "/" + maximumGauge;
+            runCombo.text = "COMBO\nx" + combo;
+            runTier.text = "TIER\n" + (difficultyTier + 1);
+            status.text = message ?? string.Empty;
+            restartButton.gameObject.SetActive(!ended);
+            targetRetryButton.gameObject.SetActive(!ended && targetRecovery);
+            ApplySafeArea(false);
+        }
+
+        public void SetPauseState(bool paused)
+        {
+            var label = restartButton?.GetComponentInChildren<Text>();
+            if (label != null) label.text = paused ? "RESUME" : "PAUSE";
         }
 
         void EnsureObjectiveCount(int count)

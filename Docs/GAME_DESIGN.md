@@ -1058,3 +1058,17 @@ MathGame은 정답을 빠르게 맞히는 단순 계산 게임도 아니고, 숫
 최종 핵심 재미는 다음과 같이 정의한다.
 
 > **빠르게 숫자 조합을 발견하고, 연속 정답으로 피버를 발동해 보드와 망가진 공간을 한꺼번에 복구하는 쾌감**
+# Production Addendum — Continuous Run Speed Survival (2026-08-15)
+
+This addendum overrides the finite Stage loop only for the primary Production gameplay mode. Legacy Stage mode remains available for compatibility and does not define Continuous Run behavior.
+
+- Primary Production gameplay is a continuous addition-only, orthogonal-connection survival run.
+- Time is the sole primary survival resource. Moves and objectives do not end a Continuous Run.
+- Time drains during every live, non-paused Run phase, including input, answer resolution, removal, gravity, refill, target updates, recovery, and Fever transitions. Legitimate pause/interruption stops both drain and active-duration accumulation.
+- If time reaches zero before a correct answer commits, Run End wins. A correct answer already atomically committed before expiry observation may apply its recovery exactly once.
+- Time capacity, initial time, drain rate, and Normal/Fast/Perfect recovery are configurable balance data. Recovery clamps to maximum capacity. Fever adds no extra time modifier.
+- Difficulty advances by completed correct-answer cycles. The first migration changes only proven target difficulty/range at challenge boundaries; board number ranges, obstacles, and Fever rules do not scale yet.
+- Every displayed target must retain a current legal witness. Correct resolution, gravity/refill, and safe-target recovery continue inside the same Run.
+- Time reaching zero ends the Run exactly once, disables board input, freezes a result, and presents Play Again. No normal Stage Clear or Next Stage occurs in Continuous Run.
+- Run Result survival duration is total active Run gameplay time, excluding paused/interrupted time.
+- Existing Board, connection, answer grade, resolution, score, Fever, obstacle, and serialized BoardView behavior should be reused without transferring rule authority to UI.

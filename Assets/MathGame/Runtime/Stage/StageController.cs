@@ -23,7 +23,7 @@ namespace MathGame.Stage
 
         public StageState? StateBeforePause => _stateBeforePause;
 
-        public bool IsTerminal => State is StageState.Success or StageState.Failure or StageState.Exited;
+        public bool IsTerminal => State is StageState.Success or StageState.Failure or StageState.RunEnded or StageState.Exited;
 
         public bool AcceptsPlayerInput => State is StageState.PlayerInput or StageState.FeverInput;
         public AnswerResolutionOrigin ResolutionOrigin { get; private set; }
@@ -37,7 +37,7 @@ namespace MathGame.Stage
 
         public TransitionResult Start()
         {
-            if (State == StageState.Exited)
+            if (IsTerminal)
             {
                 return TransitionResult.StageAlreadyTerminated;
             }
@@ -54,7 +54,7 @@ namespace MathGame.Stage
 
         public TransitionResult FinishInitialization()
         {
-            if (State == StageState.Exited)
+            if (IsTerminal)
             {
                 return TransitionResult.StageAlreadyTerminated;
             }
@@ -69,7 +69,7 @@ namespace MathGame.Stage
 
         public TransitionResult BeginTargetPresentation()
         {
-            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            if (IsTerminal)
             {
                 return TransitionResult.StageAlreadyTerminated;
             }
@@ -85,7 +85,7 @@ namespace MathGame.Stage
 
         public TransitionResult EnablePlayerInput()
         {
-            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            if (IsTerminal)
             {
                 return TransitionResult.StageAlreadyTerminated;
             }
@@ -100,7 +100,7 @@ namespace MathGame.Stage
 
         public TransitionResult BeginAnswerResolution()
         {
-            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            if (IsTerminal)
             {
                 return TransitionResult.StageAlreadyTerminated;
             }
@@ -116,7 +116,7 @@ namespace MathGame.Stage
 
         public TransitionResult FinishMissResolution()
         {
-            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            if (IsTerminal)
             {
                 return TransitionResult.StageAlreadyTerminated;
             }
@@ -159,7 +159,7 @@ namespace MathGame.Stage
 
         public TransitionResult BeginDeadlockRecovery()
         {
-            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            if (IsTerminal)
                 return TransitionResult.StageAlreadyTerminated;
             if (State != StageState.PlayerInput)
                 return InvalidTransition(StageState.RecoveringBoard);
@@ -168,7 +168,7 @@ namespace MathGame.Stage
 
         public TransitionResult Pause(PauseReason reason)
         {
-            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            if (IsTerminal)
             {
                 return TransitionResult.StageAlreadyTerminated;
             }
@@ -195,7 +195,7 @@ namespace MathGame.Stage
 
         public TransitionResult Resume(PauseReason reason)
         {
-            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            if (IsTerminal)
             {
                 return TransitionResult.StageAlreadyTerminated;
             }
@@ -230,6 +230,11 @@ namespace MathGame.Stage
             return Finish(StageState.Failure, StageTransitionCause.StageFailed);
         }
 
+        public TransitionResult EndRun()
+        {
+            return Finish(StageState.RunEnded, StageTransitionCause.RunEnded);
+        }
+
         public TransitionResult EnterFailedPendingDecision()
         {
             return GuardedTransition(StageState.ResolvingAnswer, StageState.FailedPendingDecision, StageTransitionCause.FailedDecisionBegan);
@@ -256,7 +261,7 @@ namespace MathGame.Stage
 
         private TransitionResult Finish(StageState target, StageTransitionCause cause)
         {
-            if (State == StageState.Exited || State is StageState.Success or StageState.Failure)
+            if (State == StageState.Exited || State is StageState.Success or StageState.Failure or StageState.RunEnded)
             {
                 return TransitionResult.StageAlreadyTerminated;
             }
@@ -316,6 +321,7 @@ namespace MathGame.Stage
             return state is StageState.PresentingTarget
                 or StageState.PlayerInput
                 or StageState.ResolvingAnswer
+                or StageState.RecoveringBoard
                 or StageState.EnteringFever
                 or StageState.FeverInput
                 or StageState.EndingFever

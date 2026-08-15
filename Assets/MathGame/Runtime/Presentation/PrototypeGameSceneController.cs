@@ -15,6 +15,7 @@ using MathGame.Restoration;
 using MathGame.Restoration.Contracts;
 using MathGame.Stage;
 using MathGame.StageSession;
+using MathGame.SurvivalRun;
 using MathGame.Targets;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -44,6 +45,8 @@ namespace MathGame.Presentation.Unity
         LineRenderer selectionLine;
         PrototypeUILayout uiLayout;
         StageClearPopupView stageClearPopup;
+        RunResultPopupView runResultPopup;
+        SurvivalRunSession run;
         readonly List<BoardPosition> selected = new List<BoardPosition>();
         long commandId = 1;
         long presentationId = 1;
@@ -91,21 +94,16 @@ namespace MathGame.Presentation.Unity
             var built = new ObstacleBoardBuilder().Build(generated.Board, layout);
             if (!built.Succeeded) { status = "Obstacle setup failed: " + built.Status; return; }
 
-            var definition = new StageDefinition(new StageDefinitionId(1), 6,
-                new[]
-                {
-                    new StageObjectiveDefinition(StageObjectiveKind.RemoveNumberBlocks, 12, default, 0),
-                    new StageObjectiveDefinition(StageObjectiveKind.RemoveObstacle, 1, default, 0, ObstacleKind.Dust)
-                },
+            var definition = new StageDefinition(new StageDefinitionId(1), 1,
+                Array.Empty<StageObjectiveDefinition>(),
                 new ScoreRewardConfig(10, 25, 15, 5, new[]
                 {
                     new ConnectionLengthScoreRule(3, 3), new ConnectionLengthScoreRule(4, 6), new ConnectionLengthScoreRule(5, 10)
-                }), new StageRestorationConfig(new WorldRestorationId(1), 100));
+                }), null, StageSessionMode.ContinuousRun);
             if (Session.TryCreate(definition, new StageRunId(1), out session) != StageSessionCreateStatus.Succeeded)
             { status = "StageSession creation failed."; return; }
 
-            world = new WorldRestorationProgress(new WorldRestorationId(1), 100);
-            var restoration = new RestorationTransactionCoordinator(session, world);
+            run = new SurvivalRunSession(SurvivalRunConfig.TemporaryPrototype);
             FeverController.TryCreate(new FeverConfig(50, 8), stage, session, bootstrap.TimeProvider, out fever);
             targets = new TargetRecoveryCoordinator(random);
             targetConfig = new TargetRecoveryConfig(new TargetSearchConfig(5, 10, 2, 4, 250000), new TargetSelectionPolicy(1), 5);
@@ -116,7 +114,7 @@ namespace MathGame.Presentation.Unity
             target = initialTarget.Solution.Target;
             refill = new RefillValueRange(1, 4);
             obstacleFlow = new ObstacleResolutionCoordinator(new ObstacleBoardResolver(random), stage, session, fever,
-                targets, initialTarget.Board, generated.NextBlockIdValue, restoration);
+                targets, initialTarget.Board, generated.NextBlockIdValue, null);
             commands = new ObstacleGameplayPresentationPort(obstacleFlow, stage, fever, session,
                 new AnswerValidator(AnswerTimingThresholds.Prototype), null);
 
@@ -141,6 +139,14 @@ namespace MathGame.Presentation.Unity
             }
             stageClearPopup.Bind(Restart, NextStageRequested, false);
             stageClearPopup.Hide();
+            runResultPopup = context.OverlayRoot.GetComponentInChildren<RunResultPopupView>(true);
+            if (runResultPopup == null)
+            {
+                status = "Serialized RunResultPopup is missing from OverlaySlot.";
+                return;
+            }
+            runResultPopup.Bind(Restart);
+            runResultPopup.Hide();
             boardView.ConfigureSlots(boardView.transform.Find("CellRoot"), boardView.transform.Find("BlockRoot"), context.EffectSlot);
             presentation = new GameplayPresentationCoordinator(commands, boardView);
             boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
@@ -158,7 +164,8 @@ namespace MathGame.Presentation.Unity
                 camera.backgroundColor = new Color(.07f, .09f, .13f);
             }
             uiLayout = presentationHost.UILayout;
-            uiLayout.Build(camera, boardView, Continue, Restart, Abandon, RetryTarget, presentationHost.Registry);
+            uiLayout.Build(camera, boardView, Continue, TogglePause, Abandon, RetryTarget, presentationHost.Registry);
+            uiLayout.SetRunMode(true);
             stage.BeginTargetPresentation();
             stage.EnablePlayerInput();
             targetStarted = Time.unscaledTime;
@@ -168,10 +175,28 @@ namespace MathGame.Presentation.Unity
         void Update()
         {
             if (commands == null) return;
+            // Expiry is sampled before input. All live Stage phases drain; only an actual
+            // lifecycle pause/interruption stops the clock.
+            if (run != null && run.Status == SurvivalRunStatus.Active &&
+                run.Tick(Time.unscaledDeltaTime, stage.State == StageState.Paused))
+            {
+                pointerDown = false;
+                selected.Clear();
+                UpdateLine();
+                stage.EndRun();
+                status = "RUN OVER";
+                runResultPopup.Show(run.Result);
+            }
             var currentSnapshot=session.CreateSnapshot();
-            uiLayout?.Refresh(currentSnapshot,target.Value,fever.Gauge,50,status,
+            var currentCombo = fever.SessionSnapshot?.CurrentCombo ?? 0;
+            run?.RecordStatistics(currentSnapshot.Score, currentCombo);
+            uiLayout?.RefreshRun(currentSnapshot, target.Value, fever.Gauge, 50, status,
+                run?.RemainingTime ?? 0, run?.DifficultyTier ?? 0, currentCombo,
+                run?.Status == SurvivalRunStatus.Ended, targetRecoveryPending);
+            /*uiLayout?.Refresh(currentSnapshot,target.Value,fever.Gauge,50,status,
                 stage.State==StageState.FailedPendingDecision,targetRecoveryPending,
-                stage.State is StageState.Success or StageState.Failure);
+                stage.State is StageState.Success or StageState.Failure);*/
+            if (run?.Status == SurvivalRunStatus.Ended) return;
             if (stage.State == StageState.EnteringFever)
             {
                 if (fever.CompleteEntry() == FeverControllerCommandResult.Succeeded)
@@ -212,9 +237,19 @@ namespace MathGame.Presentation.Unity
             if (up && pointerDown)
             {
                 pointerDown = false;
+                // Apply the prospective tier only when the selected value is a correct answer.
+                // The domain validator remains authoritative; this mirrors its sum fact solely
+                // so target recovery for the threshold-crossing commit receives the new range.
+                var requestTargetConfig = targetConfig;
+                if (SelectedSum() == target.Value)
+                {
+                    var prospectiveRange = run.ProspectiveCorrectTargetRange;
+                    requestTargetConfig = new TargetRecoveryConfig(new TargetSearchConfig(prospectiveRange.Minimum,
+                        prospectiveRange.Maximum, 2, 4, 250000), new TargetSelectionPolicy(1), 5);
+                }
                 var request = new ReleasePathRequest(new PresentationCommandId(commandId++), commands.CurrentToken, target,
                     Math.Max(0, Time.unscaledTime - targetStarted), session.CreateSnapshot().NextExpectedAttemptId,
-                    refill, history, targetConfig, stage.ResolutionOrigin == AnswerResolutionOrigin.Fever);
+                    refill, history, requestTargetConfig, stage.ResolutionOrigin == AnswerResolutionOrigin.Fever);
                 HandleRelease(commands.ReleasePath(request));
                 selected.Clear();
                 uiLayout?.SetSelectionSum(0,0);
@@ -237,6 +272,15 @@ namespace MathGame.Presentation.Unity
             UpdateLine();
         }
 
+        long SelectedSum()
+        {
+            long sum = 0;
+            foreach (var position in selected)
+                if (obstacleFlow.CurrentBoard.TryGetCell(position, out var cell) == CellLookupResult.Succeeded && cell.Block.HasValue)
+                    sum += cell.Block.Value.Value;
+            return sum;
+        }
+
         void HandleRelease(GameplayCommandResult result)
         {
             if (result == null || result.Status != PresentationCommandStatus.Accepted)
@@ -251,6 +295,19 @@ namespace MathGame.Presentation.Unity
 
             if (result.AnswerFlow?.StageResult != null && result.AnswerFlow.FeverResult == null)
                 fever.ApplyNormalAttempt(result.AnswerFlow.StageResult);
+
+            if (result.AnswerFlow?.AttemptCommitted == true)
+            {
+                var prepared = run.PrepareCorrectCycle(result.AnswerFlow.GameplayToken.SourceId, result.Answer.Grade, out var plan);
+                if (prepared != CorrectCyclePrepareStatus.Prepared ||
+                    run.CommitCorrectCycle(plan) != CorrectCycleCommitStatus.Committed)
+                    throw new InvalidOperationException("Committed answer could not be correlated to Survival Time recovery.");
+                run.RecordStatistics(session.CreateSnapshot().Score,
+                    fever.SessionSnapshot?.CurrentCombo ?? 0);
+                var committedRange = run.TargetRange;
+                targetConfig = new TargetRecoveryConfig(new TargetSearchConfig(committedRange.Minimum,
+                    committedRange.Maximum, 2, 4, 250000), new TargetSelectionPolicy(1), 5);
+            }
             if (result.AnswerFlow?.History != null) history = result.AnswerFlow.History;
             if (result.AnswerFlow?.SelectedTarget != null) target = result.AnswerFlow.SelectedTarget.Target;
             boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
@@ -415,7 +472,34 @@ namespace MathGame.Presentation.Unity
         void Restart()
         {
             stageClearPopup?.Hide();
+            runResultPopup?.Hide();
             if(!restarting)StartCoroutine(RestartCleanly());
+        }
+
+        void TogglePause()
+        {
+            if (run == null || run.Status == SurvivalRunStatus.Ended) return;
+            if (stage.State == StageState.Paused)
+            {
+                if (stage.Resume(PauseReason.User) != TransitionResult.Succeeded)
+                {
+                    uiLayout?.SetPauseState(true);
+                    status = "Run remains paused by another interruption.";
+                    return;
+                }
+                uiLayout?.SetPauseState(false);
+                status = "Run resumed.";
+            }
+            else
+            {
+                if (stage.Pause(PauseReason.User) != TransitionResult.Succeeded)
+                {
+                    status = "Pause request rejected.";
+                    return;
+                }
+                uiLayout?.SetPauseState(true);
+                status = "Run paused.";
+            }
         }
 
         void NextStageRequested()

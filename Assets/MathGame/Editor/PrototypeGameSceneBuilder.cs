@@ -109,6 +109,8 @@ namespace MathGame.Editor.SceneBuilder
             var host=gameRoot.GetComponent<GamePresentationHost>();if(host==null||!host.HasValidContext)return "GameRoot presentation context is incomplete.";
             if (host.CreateContext().OverlayRoot.GetComponentInChildren<StageClearPopupView>(true) == null)
                 return "Serialized StageClearPopup is missing from OverlaySlot.";
+            if (host.CreateContext().OverlayRoot.GetComponentInChildren<RunResultPopupView>(true) == null)
+                return "Serialized RunResultPopup is missing from OverlaySlot.";
             if (FindMainCamera(scene) == null) return "A tagged Main Camera is missing.";
             if (!EditorBuildSettings.scenes.Any(item => item.path == ScenePath && item.enabled)) return "GameScene is not enabled in Build Settings.";
             return null;

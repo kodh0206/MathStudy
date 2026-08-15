@@ -7,6 +7,7 @@ using MathGame.Restoration.Contracts;
 
 namespace MathGame.StageSession
 {
+    public enum StageSessionMode { LegacyStage = 0, ContinuousRun = 1 }
     public readonly struct StageDefinitionId : IEquatable<StageDefinitionId>
     {
         public StageDefinitionId(int value) { if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value)); Value = value; }
@@ -49,9 +50,12 @@ namespace MathGame.StageSession
         public StageDefinition(StageDefinitionId id, int initialMoves, IEnumerable<StageObjectiveDefinition> objectives, ScoreRewardConfig scoreConfig)
             : this(id, initialMoves, objectives, scoreConfig, null) { }
         public StageDefinition(StageDefinitionId id, int initialMoves, IEnumerable<StageObjectiveDefinition> objectives, ScoreRewardConfig scoreConfig, StageRestorationConfig restorationConfig)
-        { Id = id; InitialMoves = initialMoves; Objectives = objectives == null ? null : Array.AsReadOnly(objectives.ToArray()); ScoreConfig = scoreConfig; RestorationConfig = restorationConfig; }
+            : this(id, initialMoves, objectives, scoreConfig, restorationConfig, StageSessionMode.LegacyStage) { }
+        public StageDefinition(StageDefinitionId id, int initialMoves, IEnumerable<StageObjectiveDefinition> objectives, ScoreRewardConfig scoreConfig, StageRestorationConfig restorationConfig, StageSessionMode mode)
+        { Id = id; InitialMoves = initialMoves; Objectives = objectives == null ? null : Array.AsReadOnly(objectives.ToArray()); ScoreConfig = scoreConfig; RestorationConfig = restorationConfig; Mode = mode; }
         public StageDefinitionId Id { get; } public int InitialMoves { get; } public IReadOnlyList<StageObjectiveDefinition> Objectives { get; } public ScoreRewardConfig ScoreConfig { get; }
         public StageRestorationConfig RestorationConfig { get; }
+        public StageSessionMode Mode { get; }
     }
     public sealed class StageAttemptCommand
     {
@@ -84,7 +88,7 @@ namespace MathGame.StageSession
             return new StageAttemptRules(StageAttemptMode.Fever, 0, comboMultiplier);
         }
     }
-    public enum StageSessionCreateStatus { MissingDefinition, InvalidDefinitionId, InvalidMoves, MissingObjectives, InvalidObjectiveCount, MissingObjective, UnsupportedObjective, InvalidObjective, DuplicateObjective, MissingScoreConfig, InvalidScoreConfig, Succeeded }
+    public enum StageSessionCreateStatus { MissingDefinition, InvalidDefinitionId, InvalidMoves, MissingObjectives, InvalidObjectiveCount, MissingObjective, UnsupportedObjective, InvalidObjective, DuplicateObjective, MissingScoreConfig, InvalidScoreConfig, Succeeded, InvalidMode }
     public enum StageSessionStatus { Active, Success, Failure, FailedPendingDecision }
     public enum StageAttemptApplyStatus { AppliedContinue, AppliedMiss, AppliedSuccess, AppliedFailure, MissingCommand, SessionAlreadyTerminal, InvalidAttempt, DuplicateAttempt, OutOfOrderAttempt, InvalidAnswer, UnexpectedResolution, AnswerResolutionMismatch, NoMovesRemaining, ArithmeticOverflow, MissingRestorationEvidence, UnexpectedRestorationEvidence, RestorationSourceMismatch, InvalidRestorationAward, PreparationRequired }
     public enum ConnectionLengthRewardTier { None, StandardRemoval, ExtraFeverRequested, BasicSpecialRequested, EnhancedAreaSpecialRequested }
