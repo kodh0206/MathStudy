@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using MathGame.StageSession;
 using UnityEngine;
@@ -43,9 +44,22 @@ namespace MathGame.Presentation.Unity
         Rect lastSafeArea;
         bool runMode;
         bool pauseState;
+        readonly Dictionary<RectTransform, Coroutine> pulses = new Dictionary<RectTransform, Coroutine>();
+        int displayedTarget = int.MinValue;
+        int displayedCombo;
+        int displayedGauge = -1;
+        double displayedTime = double.NaN;
+        [SerializeField, Min(0)] float lowTimeWarningSeconds = 8f;
+        static readonly Color LowTimeColor = new Color(1f, .42f, .32f, 1f);
+        Vector2 selectionSumBaseline;
+        bool hasSelectionSumBaseline;
 
         void OnEnable() => LocalizationSettings.SelectedLocaleChanged += LocaleChanged;
-        void OnDisable() => LocalizationSettings.SelectedLocaleChanged -= LocaleChanged;
+        void OnDisable()
+        {
+            LocalizationSettings.SelectedLocaleChanged -= LocaleChanged;
+            ResetPolish();
+        }
         void LocaleChanged(Locale _) => RefreshLocalizedControls();
 
         void RefreshLocalizedControls()
@@ -294,7 +308,12 @@ namespace MathGame.Presentation.Unity
 
         public void SetSelectionSum(long value,int count)
         {
-            if(selectionSum!=null)selectionSum.text=MathGameLocalization.Get("Gameplay","gameplay.selected_sum",value);
+            if(selectionSum==null)return;
+            CaptureSelectionSumBaseline();
+            selectionSum.text=MathGameLocalization.Get("Gameplay","gameplay.selected_sum",value);
+            selectionSum.color = displayedTarget != int.MinValue && value == displayedTarget && count > 0
+                ? new Color(.45f, 1f, .68f, 1f) : Color.white;
+            Pulse(selectionSum.rectTransform, displayedTarget != int.MinValue && value == displayedTarget ? 1.12f : 1.05f, .09f);
         }
 
         public void SetRunMode(bool active)
@@ -326,12 +345,27 @@ namespace MathGame.Presentation.Unity
             string message, double remainingTime, int difficultyTier, int combo, bool ended, bool targetRecovery)
         {
             if (snapshot == null) return;
+            if (displayedTarget != targetValue)
+            {
+                displayedTarget = targetValue;
+                Pulse(target.rectTransform, 1.1f, .14f);
+            }
             target.text = MathGameLocalization.Get("Gameplay", "gameplay.target", targetValue);
             score.text = MathGameLocalization.Get("Gameplay", "gameplay.score", snapshot.Score);
             runTime.text = MathGameLocalization.Get("Gameplay", "gameplay.time", remainingTime);
             runFever.text = MathGameLocalization.Get("Gameplay", "gameplay.fever", gauge, maximumGauge);
             runCombo.text = MathGameLocalization.Get("Gameplay", "gameplay.combo", combo);
             runTier.text = MathGameLocalization.Get("Gameplay", "gameplay.tier", difficultyTier + 1);
+            if (!double.IsNaN(displayedTime) && remainingTime > displayedTime + .01)
+                Pulse(runTime.rectTransform, 1.12f, .16f);
+            if (combo != displayedCombo)
+                Pulse(runCombo.rectTransform, combo > displayedCombo ? 1.05f + Mathf.Min(combo, 8) * .012f : 1.03f, .13f);
+            if (displayedGauge >= 0 && gauge > displayedGauge)
+                Pulse(runFever.rectTransform, gauge >= maximumGauge ? 1.13f : 1.04f, gauge >= maximumGauge ? .18f : .09f);
+            displayedTime = remainingTime;
+            displayedCombo = combo;
+            displayedGauge = gauge;
+            runTime.color = remainingTime > 0 && remainingTime <= lowTimeWarningSeconds ? LowTimeColor : Color.white;
             status.text = message ?? string.Empty;
             restartButton.gameObject.SetActive(!ended);
             targetRetryButton.gameObject.SetActive(!ended && targetRecovery);
@@ -341,7 +375,104 @@ namespace MathGame.Presentation.Unity
         public void SetPauseState(bool paused)
         {
             pauseState = paused;
+            if (paused) StopTransientResponses();
             RefreshLocalizedControls();
+        }
+
+        public void PresentCorrect(MathGame.Answer.SpeedGrade grade, double recoveredTime)
+        {
+            if (status != null)
+            {
+                status.color = grade == MathGame.Answer.SpeedGrade.Perfect
+                    ? new Color(1f, .86f, .32f) : grade == MathGame.Answer.SpeedGrade.Fast
+                        ? new Color(.42f, .9f, 1f) : Color.white;
+                Pulse(status.rectTransform, grade == MathGame.Answer.SpeedGrade.Perfect ? 1.12f : 1.07f, .15f);
+            }
+            if (recoveredTime > 0 && runTime != null) Pulse(runTime.rectTransform, 1.14f, .18f);
+        }
+
+        public void PresentMiss()
+        {
+            if (selectionSum != null) StartCoroutine(Shake(selectionSum.rectTransform, .12f));
+            if (status != null) { status.color = new Color(1f, .52f, .48f); Pulse(status.rectTransform, 1.06f, .10f); }
+        }
+
+        public void PresentFever(bool entering)
+        {
+            if (runFever == null) return;
+            runFever.color = entering ? new Color(1f, .82f, .28f) : Color.white;
+            Pulse(runFever.rectTransform, entering ? 1.14f : 1.06f, entering ? .22f : .12f);
+        }
+
+        public void PresentRunEnd()
+        {
+            if (runTime != null) Pulse(runTime.rectTransform, 1.16f, .22f);
+            if (status != null) Pulse(status.rectTransform, 1.1f, .18f);
+        }
+
+        public void ResetPolish()
+        {
+            StopAllCoroutines();
+            foreach (var transformValue in pulses.Keys) if (transformValue != null) transformValue.localScale = Vector3.one;
+            pulses.Clear();
+            displayedTarget = int.MinValue;
+            displayedCombo = 0;
+            displayedGauge = -1;
+            displayedTime = double.NaN;
+            if (selectionSum != null) { selectionSum.color = Color.white; selectionSum.rectTransform.localScale = Vector3.one; }
+            if (selectionSum != null && hasSelectionSumBaseline) selectionSum.rectTransform.anchoredPosition = selectionSumBaseline;
+            if (status != null) { status.color = Color.white; status.rectTransform.localScale = Vector3.one; }
+            if (runTime != null) { runTime.color = Color.white; runTime.rectTransform.localScale = Vector3.one; }
+            if (runFever != null) { runFever.color = Color.white; runFever.rectTransform.localScale = Vector3.one; }
+            if (runCombo != null) runCombo.rectTransform.localScale = Vector3.one;
+            if (target != null) target.rectTransform.localScale = Vector3.one;
+        }
+
+        void StopTransientResponses()
+        {
+            StopAllCoroutines();
+            foreach (var transformValue in pulses.Keys) if (transformValue != null) transformValue.localScale = Vector3.one;
+            pulses.Clear();
+            if (selectionSum != null && hasSelectionSumBaseline) selectionSum.rectTransform.anchoredPosition = selectionSumBaseline;
+        }
+
+        void CaptureSelectionSumBaseline()
+        {
+            if (selectionSum == null || hasSelectionSumBaseline) return;
+            selectionSumBaseline = selectionSum.rectTransform.anchoredPosition;
+            hasSelectionSumBaseline = true;
+        }
+
+        void Pulse(RectTransform value, float scale, float duration)
+        {
+            if (value == null || !isActiveAndEnabled) return;
+            if (pulses.TryGetValue(value, out var active) && active != null) StopCoroutine(active);
+            pulses[value] = StartCoroutine(PulseRoutine(value, scale, duration));
+        }
+
+        IEnumerator PulseRoutine(RectTransform value, float scale, float duration)
+        {
+            value.localScale = Vector3.one;
+            for (var elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
+            {
+                var wave = Mathf.Sin(Mathf.Clamp01(elapsed / duration) * Mathf.PI);
+                value.localScale = Vector3.one * Mathf.Lerp(1f, scale, wave);
+                yield return null;
+            }
+            value.localScale = Vector3.one;
+            pulses.Remove(value);
+        }
+
+        static IEnumerator Shake(RectTransform value, float duration)
+        {
+            var origin = value.anchoredPosition;
+            for (var elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
+            {
+                var strength = 8f * (1f - elapsed / duration);
+                value.anchoredPosition = origin + Vector2.right * Mathf.Sin(elapsed * 120f) * strength;
+                yield return null;
+            }
+            value.anchoredPosition = origin;
         }
 
         void EnsureObjectiveCount(int count)

@@ -10,7 +10,7 @@ namespace MathGame.Editor.SceneBuilder
 {
     public static class PrototypePrefabBuilder
     {
-        const int ContractVersion=7;
+        const int ContractVersion=8;
         public const string Root = "Assets/MathGame/Prefabs";
         public const string GameRootPath = Root + "/Core/GameRoot.prefab";
         public const string BoardPath = Root + "/Board/Board.prefab";
@@ -33,6 +33,7 @@ namespace MathGame.Editor.SceneBuilder
         public static bool EnsurePrototypePrefabsForSceneBuild()
         {
             MathGameLocalizationBuilder.Build();
+            MigrateP10AContractsInPlace();
             var legacy = FindLegacyManagedPrefabs();
             if (legacy.Count > 0)
             {
@@ -63,7 +64,6 @@ namespace MathGame.Editor.SceneBuilder
             CreateIfMissing(StageClearPopupPath,CreateStageClearPopup);
             CreateIfMissing(RunResultPopupPath,CreateRunResultPopup);
             CreateIfMissing(HudPath,CreateHud);
-            UpgradeManagedHudLayout();
             EnsureRegistry();
             CreateIfMissing(GameRootPath,CreateGameRoot);
             EnsureStageClearPopupInGameRoot();
@@ -72,6 +72,50 @@ namespace MathGame.Editor.SceneBuilder
             EnsureRegistry();
             AssetDatabase.SaveAssets();AssetDatabase.Refresh();
             Debug.Log("MathGame prototype prefabs are available. Existing prefab assets were preserved.");
+        }
+
+        static void MigrateP10AContractsInPlace()
+        {
+            var candidates = new List<string>();
+            foreach (var path in ManagedPrefabPaths())
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (prefab == null) continue;
+                var contract = prefab.GetComponent<PresentationPrefabContract>();
+                if (contract == null || contract.ContractId != Path.GetFileNameWithoutExtension(path) || contract.Version != 7)
+                    continue;
+                if (path == GameRootPath)
+                {
+                    var marker = prefab.GetComponent<PrototypeGeneratedRoot>();
+                    if (marker == null || !marker.IsMathGameOwned)
+                        throw new InvalidOperationException("GameRoot v7 contract exists without a valid MathGame ownership marker; no prefab was modified.");
+                }
+                candidates.Add(path);
+            }
+
+            foreach (var path in candidates)
+            {
+                var contents = PrefabUtility.LoadPrefabContents(path);
+                try
+                {
+                    if (path == BoardPath && contents.GetComponentInChildren<SelectionLineGraphic>(true) == null)
+                    {
+                        var selectionLine = UI("SelectionLine", typeof(CanvasRenderer), typeof(SelectionLineGraphic));
+                        selectionLine.transform.SetParent(contents.transform, false);
+                        Stretch(selectionLine.GetComponent<RectTransform>(), 0);
+                        selectionLine.GetComponent<SelectionLineGraphic>().Configure(10f, new Color(.22f, .9f, 1f, .82f));
+                    }
+                    contents.GetComponent<PresentationPrefabContract>().Configure(Path.GetFileNameWithoutExtension(path), ContractVersion);
+                    if (path == GameRootPath)
+                    {
+                        var marker = contents.GetComponent<PrototypeGeneratedRoot>();
+                        marker.Configure(ContractVersion);
+                    }
+                    PrefabUtility.SaveAsPrefabAsset(contents, path);
+                }
+                finally { PrefabUtility.UnloadPrefabContents(contents); }
+            }
+            AssetDatabase.SaveAssets();
         }
 
         static void UpgradeManagedHudLayout()
@@ -342,6 +386,10 @@ namespace MathGame.Editor.SceneBuilder
             var cells=UI("CellRoot");cells.transform.SetParent(root.transform,false);Stretch(cells.GetComponent<RectTransform>(),0);
             var blocks=UI("BlockRoot");blocks.transform.SetParent(root.transform,false);Stretch(blocks.GetComponent<RectTransform>(),0);
             var effects=UI("EffectRoot");effects.transform.SetParent(root.transform,false);Stretch(effects.GetComponent<RectTransform>(),0);
+            var selectionLine=UI("SelectionLine",typeof(CanvasRenderer),typeof(SelectionLineGraphic));
+            selectionLine.transform.SetParent(root.transform,false);
+            Stretch(selectionLine.GetComponent<RectTransform>(),0);
+            selectionLine.GetComponent<SelectionLineGraphic>().Configure(10f,new Color(.22f,.9f,1f,.82f));
             var cellPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(CellPath);
             for(var row=0;row<8;row++)for(var column=0;column<8;column++)
             {

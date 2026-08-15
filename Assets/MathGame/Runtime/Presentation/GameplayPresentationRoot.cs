@@ -21,6 +21,7 @@ namespace MathGame.Presentation.Unity
         MathGamePrefabRegistry prefabRegistry;
         Transform cellRoot,blockRoot,effectRoot;
         readonly Dictionary<BoardPosition,PrototypeCellView> prebuiltCells=new Dictionary<BoardPosition,PrototypeCellView>();
+        SelectionLineGraphic selectionLine;
 
         public event Action PlaybackCompleted;
         public IReadOnlyList<PresentationEvent> AppliedEvents => appliedEvents.AsReadOnly();
@@ -29,10 +30,35 @@ namespace MathGame.Presentation.Unity
         public int SerializedCellViewCount => GetComponentsInChildren<PrototypeCellView>(true).Length;
         public PresentationTiming Timing { get; private set; } = PresentationTiming.Approved;
         public void PlaySelectionCue()=>feedback?.Play(PresentationFeedbackCue.Selection,true,false);
+        public void PlayCorrectCue(MathGame.Answer.SpeedGrade grade, bool audio = true, bool haptics = true)
+        {
+            feedback?.Play(PresentationFeedbackCue.Correct, audio, haptics);
+            if (grade == MathGame.Answer.SpeedGrade.Perfect) feedback?.Play(PresentationFeedbackCue.Perfect, audio, haptics);
+            else if (grade == MathGame.Answer.SpeedGrade.Fast) feedback?.Play(PresentationFeedbackCue.Fast, audio, haptics);
+        }
+        public void PlayTimeRecoveryCue(bool audio = true) => feedback?.Play(PresentationFeedbackCue.TimeRecovery, audio, false);
+        public void PlayComboCue(bool audio = true) => feedback?.Play(PresentationFeedbackCue.Combo, audio, false);
+        public void PlayRunEndCue(bool audio = true, bool haptics = true) => feedback?.Play(PresentationFeedbackCue.RunEnd, audio, haptics);
+        public void PlayAgainCue(bool audio = true) => feedback?.Play(PresentationFeedbackCue.PlayAgain, audio, false);
         public void SetSelectedPositions(IReadOnlyCollection<BoardPosition> positions)
         {
             var selectedPositions=positions==null?new HashSet<BoardPosition>():new HashSet<BoardPosition>(positions);
             foreach(var pair in prebuiltCells)if(pair.Value.gameObject.activeSelf)pair.Value.SetSelected(selectedPositions.Contains(pair.Key));
+        }
+
+        public void SetSelectionPath(IReadOnlyList<BoardPosition> positions)
+        {
+            if (selectionLine == null) selectionLine = GetComponentInChildren<SelectionLineGraphic>(true);
+            if (selectionLine == null) return;
+            var points = new List<Vector2>();
+            if (positions != null)
+                for (var i = 0; i < positions.Count; i++)
+                    if (prebuiltCells.TryGetValue(positions[i], out var cell))
+                    {
+                        var world = cell.RectTransform.TransformPoint(cell.RectTransform.rect.center);
+                        points.Add(selectionLine.rectTransform.InverseTransformPoint(world));
+                    }
+            selectionLine.SetPoints(points);
         }
 
         public void FrameCamera(Camera camera)
@@ -133,6 +159,8 @@ namespace MathGame.Presentation.Unity
             overlay = GetComponent<GameplayOverlayView>();
             if (overlay == null) overlay = gameObject.AddComponent<GameplayOverlayView>();
             feedback = GetComponent<IPresentationFeedbackPort>();
+            selectionLine = GetComponentInChildren<SelectionLineGraphic>(true);
+            selectionLine?.Clear();
             if (touch != null) touch.PathChanged -= PathChanged;
             touch = GetComponentInChildren<LogicalBoardTouchAdapter>();
             if (touch != null) touch.PathChanged += PathChanged;
@@ -189,6 +217,8 @@ namespace MathGame.Presentation.Unity
             touch = null;
             if (playback != null) StopCoroutine(playback);
             playback = null;
+            selectionLine?.Clear();
+            foreach (var view in prebuiltCells.Values) view.ResetVisualState();
             cells.Clear(); blocks.Clear(); obstacles.Clear(); appliedEvents.Clear();
         }
 
@@ -196,10 +226,18 @@ namespace MathGame.Presentation.Unity
         {
             var events=plan is ObstaclePresentationPlan op?op.Events:null;
             var count=events?.Count??1;
-            for(var index=0;index<count;index++)
+            for(var index=0;index<count;)
             {
                 if(events!=null)ApplyEvent(events[index],plan);
                 var normal=DurationFor(events==null?PresentationEventKind.Reconcile:events[index].Kind);
+                var phase=PhaseFor(events==null?PresentationEventKind.Reconcile:events[index].Kind);
+                index++;
+                while(events!=null&&index<count&&PhaseFor(events[index].Kind)==phase)
+                {
+                    ApplyEvent(events[index],plan);
+                    normal=Math.Max(normal,DurationFor(events[index].Kind));
+                    index++;
+                }
                 var milliseconds=plan.Settings.ReducedMotion?Timing.ForReducedMotion(normal):normal;
                 var elapsed=0f;while(elapsed<milliseconds/1000f){if(!paused)elapsed+=Time.unscaledDeltaTime;yield return null;}
             }
@@ -218,18 +256,22 @@ namespace MathGame.Presentation.Unity
                     // Prebuilt cells are never hidden or destroyed during playback. Their
                     // final number is rebound from the authoritative Board at reconciliation.
                     blocks.Remove(blockId);
-                    feedback?.Play(value.Kind == PresentationEventKind.RemoveSelected ? PresentationFeedbackCue.Correct : PresentationFeedbackCue.Selection,
-                        plan.Settings.AudioEnabled, plan.Settings.HapticsEnabled);
+                    if(prebuiltCells.TryGetValue(value.Position,out var removedView))removedView.PlayRemoval(plan.Settings.ReducedMotion);
                     break;
                 case PresentationEventKind.MoveBlock:
                 case PresentationEventKind.ShuffleBlock:
                     var movedId = new BlockId((int)value.Identity);
                     if (blocks.TryGetValue(movedId, out var moved) && moved != null && cells.TryGetValue(value.Position, out var destination))
                     {if(moved.GetComponent<PrototypeCellView>()==null)moved.transform.SetParent(destination.transform, false);}
+                    if(prebuiltCells.TryGetValue(value.Position,out var movedView))movedView.PlayArrival(plan.Settings.ReducedMotion);
+                    break;
+                case PresentationEventKind.SpawnBlock:
+                    if(prebuiltCells.TryGetValue(value.Position,out var spawnedView))spawnedView.PlayArrival(plan.Settings.ReducedMotion);
                     break;
                 case PresentationEventKind.DamageObstacle:
                     var damageId = new ObstacleId((int)value.Identity);
                     if (obstacles.TryGetValue(damageId, out var damaged) && damaged != null&&damaged.GetComponent<PrototypeCellView>()==null) damaged.transform.localScale = Vector3.one * .8f;
+                    if(prebuiltCells.TryGetValue(value.Position,out var damageView))damageView.PlayDamage(plan.Settings.ReducedMotion);
                     feedback?.Play(PresentationFeedbackCue.ObstacleDamaged, plan.Settings.AudioEnabled, plan.Settings.HapticsEnabled);
                     break;
                 case PresentationEventKind.DestroyObstacle:
@@ -299,6 +341,14 @@ namespace MathGame.Presentation.Unity
          PresentationEventKind.MoveBlock or PresentationEventKind.ShuffleBlock=>Timing.GravityMilliseconds,
          PresentationEventKind.SpawnBlock=>Timing.RefillMilliseconds,
          PresentationEventKind.RestorationMilestone=>Timing.RestorationMilestoneMilliseconds,_=>Timing.SelectionMilliseconds};
+        static int PhaseFor(PresentationEventKind kind)=>kind switch
+        {
+            PresentationEventKind.RemoveSelected or PresentationEventKind.RemoveCollateral or
+            PresentationEventKind.DamageObstacle or PresentationEventKind.DestroyObstacle => 1,
+            PresentationEventKind.MoveBlock or PresentationEventKind.ShuffleBlock => 2,
+            PresentationEventKind.SpawnBlock => 3,
+            _ => 4
+        };
         void ReconcileIdentityViews(MathGame.Board.Board board)
         {
             var liveBlocks=new HashSet<BlockId>();var liveObstacles=new HashSet<ObstacleId>();

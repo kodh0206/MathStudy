@@ -271,6 +271,16 @@ Exactly-once across restart additionally requires a product-approved durable pro
 
 Managed presentation contract v7 adds a serialized language button. Editor tooling owns creation/update of the four localization collections and validates missing values visibly at runtime. Domain gameplay remains localization-free.
 
+### ADR-038: P10A interaction polish is presentation-owned and resettable
+
+**Status:** Implemented; Unity prefab migration and manual Play verification required
+
+**Decision:** Selection, correct/miss, authoritative timing grade, recovered Time, Combo, Fever, Board deltas, Run End, result, and replay feedback are short theme-neutral presentation responses. The serialized Board prefab owns the UI selection line; runtime never creates a second BoardView or permanent line hierarchy. Prebuilt cell views remain identity/data-bound and reset scale/color after every final-board reconciliation. HUD low-Time emphasis uses a serialized presentation-only eight-second threshold and has no gameplay effect.
+
+All coroutines are unscaled, pause-aware where presentation playback owns the delay, and explicitly stopped/reset on disable, replay, or teardown. Consecutive resolution events are grouped into removal, gravity, and refill presentation phases to keep the speed-survival loop responsive. Authoritative domain results remain the only sources for timing grade, recovery, Combo, Fever, target, and Board state.
+
+**Rationale:** P10A improves clarity and response without introducing a second gameplay authority, theme dependency, permanent runtime hierarchy, or animation delay proportional to the number of affected blocks.
+
 ## Deferred decisions
 
 - Path rules, gravity, and obstacle layering remain deferred to their owning STEP designs.

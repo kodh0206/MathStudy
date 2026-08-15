@@ -46,7 +46,6 @@ namespace MathGame.Presentation.Unity
         TargetNumber target;
         RefillValueRange refill;
         WorldRestorationProgress world;
-        LineRenderer selectionLine;
         PrototypeUILayout uiLayout;
         StageClearPopupView stageClearPopup;
         RunResultPopupView runResultPopup;
@@ -151,7 +150,7 @@ namespace MathGame.Presentation.Unity
             boardView.BeginSession();
             // Prototype board visuals are authored in the scene. Reconcile them immediately
             // instead of holding input while staging per-delta animations.
-            boardView.Configure(new PresentationTiming(0, 0, 0, 0, 0));
+            boardView.Configure(new PresentationTiming(45, 80, 100, 80, 180));
             boardView.ConfigureRegistry(presentationHost.Registry);
             var context = presentationHost.CreateContext();
             stageClearPopup = context.OverlayRoot.GetComponentInChildren<StageClearPopupView>(true);
@@ -173,12 +172,6 @@ namespace MathGame.Presentation.Unity
             boardView.ConfigureSlots(boardView.transform.Find("CellRoot"), boardView.transform.Find("BlockRoot"), context.EffectSlot);
             presentation = new GameplayPresentationCoordinator(commands, boardView);
             boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
-
-            var lineObject = new GameObject("PrototypeSelectionLine");
-            selectionLine = lineObject.AddComponent<LineRenderer>();
-            selectionLine.widthMultiplier = .09f;
-            selectionLine.material = new Material(Shader.Find("Sprites/Default"));
-            selectionLine.startColor = selectionLine.endColor = Color.cyan;
 
             var camera = Camera.main;
             if (camera != null)
@@ -212,8 +205,10 @@ namespace MathGame.Presentation.Unity
                 UpdateLine();
                 stage.EndRun();
                 status = MathGameLocalization.Get("Gameplay", "gameplay.run_over");
+                uiLayout?.PresentRunEnd();
+                boardView?.PlayRunEndCue();
                 ApplyAndSaveProgress(run.Result);
-                runResultPopup.Show(run.Result);
+                StartCoroutine(ShowRunResultAfterFeedback(run.Result));
             }
             uiLayout?.RefreshRun(currentSnapshot, target.Value, fever.Gauge, 50, status,
                 run?.RemainingTime ?? 0, run?.DifficultyTier ?? 0, currentCombo,
@@ -225,7 +220,7 @@ namespace MathGame.Presentation.Unity
             if (stage.State == StageState.EnteringFever)
             {
                 if (fever.CompleteEntry() == FeverControllerCommandResult.Succeeded)
-                { status = MathGameLocalization.Get("Gameplay", "gameplay.fever_active"); targetStarted = Time.unscaledTime; }
+                { status = MathGameLocalization.Get("Gameplay", "gameplay.fever_active"); uiLayout?.PresentFever(true); targetStarted = Time.unscaledTime; }
             }
             if (fever.State == FeverState.Active)
             {
@@ -313,6 +308,7 @@ namespace MathGame.Presentation.Unity
             if (!result.Answer.IsCorrect)
             {
                 status = MathGameLocalization.Get("Gameplay", "gameplay.miss");
+                uiLayout?.PresentMiss();
                 PreparePlan(ObstaclePresentationPlanBuilder.ForMiss(Envelope(PresentationAcknowledgementKind.Answer,
                     session.CreateSnapshot().NextExpectedAttemptId.Value - 1), Settings()));
                 return;
@@ -323,12 +319,18 @@ namespace MathGame.Presentation.Unity
 
             if (result.AnswerFlow?.AttemptCommitted == true)
             {
+                var beforeRecovery = run.RemainingTime;
                 var prepared = run.PrepareCorrectCycle(result.AnswerFlow.GameplayToken.SourceId, result.Answer.Grade, out var plan);
                 if (prepared != CorrectCyclePrepareStatus.Prepared ||
                     run.CommitCorrectCycle(plan) != CorrectCycleCommitStatus.Committed)
                     throw new InvalidOperationException("Committed answer could not be correlated to Survival Time recovery.");
                 run.RecordStatistics(session.CreateSnapshot().Score,
                     fever.SessionSnapshot?.CurrentCombo ?? 0);
+                var recovered = Math.Max(0, run.RemainingTime - beforeRecovery);
+                uiLayout?.PresentCorrect(result.Answer.Grade, recovered);
+                boardView?.PlayCorrectCue(result.Answer.Grade);
+                if (recovered > 0) boardView?.PlayTimeRecoveryCue();
+                if ((fever.SessionSnapshot?.CurrentCombo ?? 0) > 1) boardView?.PlayComboCue();
                 var committedRange = run.TargetRange;
                 targetConfig = new TargetRecoveryConfig(new TargetSearchConfig(committedRange.Minimum,
                     committedRange.Maximum, 2, 4, 250000), new TargetSelectionPolicy(1), 5);
@@ -387,6 +389,7 @@ namespace MathGame.Presentation.Unity
             if (result?.Status != PresentationCommandStatus.Accepted) { status = "Fever end failed: " + result?.Status; return; }
             if (result.EndFlow?.History != null) history = result.EndFlow.History;
             if (result.EndFlow?.SelectedTarget != null) target = result.EndFlow.SelectedTarget.Target;
+            uiLayout?.PresentFever(false);
             boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
             if(result.EndFlow.Status==ObstacleEndFlowStatus.StageTerminal)
                 PreparePlan(ObstaclePresentationPlanBuilder.ForTerminal(Envelope(PresentationAcknowledgementKind.Terminal,
@@ -472,9 +475,7 @@ namespace MathGame.Presentation.Unity
         void UpdateLine()
         {
             boardView?.SetSelectedPositions(selected);
-            if (selectionLine == null) return;
-            selectionLine.positionCount = selected.Count;
-            for (var i = 0; i < selected.Count; i++) selectionLine.SetPosition(i, boardView.GetCellWorldPosition(selected[i]));
+            boardView?.SetSelectionPath(selected);
         }
 
         void Abandon()
@@ -505,6 +506,8 @@ namespace MathGame.Presentation.Unity
             }
             stageClearPopup?.Hide();
             runResultPopup?.Hide();
+            boardView?.PlayAgainCue();
+            uiLayout?.ResetPolish();
             if(!restarting)StartCoroutine(RestartCleanly());
         }
 
@@ -556,8 +559,19 @@ namespace MathGame.Presentation.Unity
                     return;
                 }
                 uiLayout?.SetPauseState(true);
+                pointerDown = false;
+                selected.Clear();
+                uiLayout?.SetSelectionSum(0, 0);
+                UpdateLine();
                 status = MathGameLocalization.Get("Gameplay", "gameplay.paused");
             }
+        }
+
+        IEnumerator ShowRunResultAfterFeedback(RunResult result)
+        {
+            yield return new WaitForSecondsRealtime(.12f);
+            if (run?.Status == SurvivalRunStatus.Ended && ReferenceEquals(run.Result, result))
+                runResultPopup?.Show(result);
         }
 
         void ToggleLanguage()
@@ -591,7 +605,6 @@ namespace MathGame.Presentation.Unity
             pointerDown = false;
             targetRecoveryPending = false;
             resolvingEnd = false;
-            if (selectionLine != null) Destroy(selectionLine.gameObject);
             yield return null;
             if (bootstrap == null || !bootstrap.RestartStage())
             {

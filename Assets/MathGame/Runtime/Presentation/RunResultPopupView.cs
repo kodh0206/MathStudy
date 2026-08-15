@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using MathGame.SurvivalRun;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +14,7 @@ namespace MathGame.Presentation.Unity
         [SerializeField] Text resultText;
         [SerializeField] Button playAgainButton;
         RunResult current;
+        Coroutine transition;
 
         void OnEnable() => LocalizationSettings.SelectedLocaleChanged += LocaleChanged;
         void OnDisable() => LocalizationSettings.SelectedLocaleChanged -= LocaleChanged;
@@ -31,6 +33,8 @@ namespace MathGame.Presentation.Unity
             Render();
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
+            if (transition != null) StopCoroutine(transition);
+            transition = StartCoroutine(Enter());
         }
 
         void Render()
@@ -41,7 +45,27 @@ namespace MathGame.Presentation.Unity
             if (label != null) label.text = MathGameLocalization.Get("Result", "result.play_again");
         }
 
-        public void Hide() { current = null; gameObject.SetActive(false); }
+        public void Hide()
+        {
+            if (transition != null) StopCoroutine(transition);
+            transition = null;
+            transform.localScale = Vector3.one;
+            current = null;
+            gameObject.SetActive(false);
+        }
+
+        IEnumerator Enter()
+        {
+            const float duration = .18f;
+            transform.localScale = Vector3.one * .94f;
+            for (var elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
+            {
+                transform.localScale = Vector3.one * Mathf.Lerp(.94f, 1f, Mathf.SmoothStep(0, 1, elapsed / duration));
+                yield return null;
+            }
+            transform.localScale = Vector3.one;
+            transition = null;
+        }
 
 #if UNITY_EDITOR
         public void Configure(Text value, Button playAgain)

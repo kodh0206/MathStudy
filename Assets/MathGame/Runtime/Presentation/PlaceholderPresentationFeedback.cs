@@ -41,9 +41,12 @@ namespace MathGame.Presentation.Unity
             var frequency=cue switch
             {
                 PresentationFeedbackCue.Selection=>520f, PresentationFeedbackCue.Correct=>760f,
+                PresentationFeedbackCue.Perfect=>980f, PresentationFeedbackCue.Fast=>860f,
+                PresentationFeedbackCue.TimeRecovery=>680f, PresentationFeedbackCue.Combo=>820f,
                 PresentationFeedbackCue.Miss=>180f, PresentationFeedbackCue.ObstacleDamaged=>300f,
                 PresentationFeedbackCue.ObstacleDestroyed=>420f, PresentationFeedbackCue.FeverEntry=>900f,
                 PresentationFeedbackCue.FeverEnd=>620f, PresentationFeedbackCue.Success=>1040f,
+                PresentationFeedbackCue.RunEnd=>150f, PresentationFeedbackCue.PlayAgain=>620f,
                 PresentationFeedbackCue.Failure=>140f, _=>680f
             };
             const int rate=22050;const float duration=.075f;var samples=new float[(int)(rate*duration)];

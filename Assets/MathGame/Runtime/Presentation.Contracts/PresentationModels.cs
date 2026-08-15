@@ -133,7 +133,12 @@ namespace MathGame.Presentation
     }
 
     public enum PresentationStateIndicator { Selected, Blocked, Damaged, Completed, Unavailable }
-    public enum PresentationFeedbackCue { Selection, Correct, Miss, ObstacleDamaged, ObstacleDestroyed, FeverEntry, FeverEnd, Milestone, Success, Failure }
+    public enum PresentationFeedbackCue
+    {
+        Selection, Correct, Miss, Perfect, Fast, TimeRecovery, Combo,
+        ObstacleDamaged, ObstacleDestroyed, FeverEntry, FeverEnd, Milestone,
+        RunEnd, PlayAgain, Success, Failure
+    }
     public interface IPresentationFeedbackPort { void Play(PresentationFeedbackCue cue, bool audioEnabled, bool hapticsEnabled); }
 
     public sealed class GameplayHudSnapshot
