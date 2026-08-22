@@ -22,7 +22,6 @@ namespace MathGame.Presentation.Unity
         Transform cellRoot,blockRoot,effectRoot;
         readonly Dictionary<BoardPosition,PrototypeCellView> prebuiltCells=new Dictionary<BoardPosition,PrototypeCellView>();
         SelectionLineGraphic selectionLine;
-        BlockRemovalEffectPool removalEffects;
 
         public event Action PlaybackCompleted;
         public IReadOnlyList<PresentationEvent> AppliedEvents => appliedEvents.AsReadOnly();
@@ -147,19 +146,10 @@ namespace MathGame.Presentation.Unity
         public void ConfigureRegistry(MathGamePrefabRegistry registry)
         {
             prefabRegistry=registry;
-            ConfigureRemovalEffects();
         }
         public void ConfigureSlots(Transform cellsSlot,Transform blocksSlot,Transform effectsSlot)
         {
             cellRoot=cellsSlot;blockRoot=blocksSlot;effectRoot=effectsSlot;
-            ConfigureRemovalEffects();
-        }
-        void ConfigureRemovalEffects()
-        {
-            removalEffects ??= GetComponent<BlockRemovalEffectPool>();
-            if (removalEffects == null)
-                throw new InvalidOperationException("Serialized BoardView is missing BlockRemovalEffectPool. Rebuild the managed Board prefab before Play Mode.");
-            removalEffects?.Configure(prefabRegistry?.BlockRemovalEffectPrefab,effectRoot);
         }
         void IndexPrebuiltCells()
         {
@@ -243,7 +233,6 @@ namespace MathGame.Presentation.Unity
             selectionLine?.Clear();
             foreach (var view in prebuiltCells.Values)
                 if (view != null) view.ResetVisualState();
-            removalEffects?.ResetAll();
             cells.Clear(); blocks.Clear(); obstacles.Clear(); appliedEvents.Clear();
         }
 
@@ -284,7 +273,6 @@ namespace MathGame.Presentation.Unity
                     if(prebuiltCells.TryGetValue(value.Position,out var removedView))
                     {
                         removedView.PlayRemoval(plan.Settings.ReducedMotion);
-                        removalEffects?.PlayAt(removedView.RectTransform.TransformPoint(removedView.RectTransform.rect.center));
                     }
                     break;
                 case PresentationEventKind.MoveBlock:

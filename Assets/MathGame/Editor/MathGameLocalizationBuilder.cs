@@ -21,6 +21,7 @@ namespace MathGame.Editor.SceneBuilder
                 if (LocalizationEditorSettings.GetLocale("en") == null || LocalizationEditorSettings.GetLocale("ko") == null ||
                     LocalizationEditorSettings.GetStringTableCollection("Gameplay") == null ||
                     LocalizationEditorSettings.GetStringTableCollection("Result") == null ||
+                    LocalizationEditorSettings.GetStringTableCollection("Start") == null ||
                     LocalizationEditorSettings.GetStringTableCollection("Common") == null ||
                     LocalizationEditorSettings.GetStringTableCollection("Settings") == null)
                     Build();
@@ -69,8 +70,19 @@ namespace MathGame.Editor.SceneBuilder
                 ["result.summary"] = ("RUN OVER\n\nSCORE  {0:N0}\nSURVIVAL TIME  {1:0.0}s\nMAX COMBO  {2}\nHIGHEST DIFFICULTY  {3}",
                     "게임 종료\n\n점수  {0:N0}\n생존 시간  {1:0.0}초\n최대 콤보  {2}\n최고 난이도  {3}"),
                 ["result.play_again"] = ("PLAY AGAIN", "다시 하기"),
+                ["result.home"] = ("HOME", "홈"),
                 ["result.best_score"] = ("BEST SCORE", "최고 점수"),
                 ["result.new_best"] = ("NEW BEST!", "신기록!")
+            });
+            EnsureCollection("Start", english, korean, new Dictionary<string, (string en, string ko)>
+            {
+                ["start.title"] = ("SUM//VIVE", "SUM//VIVE"),
+                ["start.subtitle"] = ("KEEP THE CORE ONLINE", "코어를 유지하세요"),
+                ["start.core_online"] = ("CORE ONLINE", "코어 온라인"),
+                ["start.system_online"] = ("SYSTEM ONLINE", "시스템 온라인"),
+                ["start.run"] = ("START RUN", "게임 시작"),
+                ["start.best_time"] = ("BEST TIME  {0:0.0}s", "최고 시간  {0:0.0}초"),
+                ["start.best_score"] = ("BEST SCORE  {0:N0}", "최고 점수  {0:N0}")
             });
             EnsureCollection("Common", english, korean, new Dictionary<string, (string en, string ko)>
             {

@@ -51,7 +51,6 @@ There is intentionally no manual Pause control. Background, focus-loss, and plat
 | Cell | `Assets/MathGame/Prefabs/Board/Cell.prefab` | Cell background, border, number and obstacle typography |
 | Block | `Assets/MathGame/Prefabs/Board/Block.prefab` | Optional block visual styling |
 | Run result | `Assets/MathGame/Prefabs/UI/RunResultPopup.prefab` | Result layout, typography and Play Again appearance |
-| Removal feedback | `Assets/MathGame/Prefabs/Effects/BlockRemovalEffect.prefab` | Image sprite/color/material/size, duration and travel distance |
 | Composition | `Assets/MathGame/Prefabs/Core/GameRoot.prefab` | Slot layout and prefab composition; preserve host references |
 
 Runtime binds state into these serialized assets. It does not instantiate another BoardView or rebuild permanent cells.
@@ -61,9 +60,8 @@ Runtime binds state into these serialized assets. It does not instantiate anothe
 - Keep `GamePresentationHost` references assigned.
 - Keep `BoardView` below `GameplayRoot/BoardSlot`.
 - Keep exactly one serialized `GameplayPresentationRoot` and its 64 coordinate-stable `PrototypeCellView` children.
-- Keep `RunHUDView`, `RunResultPopupView`, `SelectionLineGraphic`, and `BlockRemovalEffectPool` references assigned.
+- Keep `RunHUDView`, `RunResultPopupView`, and `SelectionLineGraphic` references assigned.
 - Keep `SelectionSum` as Current Sum. It uses authoritative `ConnectionPathSnapshot.Sum`; do not calculate it in UI.
-- Keep `EffectSlot` and the registry's `BlockRemovalEffectPrefab` reference.
 - Decorative graphics above the board must not intercept raycasts.
 
 ## Responsive layout
@@ -80,7 +78,6 @@ Runtime binds state into these serialized assets. It does not instantiate anothe
 - Cell selection/removal/arrival/damage: `PrototypeCellView`.
 - Connection line: `SelectionLineGraphic`.
 - Run result entrance: `RunResultPopupView`.
-- Removal particles: pooled `BlockRemovalEffectView` instances.
 
 Avoid adding an Animator that drives the same scale, color, or anchored position unless the script-owned effect is migrated first.
 

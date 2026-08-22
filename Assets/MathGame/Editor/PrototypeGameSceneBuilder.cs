@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 namespace MathGame.Editor.SceneBuilder
 {
@@ -67,6 +68,8 @@ namespace MathGame.Editor.SceneBuilder
             }
             camera.orthographic = true;
             camera.orthographicSize = 4.5f;
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = Color.black;
             camera.transform.position = new Vector3(3.5f, 3.5f, -10f);
 
             EnsureInBuildSettings(ScenePath);
@@ -118,11 +121,10 @@ namespace MathGame.Editor.SceneBuilder
             var host=gameRoot.GetComponent<GamePresentationHost>();if(host==null||!host.HasValidContext)return "GameRoot presentation context is incomplete.";
             if (host.CreateContext().OverlayRoot.GetComponentInChildren<RunResultPopupView>(true) == null)
                 return "Serialized RunResultPopup is missing from OverlaySlot.";
-            if (host.Registry.BlockRemovalEffectPrefab == null ||
-                host.Registry.BlockRemovalEffectPrefab.GetComponent<BlockRemovalEffectView>() == null)
-                return "BlockRemovalEffect prefab registry reference is missing or invalid. Run MathGame > Build Prototype Scene to generate and assign the managed effect prefab.";
-            if (host.BoardView.GetComponent<BlockRemovalEffectPool>() == null)
-                return "Serialized BoardView is missing BlockRemovalEffectPool.";
+            if (host.CreateContext().OverlayRoot.GetComponentInChildren<StartScreenView>(true) == null)
+                return "Serialized StartView is missing from OverlaySlot.";
+            if (gameRoot.GetComponentInChildren<EventSystem>(true) == null)
+                return "Serialized EventSystem is missing from GameRoot.";
             if (FindMainCamera(scene) == null) return "A tagged Main Camera is missing.";
             if (!EditorBuildSettings.scenes.Any(item => item.path == ScenePath && item.enabled)) return "GameScene is not enabled in Build Settings.";
             return null;

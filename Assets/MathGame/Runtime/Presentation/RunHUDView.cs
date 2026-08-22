@@ -37,6 +37,7 @@ namespace MathGame.Presentation.Unity
         public void Present(int target, double remainingTime, double maximumTime, long score, int combo,
             int tier, int fever, int maximumFever)
         {
+            EnsureProgressBars();
             SetLabel("TargetPanel/Label", "gameplay.label.target");
             SetLabel("SurvivalPanel/Label", "gameplay.label.time");
             targetValue.text = target.ToString();
@@ -48,15 +49,61 @@ namespace MathGame.Presentation.Unity
                 fever >= maximumFever ? "gameplay.label.overdrive" : "gameplay.label.fever");
 
             var timeRatio = maximumTime <= 0 ? 0 : Mathf.Clamp01((float)(remainingTime / maximumTime));
-            timeFill.fillAmount = timeRatio;
+            SetNormalizedProgress(timeFill, timeRatio);
             var timeColor = timeRatio <= .15f ? Critical : timeRatio <= .35f ? Warning : Cyan;
             critical = timeRatio > 0 && timeRatio <= .15f;
             timeFill.color = timeColor;
             timeValue.color = timeColor;
-            feverFill.fillAmount = maximumFever <= 0 ? 0 : Mathf.Clamp01(fever / (float)maximumFever);
+            SetNormalizedProgress(feverFill,
+                maximumFever <= 0 ? 0 : Mathf.Clamp01(fever / (float)maximumFever));
             feverFill.color = fever >= maximumFever
                 ? new Color(1f, .78f, .22f, 1f)
                 : new Color(.96f, .48f, .12f, 1f);
+        }
+
+        void EnsureProgressBars()
+        {
+            ConfigureHorizontalFill(timeFill);
+            ConfigureHorizontalFill(feverFill);
+        }
+
+        static void ConfigureHorizontalFill(Image image)
+        {
+            if (image == null) return;
+            image.enabled = true;
+            image.raycastTarget = false;
+            image.type = Image.Type.Filled;
+            image.fillMethod = Image.FillMethod.Horizontal;
+            image.fillOrigin = (int)Image.OriginHorizontal.Left;
+            image.fillClockwise = true;
+            if (image.transform.parent != null)
+                image.transform.parent.gameObject.SetActive(true);
+        }
+
+        static void SetNormalizedProgress(Image image, float value)
+        {
+            if (image == null) return;
+            var normalized = Mathf.Clamp01(value);
+            image.fillAmount = normalized;
+
+            // Unity does not generate Filled geometry for every sprite-less Image
+            // configuration. Managed placeholder gauges intentionally have no art
+            // sprite, so crop their RectTransform as a deterministic fallback.
+            var rect = image.rectTransform;
+            if (image.sprite == null)
+            {
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = new Vector2(normalized, 1f);
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+                image.enabled = normalized > 0f;
+            }
+            else
+            {
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                image.enabled = true;
+            }
         }
 
         public void PulseTimeGain()

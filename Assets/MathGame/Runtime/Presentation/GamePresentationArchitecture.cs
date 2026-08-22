@@ -75,7 +75,7 @@ namespace MathGame.Presentation.Unity
     public sealed partial class BlockRemovalEffectView : MonoBehaviour
     {
         [SerializeField] Graphic[] particles = Array.Empty<Graphic>();
-        [SerializeField, Min(.03f)] float duration = .16f;
+        [SerializeField, Min(.03f)] float duration = 1f;
         [SerializeField, Min(1f)] float travelDistance = 34f;
         Coroutine playback;
         Vector2[] origins = Array.Empty<Vector2>();

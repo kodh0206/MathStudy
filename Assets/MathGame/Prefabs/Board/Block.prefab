@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PresentationPrefabContract
   contractId: Block
-  version: 7
+  version: 11
 --- !u!1 &4453280019467570477
 GameObject:
   m_ObjectHideFlags: 0

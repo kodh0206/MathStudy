@@ -10,44 +10,52 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
-  m_Name: Result_ko
+  m_Name: Start_ko
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
   m_LocaleId:
     m_Code: ko
-  m_SharedData: {fileID: 11400000, guid: ae569781f3f819544a0adc85716e68ac, type: 2}
+  m_SharedData: {fileID: 11400000, guid: ac042fb46f1a7c34fbb977b606837e73, type: 2}
   m_Metadata:
     m_Items:
-    - rid: 8260650990455750911
+    - rid: 8260651150164099537
   m_TableData:
-  - m_Id: 495005696
-    m_Localized: "\uAC8C\uC784 \uC885\uB8CC\n\n\uC810\uC218  {0:N0}\n\uC0DD\uC874
-      \uC2DC\uAC04  {1:0.0}\uCD08\n\uCD5C\uB300 \uCF64\uBCF4  {2}\n\uCD5C\uACE0 \uB09C\uC774\uB3C4 
-      {3}"
+  - m_Id: 658583552
+    m_Localized: SUM//VIVE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 708915200
+    m_Localized: "\uCF54\uC5B4\uB97C \uC720\uC9C0\uD558\uC138\uC694"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 708915201
+    m_Localized: "\uCF54\uC5B4 \uC628\uB77C\uC778"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 708915202
+    m_Localized: "\uC2DC\uC2A4\uD15C \uC628\uB77C\uC778"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 713109504
+    m_Localized: "\uAC8C\uC784 \uC2DC\uC791"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 713109505
+    m_Localized: "\uCD5C\uACE0 \uC2DC\uAC04  {0:0.0}\uCD08"
     m_Metadata:
       m_Items:
-      - rid: 8260650990455750911
-  - m_Id: 574697472
-    m_Localized: "\uB2E4\uC2DC \uD558\uAE30"
+      - rid: 8260651150164099537
+  - m_Id: 713109506
+    m_Localized: "\uCD5C\uACE0 \uC810\uC218  {0:N0}"
     m_Metadata:
-      m_Items: []
-  - m_Id: 574697473
-    m_Localized: "\uCD5C\uACE0 \uC810\uC218"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 574697474
-    m_Localized: "\uC2E0\uAE30\uB85D!"
-    m_Metadata:
-      m_Items: []
-  - m_Id: 2526544950013952
-    m_Localized: "\uD648"
-    m_Metadata:
-      m_Items: []
+      m_Items:
+      - rid: 8260651150164099537
   references:
     version: 2
     RefIds:
-    - rid: 8260650990455750911
+    - rid: 8260651150164099537
       type: {class: SmartFormatTag, ns: UnityEngine.Localization.Metadata, asm: Unity.Localization}
       data:
         m_Entries: 
         m_SharedEntries:
-        - id: 495005696
+        - id: 713109505
+        - id: 713109506

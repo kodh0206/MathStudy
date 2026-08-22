@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 1
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ac042fb46f1a7c34fbb977b606837e73
+    m_Address: Assets/MathGame/Localization/Start Shared Data.asset
+    m_ReadOnly: 1
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ae569781f3f819544a0adc85716e68ac
     m_Address: Assets/MathGame/Localization/Result Shared Data.asset
     m_ReadOnly: 1

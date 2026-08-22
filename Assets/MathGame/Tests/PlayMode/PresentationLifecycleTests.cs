@@ -83,6 +83,8 @@ namespace MathGame.Tests
             view.Present(8, 15, 30, 1240, 4, 2, 25, 50);
             Assert.That(target.text, Is.EqualTo("8"));
             Assert.That(timeFill.fillAmount, Is.EqualTo(.5f).Within(.001f));
+            Assert.That(timeFill.rectTransform.anchorMax.x, Is.EqualTo(.5f).Within(.001f),
+                "A sprite-less managed gauge must visibly crop to its normalized value.");
             Assert.That(feverFill.fillAmount, Is.EqualTo(.5f).Within(.001f));
             Assert.That(combo.text, Does.Contain("x4"));
             Object.DestroyImmediate(root);
@@ -107,9 +109,41 @@ namespace MathGame.Tests
         {
             var existingEventSystem = Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
             var gameObject = new GameObject("HUD");
+            gameObject.AddComponent<Canvas>();
+            GameObject Node(string name, Transform parent, params System.Type[] components)
+            {
+                var types = new System.Type[components.Length + 1];
+                types[0] = typeof(RectTransform);
+                components.CopyTo(types, 1);
+                var node = new GameObject(name, types);
+                node.transform.SetParent(parent, false);
+                return node;
+            }
+            Text TextNode(string name, Transform parent) =>
+                Node(name, parent, typeof(CanvasRenderer), typeof(Text)).GetComponent<Text>();
+            var safe = Node("SafeArea", gameObject.transform);
+            var top = Node("TopSlot", safe.transform);
+            var hud = Node("HUD", top.transform);
+            var content = Node("RunHUD", hud.transform);
+            var runHud = hud.AddComponent<RunHUDView>();
+            var target = TextNode("Target", content.transform); var time = TextNode("Time", content.transform);
+            var score = TextNode("Score", content.transform); var combo = TextNode("Combo", content.transform);
+            var tier = TextNode("Tier", content.transform); var fever = TextNode("Fever", content.transform);
+            var timeFill = Node("TimeFill", content.transform, typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
+            var feverFill = Node("FeverFill", content.transform, typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
+#if UNITY_EDITOR
+            runHud.Configure(content, target, time, timeFill, score, combo, tier, fever, feverFill);
+#endif
+            var bottomSlot = Node("BottomSlot", safe.transform);
+            var bottom = Node("BottomHUD", bottomSlot.transform);
+            TextNode("Status", bottom.transform);
+            TextNode("SelectionSum", bottom.transform);
+            var actions = Node("Actions", bottom.transform);
+            Node("RetryTarget", actions.transform, typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            Node("Language", actions.transform, typeof(CanvasRenderer), typeof(Image), typeof(Button));
             var layout = gameObject.AddComponent<PrototypeUILayout>();
             layout.Build(null, null, null, null, null);
-            var selection = gameObject.transform.Find("SafeArea/BottomHUD/SelectionSum") as RectTransform;
+            var selection = gameObject.transform.Find("SafeArea/BottomSlot/BottomHUD/SelectionSum") as RectTransform;
             var authored = selection.anchoredPosition;
             layout.SetSelectionSum(7, 2);
             layout.PresentMiss();

@@ -13,6 +13,7 @@ namespace MathGame.Presentation.Unity
     {
         [SerializeField] Text resultText;
         [SerializeField] Button playAgainButton;
+        [SerializeField] Button homeButton;
         RunResult current;
         Coroutine transition;
 
@@ -20,10 +21,16 @@ namespace MathGame.Presentation.Unity
         void OnDisable() => LocalizationSettings.SelectedLocaleChanged -= LocaleChanged;
         void LocaleChanged(Locale _) { if (current != null) Render(); }
 
-        public void Bind(Action playAgain)
+        public void Bind(Action playAgain, Action home = null)
         {
             playAgainButton.onClick.RemoveAllListeners();
             if (playAgain != null) playAgainButton.onClick.AddListener(() => playAgain());
+            if (homeButton != null)
+            {
+                homeButton.onClick.RemoveAllListeners();
+                if (home != null) homeButton.onClick.AddListener(() => home());
+                homeButton.gameObject.SetActive(home != null);
+            }
         }
 
         public void Show(RunResult result)
@@ -43,6 +50,8 @@ namespace MathGame.Presentation.Unity
                 current.ActiveDuration, current.MaximumFeverCombo, current.HighestDifficultyTier + 1);
             var label = playAgainButton.GetComponentInChildren<Text>();
             if (label != null) label.text = MathGameLocalization.Get("Result", "result.play_again");
+            var homeLabel = homeButton != null ? homeButton.GetComponentInChildren<Text>() : null;
+            if (homeLabel != null) homeLabel.text = MathGameLocalization.Get("Result", "result.home");
         }
 
         public void Hide()
@@ -68,8 +77,9 @@ namespace MathGame.Presentation.Unity
         }
 
 #if UNITY_EDITOR
-        public void Configure(Text value, Button playAgain)
-        { resultText = value; playAgainButton = playAgain; }
+        public void Configure(Text value, Button playAgain, Button home = null)
+        { resultText = value; playAgainButton = playAgain; homeButton = home; }
 #endif
     }
+
 }

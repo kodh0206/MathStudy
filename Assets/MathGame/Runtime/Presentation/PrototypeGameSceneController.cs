@@ -48,6 +48,7 @@ namespace MathGame.Presentation.Unity
         WorldRestorationProgress world;
         PrototypeUILayout uiLayout;
         RunResultPopupView runResultPopup;
+        StartScreenView startView;
         SurvivalRunSession run;
         double maximumRunTime;
         IPlayerProgressRepository progressRepository;
@@ -77,7 +78,44 @@ namespace MathGame.Presentation.Unity
                 status = "Bootstrap did not reach Ready.";
                 yield break;
             }
-            Compose();
+            InitializeShell();
+            ShowStartScreen();
+        }
+
+        void InitializeShell()
+        {
+            if (presentationHost == null || !presentationHost.HasValidContext)
+            {
+                status = "Serialized GamePresentationHost context is missing or incomplete.";
+                return;
+            }
+
+            progressRepository = LocalPlayerProgressRepository.ForUnityPersistentData();
+            var loadedProgress = progressRepository.Load();
+            progressService = new PlayerProgressService(loadedProgress.Progress);
+            var localeCode = MathGameLocalization.ResolveSupportedCode(
+                progressService.Current.Settings.LocaleCode, Application.systemLanguage);
+            if (!MathGameLocalization.Select(localeCode))
+            {
+                status = "Required Korean/English localization assets are missing.";
+                return;
+            }
+            if (loadedProgress.Status is ProgressLoadStatus.InvalidDataFallback or ProgressLoadStatus.ReadFailedFallback)
+                Debug.LogWarning("[MathGame][Progress] Local progress fallback: " + loadedProgress.Diagnostic);
+
+            var context = presentationHost.CreateContext();
+            uiLayout = presentationHost.UILayout;
+            uiLayout.EnsureEventSystem();
+            startView = context.OverlayRoot.GetComponentInChildren<StartScreenView>(true);
+            runResultPopup = context.OverlayRoot.GetComponentInChildren<RunResultPopupView>(true);
+            if (startView == null || runResultPopup == null)
+            {
+                status = "Serialized StartView or RunResultPopup is missing from OverlaySlot.";
+                return;
+            }
+            startView.Bind(StartRun, ToggleLanguage);
+            runResultPopup.Bind(Restart, Home);
+            runResultPopup.Hide();
         }
 
         void Compose()
@@ -115,18 +153,6 @@ namespace MathGame.Presentation.Unity
             if (!runContent.Succeeded) { status = "Run content failed: " + runContent.Error; return; }
             run = new SurvivalRunSession(runContent.Config, Guid.NewGuid().ToString("N"));
             maximumRunTime = runContent.Config.MaximumTime;
-            progressRepository = LocalPlayerProgressRepository.ForUnityPersistentData();
-            var loadedProgress = progressRepository.Load();
-            progressService = new PlayerProgressService(loadedProgress.Progress);
-            var localeCode = MathGameLocalization.ResolveSupportedCode(
-                progressService.Current.Settings.LocaleCode, Application.systemLanguage);
-            if (!MathGameLocalization.Select(localeCode))
-            {
-                status = "Required Korean/English localization assets are missing.";
-                return;
-            }
-            if (loadedProgress.Status is ProgressLoadStatus.InvalidDataFallback or ProgressLoadStatus.ReadFailedFallback)
-                Debug.LogWarning("[MathGame][Progress] Local progress fallback: " + loadedProgress.Diagnostic);
             FeverController.TryCreate(new FeverConfig(50, 8), stage, session, bootstrap.TimeProvider, out fever);
             targets = new TargetRecoveryCoordinator(random);
             targetConfig = new TargetRecoveryConfig(new TargetSearchConfig(5, 10, 2, 4, 250000), new TargetSelectionPolicy(1), 5);
@@ -154,13 +180,7 @@ namespace MathGame.Presentation.Unity
             boardView.Configure(new PresentationTiming(45, 80, 100, 80, 180));
             boardView.ConfigureRegistry(presentationHost.Registry);
             var context = presentationHost.CreateContext();
-            runResultPopup = context.OverlayRoot.GetComponentInChildren<RunResultPopupView>(true);
-            if (runResultPopup == null)
-            {
-                status = "Serialized RunResultPopup is missing from OverlaySlot.";
-                return;
-            }
-            runResultPopup.Bind(Restart);
+            runResultPopup.Bind(Restart, Home);
             runResultPopup.Hide();
             boardView.ConfigureSlots(boardView.transform.Find("CellRoot"), boardView.transform.Find("BlockRoot"), context.EffectSlot);
             presentation = new GameplayPresentationCoordinator(commands, boardView);
@@ -170,7 +190,8 @@ namespace MathGame.Presentation.Unity
             if (camera != null)
             {
                 camera.orthographic = true;
-                camera.backgroundColor = new Color(.008f, .018f, .035f);
+                camera.clearFlags = CameraClearFlags.SolidColor;
+                camera.backgroundColor = Color.black;
             }
             uiLayout = presentationHost.UILayout;
             uiLayout.Build(camera, boardView, RetryTarget, ToggleLanguage, presentationHost.Registry);
@@ -179,6 +200,42 @@ namespace MathGame.Presentation.Unity
             stage.EnablePlayerInput();
             targetStarted = Time.unscaledTime;
             status = MathGameLocalization.Get("Gameplay", "gameplay.ready");
+        }
+
+        void StartRun()
+        {
+            if (restarting || run?.Status == SurvivalRunStatus.Active) return;
+            StartCoroutine(StartRunCleanly());
+        }
+
+        IEnumerator StartRunCleanly()
+        {
+            restarting = true;
+            SetGameplayVisible(true);
+            startView?.HideImmediate();
+            yield return null;
+            commandId = 1;
+            presentationId = 1;
+            Compose();
+            if (commands == null) ShowStartScreen();
+            restarting = false;
+        }
+
+        void ShowStartScreen()
+        {
+            SetGameplayVisible(false);
+            runResultPopup?.Hide();
+            startView?.Show(progressService?.Current.RunRecords ?? RunRecords.Empty);
+        }
+
+        void SetGameplayVisible(bool visible)
+        {
+            if (presentationHost == null || !presentationHost.HasValidContext) return;
+            var context = presentationHost.CreateContext();
+            context.GameplayRoot.gameObject.SetActive(visible);
+            context.TopUIRoot.gameObject.SetActive(visible);
+            context.CenterUIRoot.gameObject.SetActive(visible);
+            context.BottomUIRoot.gameObject.SetActive(visible);
         }
 
         void Update()
@@ -476,6 +533,34 @@ namespace MathGame.Presentation.Unity
             if(!restarting)StartCoroutine(RestartCleanly());
         }
 
+        void Home()
+        {
+            if (restarting) return;
+            if (run?.Result != null && !terminalProgressHandled) ApplyAndSaveProgress(run.Result);
+            if (run?.Result != null && !terminalProgressHandled) return;
+            StartCoroutine(ReturnHomeCleanly());
+        }
+
+        IEnumerator ReturnHomeCleanly()
+        {
+            restarting = true;
+            CleanRunPresentation();
+            yield return null;
+            if (bootstrap == null || !bootstrap.RestartStage())
+            {
+                status = "Home reset did not reach Ready.";
+                restarting = false;
+                yield break;
+            }
+            run = null;
+            session = null;
+            fever = null;
+            obstacleFlow = null;
+            commands = null;
+            ShowStartScreen();
+            restarting = false;
+        }
+
         void ApplyAndSaveProgress(RunResult result)
         {
             if (terminalProgressHandled || progressService == null || progressRepository == null) return;
@@ -528,13 +613,7 @@ namespace MathGame.Presentation.Unity
         IEnumerator RestartCleanly()
         {
             restarting = true;
-            if (boardView != null) boardView.PlaybackCompleted -= PlaybackCompleted;
-            presentation?.Dispose();
-            fever?.Dispose();
-            selected.Clear();
-            pointerDown = false;
-            targetRecoveryPending = false;
-            resolvingEnd = false;
+            CleanRunPresentation();
             yield return null;
             if (bootstrap == null || !bootstrap.RestartStage())
             {
@@ -545,8 +624,21 @@ namespace MathGame.Presentation.Unity
 
             commandId = 1;
             presentationId = 1;
+            SetGameplayVisible(true);
             Compose();
             restarting = false;
+        }
+
+        void CleanRunPresentation()
+        {
+            if (boardView != null) boardView.PlaybackCompleted -= PlaybackCompleted;
+            presentation?.Dispose();
+            fever?.Dispose();
+            presentation = null;
+            selected.Clear();
+            pointerDown = false;
+            targetRecoveryPending = false;
+            resolvingEnd = false;
         }
 
         void OnDestroy()

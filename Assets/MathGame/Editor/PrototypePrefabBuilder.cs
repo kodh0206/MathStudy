@@ -5,12 +5,13 @@ using MathGame.Presentation.Unity;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace MathGame.Editor.SceneBuilder
 {
     public static class PrototypePrefabBuilder
     {
-        const int ContractVersion=10;
+        const int ContractVersion=11;
         public const string Root = "Assets/MathGame/Prefabs";
         public const string GameRootPath = Root + "/Core/GameRoot.prefab";
         public const string BoardPath = Root + "/Board/Board.prefab";
@@ -18,7 +19,7 @@ namespace MathGame.Editor.SceneBuilder
         public const string BlockPath = Root + "/Board/Block.prefab";
         public const string HudPath = Root + "/UI/HUD.prefab";
         public const string RunResultPopupPath = Root + "/UI/RunResultPopup.prefab";
-        public const string BlockRemovalEffectPath = Root + "/Effects/BlockRemovalEffect.prefab";
+        public const string StartViewPath = Root + "/UI/StartView.prefab";
         public const string RegistryPath = Root + "/MathGamePrefabRegistry.asset";
 
         [MenuItem("MathGame/Build Prototype Prefabs",priority=9)]
@@ -29,19 +30,6 @@ namespace MathGame.Editor.SceneBuilder
 
         [MenuItem("MathGame/Production/Validate Production Prefabs", priority=1)]
         public static void ValidateProductionPrefabs() => EnsurePrototypePrefabs();
-
-        [MenuItem("MathGame/Repair Block Removal Particle",priority=10)]
-        public static void RepairBlockRemovalParticle()
-        {
-            EnsureFolders();
-            CreateIfMissing(BlockRemovalEffectPath,CreateBlockRemovalEffect);
-            EnsureRegistry();
-            AssetDatabase.SaveAssets();AssetDatabase.Refresh();
-            var effect=AssetDatabase.LoadAssetAtPath<GameObject>(BlockRemovalEffectPath);
-            if(effect==null||effect.GetComponent<BlockRemovalEffectView>()==null)
-                throw new InvalidOperationException("BlockRemovalEffect repair did not produce a valid prefab.");
-            Debug.Log("MathGame BlockRemovalEffect prefab was created and assigned to the registry.");
-        }
 
         [MenuItem("MathGame/Migrate Authored Run HUD %#h", priority = 11)]
         public static void MigrateAuthoredRunHud()
@@ -119,9 +107,14 @@ namespace MathGame.Editor.SceneBuilder
                 if (EditorApplication.isPlayingOrWillChangePlaymode) return;
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(HudPath);
                 var contract = prefab != null ? prefab.GetComponent<PresentationPrefabContract>() : null;
-                if (prefab == null || (prefab.GetComponent<RunHUDView>()?.IsComplete == true &&
-                    contract != null && contract.Version >= ContractVersion)) return;
-                try { MigrateAuthoredRunHud(); }
+                try
+                {
+                    if (prefab != null && prefab.GetComponent<RunHUDView>()?.IsComplete == true &&
+                        contract != null && contract.Version >= ContractVersion)
+                        RemoveLegacyPresentationFromGameRoot();
+                    else if (prefab != null)
+                        MigrateAuthoredRunHud();
+                }
                 catch (Exception exception)
                 {
                     Debug.LogError("MathGame could not migrate the authored Run HUD. Run MathGame/Migrate Authored Run HUD after resolving compile errors.\n" + exception);
@@ -157,13 +150,14 @@ namespace MathGame.Editor.SceneBuilder
             CreateIfMissing(BlockPath,CreateBlock);
             CreateIfMissing(CellPath,CreateCell);
             CreateIfMissing(BoardPath,CreateBoard);
-            EnsureBlockRemovalPoolOnBoard();
             CreateIfMissing(RunResultPopupPath,CreateRunResultPopup);
-            CreateIfMissing(BlockRemovalEffectPath,CreateBlockRemovalEffect);
+            CreateIfMissing(StartViewPath,CreateStartView);
             CreateIfMissing(HudPath,CreateHud);
             EnsureRegistry();
             CreateIfMissing(GameRootPath,CreateGameRoot);
             EnsureRunResultPopupInGameRoot();
+            EnsureStartViewInGameRoot();
+            EnsureEventSystemInGameRoot();
             EnsureGameRootOwnershipMarker();
             EnsureRegistry();
             AssetDatabase.SaveAssets();AssetDatabase.Refresh();
@@ -203,6 +197,7 @@ namespace MathGame.Editor.SceneBuilder
                         selectionLine.GetComponent<SelectionLineGraphic>().Configure(10f, new Color(.22f, .9f, 1f, .82f));
                     }
                     if (path == HudPath) EnsureRunHudHierarchy(contents);
+                    if (path == RunResultPopupPath) EnsureRunResultHome(contents);
                     if (path == GameRootPath) UpgradeRunLayout(contents);
                     if (path == CellPath) UpgradeCellStyle(contents);
                     if (path == BoardPath) UpgradeBoardStyle(contents);
@@ -366,7 +361,7 @@ namespace MathGame.Editor.SceneBuilder
         static string[] ManagedPrefabPaths() => new[]
         {
             GameRootPath, BoardPath, CellPath, BlockPath, HudPath,
-            RunResultPopupPath, BlockRemovalEffectPath
+            RunResultPopupPath, StartViewPath
         };
 
         static void DeleteManagedPrefabSet()
@@ -391,26 +386,8 @@ namespace MathGame.Editor.SceneBuilder
             registry.CellPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(CellPath);registry.BlockPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(BlockPath);
             registry.HudPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(HudPath);
             registry.RunResultPopupPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(RunResultPopupPath);
-            registry.BlockRemovalEffectPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(BlockRemovalEffectPath);
-            if(registry.BlockRemovalEffectPrefab==null||registry.BlockRemovalEffectPrefab.GetComponent<BlockRemovalEffectView>()==null)
-                throw new InvalidOperationException("BlockRemovalEffect prefab was not created or is incompatible: "+BlockRemovalEffectPath);
+            registry.StartViewPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(StartViewPath);
             EditorUtility.SetDirty(registry);
-        }
-
-        static void EnsureBlockRemovalPoolOnBoard()
-        {
-            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(BoardPath);
-            var contract=prefab?.GetComponent<PresentationPrefabContract>();
-            if(prefab==null||contract==null||contract.ContractId!="Board"||contract.Version!=ContractVersion)
-                throw new InvalidOperationException("Managed Board ownership/contract could not be proven; BlockRemovalEffectPool was not added.");
-            if(prefab.GetComponent<BlockRemovalEffectPool>()!=null)return;
-            var contents=PrefabUtility.LoadPrefabContents(BoardPath);
-            try
-            {
-                contents.AddComponent<BlockRemovalEffectPool>();
-                PrefabUtility.SaveAsPrefabAsset(contents,BoardPath);
-            }
-            finally{PrefabUtility.UnloadPrefabContents(contents);}
         }
 
         static void EnsureRunResultPopupInGameRoot()
@@ -426,6 +403,70 @@ namespace MathGame.Editor.SceneBuilder
                 popup.transform.SetParent(overlay, false);
                 Stretch(popup.GetComponent<RectTransform>(), 0);
                 popup.SetActive(false);
+                PrefabUtility.SaveAsPrefabAsset(contents, GameRootPath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+        }
+
+        static void EnsureStartViewInGameRoot()
+        {
+            var contents = PrefabUtility.LoadPrefabContents(GameRootPath);
+            try
+            {
+                var overlay = contents.transform.Find("UIRoot/PrototypeCanvas/SafeArea/OverlaySlot");
+                if (overlay == null) throw new InvalidOperationException("Managed GameRoot OverlaySlot is missing.");
+                if (overlay.GetComponentInChildren<StartScreenView>(true) == null)
+                {
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(StartViewPath);
+                    if (prefab == null) throw new InvalidOperationException("Managed StartView prefab is missing.");
+                    var view = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+                    view.transform.SetParent(overlay, false);
+                    Stretch(view.GetComponent<RectTransform>(), 0);
+                    view.SetActive(true);
+                }
+                SetActive(contents.transform.Find("GameplayRoot"), false);
+                SetActive(contents.transform.Find("UIRoot/PrototypeCanvas/SafeArea/TopSlot"), false);
+                SetActive(contents.transform.Find("UIRoot/PrototypeCanvas/SafeArea/CenterSlot"), false);
+                SetActive(contents.transform.Find("UIRoot/PrototypeCanvas/SafeArea/BottomSlot"), false);
+                PrefabUtility.SaveAsPrefabAsset(contents, GameRootPath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+        }
+
+        static void SetActive(Transform value, bool active)
+        {
+            if (value != null) value.gameObject.SetActive(active);
+        }
+
+        static void EnsureRunResultHome(GameObject root)
+        {
+            var view = root.GetComponent<RunResultPopupView>();
+            var panel = root.transform.Find("PopupPanel");
+            if (view == null || panel == null) return;
+            var playAgain = panel.Find("PlayAgainButton")?.GetComponent<Button>();
+            var home = panel.Find("HomeButton")?.GetComponent<Button>();
+            if (home == null)
+            {
+                var homeRoot=UI("HomeButton",typeof(CanvasRenderer),typeof(Image),typeof(Button));
+                homeRoot.transform.SetParent(panel,false);
+                homeRoot.GetComponent<Image>().color=new Color(.08f,.18f,.27f,1);
+                Set(homeRoot.GetComponent<RectTransform>(),.62f,.06f,.88f,.25f,0,0,0,0);
+                Stretch(Text("Label","HOME",24,TextAnchor.MiddleCenter,homeRoot.transform).rectTransform,8);
+                home=homeRoot.GetComponent<Button>();
+            }
+            if (playAgain != null)
+            {
+                Set(playAgain.GetComponent<RectTransform>(),.12f,.06f,.58f,.25f,0,0,0,0);
+                view.Configure(root.transform.Find("PopupPanel/Result")?.GetComponent<Text>(),playAgain,home);
+            }
+        }
+
+        static void EnsureEventSystemInGameRoot()
+        {
+            var contents = PrefabUtility.LoadPrefabContents(GameRootPath);
+            try
+            {
+                PrototypeUILayout.EnsureSerializedEventSystem(contents);
                 PrefabUtility.SaveAsPrefabAsset(contents, GameRootPath);
             }
             finally { PrefabUtility.UnloadPrefabContents(contents); }
@@ -495,7 +536,7 @@ namespace MathGame.Editor.SceneBuilder
 
         static GameObject CreateBoard()
         {
-            var root=UI("BoardView",typeof(CanvasRenderer),typeof(Image),typeof(Outline),typeof(AudioSource),typeof(GameplayPresentationRoot),typeof(PlaceholderPresentationFeedback),typeof(BlockRemovalEffectPool));
+            var root=UI("BoardView",typeof(CanvasRenderer),typeof(Image),typeof(Outline),typeof(AudioSource),typeof(GameplayPresentationRoot),typeof(PlaceholderPresentationFeedback));
             var boardBackground=root.GetComponent<Image>();boardBackground.color=new Color(.018f,.045f,.08f,.96f);boardBackground.raycastTarget=false;
             var boardOutline=root.GetComponent<Outline>();boardOutline.effectColor=new Color(.08f,.58f,.72f,.70f);boardOutline.effectDistance=new Vector2(3,-3);
             var audio=root.GetComponent<AudioSource>();audio.playOnAwake=false;audio.spatialBlend=0f;audio.volume=.22f;
@@ -623,7 +664,7 @@ namespace MathGame.Editor.SceneBuilder
             var gameplay=root.transform.Find("GameplayRoot");
             if(gameplay!=null&&gameplay.Find("Backdrop")==null)
             {
-                var backdrop=Panel("Backdrop",gameplay,new Color(.008f,.018f,.035f,1f));Stretch(backdrop.GetComponent<RectTransform>(),0);
+                var backdrop=Panel("Backdrop",gameplay,Color.black);Stretch(backdrop.GetComponent<RectTransform>(),0);
                 backdrop.GetComponent<Image>().raycastTarget=false;backdrop.transform.SetAsFirstSibling();
             }
         }
@@ -632,10 +673,11 @@ namespace MathGame.Editor.SceneBuilder
         {
             var root=new GameObject("GameRoot",typeof(GamePresentationHost),typeof(PrototypeGeneratedRoot));
             root.GetComponent<PrototypeGeneratedRoot>().Configure(ContractVersion);
+            PrototypeUILayout.EnsureSerializedEventSystem(root);
             var gameplay=UI("GameplayRoot",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));gameplay.transform.SetParent(root.transform,false);
             var gameplayCanvas=gameplay.GetComponent<Canvas>();gameplayCanvas.renderMode=RenderMode.ScreenSpaceOverlay;gameplayCanvas.sortingOrder=10;
             var gameplayScaler=gameplay.GetComponent<CanvasScaler>();gameplayScaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;gameplayScaler.referenceResolution=new Vector2(1080,1920);gameplayScaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;gameplayScaler.matchWidthOrHeight=.5f;
-            var backdrop=Panel("Backdrop",gameplay.transform,new Color(.008f,.018f,.035f,1f));Stretch(backdrop.GetComponent<RectTransform>(),0);backdrop.GetComponent<Image>().raycastTarget=false;
+            var backdrop=Panel("Backdrop",gameplay.transform,Color.black);Stretch(backdrop.GetComponent<RectTransform>(),0);backdrop.GetComponent<Image>().raycastTarget=false;
             var boardSlot=UI("BoardSlot");boardSlot.transform.SetParent(gameplay.transform,false);Set(boardSlot.GetComponent<RectTransform>(),.04f,.19f,.96f,.75f,0,0,0,0);
             var effectSlot=UI("EffectSlot");effectSlot.transform.SetParent(gameplay.transform,false);Stretch(effectSlot.GetComponent<RectTransform>(),0);
             var board=PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(BoardPath)) as GameObject;board.transform.SetParent(boardSlot.transform,false);
@@ -669,25 +711,27 @@ namespace MathGame.Editor.SceneBuilder
             root.GetComponent<Image>().color=new Color(0,0,0,.78f);
             var panel=UI("PopupPanel",typeof(CanvasRenderer),typeof(Image));panel.transform.SetParent(root.transform,false);panel.GetComponent<Image>().color=new Color(.06f,.10f,.17f,1);Set(panel.GetComponent<RectTransform>(),.1f,.27f,.9f,.73f,0,0,0,0);
             var result=Text("Result","RUN OVER",38,TextAnchor.MiddleCenter,panel.transform);result.fontStyle=FontStyle.Bold;Set(result.rectTransform,0,.24f,1,1,32,16,-32,-20);
-            var buttonRoot=UI("PlayAgainButton",typeof(CanvasRenderer),typeof(Image),typeof(Button));buttonRoot.transform.SetParent(panel.transform,false);buttonRoot.GetComponent<Image>().color=new Color(.12f,.42f,.62f,1);Set(buttonRoot.GetComponent<RectTransform>(),.18f,.06f,.82f,.25f,0,0,0,0);Stretch(Text("Label","PLAY AGAIN",28,TextAnchor.MiddleCenter,buttonRoot.transform).rectTransform,8);
-            root.GetComponent<RunResultPopupView>().Configure(result,buttonRoot.GetComponent<Button>());
+            var buttonRoot=UI("PlayAgainButton",typeof(CanvasRenderer),typeof(Image),typeof(Button));buttonRoot.transform.SetParent(panel.transform,false);buttonRoot.GetComponent<Image>().color=new Color(.12f,.42f,.62f,1);Set(buttonRoot.GetComponent<RectTransform>(),.12f,.06f,.58f,.25f,0,0,0,0);Stretch(Text("Label","PLAY AGAIN",26,TextAnchor.MiddleCenter,buttonRoot.transform).rectTransform,8);
+            var homeRoot=UI("HomeButton",typeof(CanvasRenderer),typeof(Image),typeof(Button));homeRoot.transform.SetParent(panel.transform,false);homeRoot.GetComponent<Image>().color=new Color(.08f,.18f,.27f,1);Set(homeRoot.GetComponent<RectTransform>(),.62f,.06f,.88f,.25f,0,0,0,0);Stretch(Text("Label","HOME",24,TextAnchor.MiddleCenter,homeRoot.transform).rectTransform,8);
+            root.GetComponent<RunResultPopupView>().Configure(result,buttonRoot.GetComponent<Button>(),homeRoot.GetComponent<Button>());
             root.SetActive(false);
             return root;
         }
-        static GameObject CreateBlockRemovalEffect()
+
+        static GameObject CreateStartView()
         {
-            var root=UI("BlockRemovalEffect",typeof(BlockRemovalEffectView));
-            var rect=root.GetComponent<RectTransform>();rect.anchorMin=rect.anchorMax=new Vector2(.5f,.5f);rect.pivot=new Vector2(.5f,.5f);rect.sizeDelta=new Vector2(32,32);
-            var particles=new Graphic[14];
-            for(var i=0;i<particles.Length;i++)
-            {
-                var particle=UI("Particle_"+i,typeof(CanvasRenderer),typeof(Image));particle.transform.SetParent(root.transform,false);
-                var image=particle.GetComponent<Image>();image.color=i%4==0?new Color(.88f,1f,1f,.98f):i%4==1?new Color(.18f,.88f,1f,.94f):new Color(.25f,.58f,1f,.90f);image.raycastTarget=false;
-                var particleRect=particle.GetComponent<RectTransform>();particleRect.anchorMin=particleRect.anchorMax=new Vector2(.5f,.5f);particleRect.pivot=new Vector2(.5f,.5f);particleRect.anchoredPosition=Vector2.zero;
-                var size=i%5==0?14f:i%2==0?9f:6f;particleRect.sizeDelta=new Vector2(size,i%3==0?size*.55f:size);
-                particles[i]=image;
-            }
-            root.GetComponent<BlockRemovalEffectView>().Configure(particles,.22f,54f);
+            var root=UI("StartView",typeof(CanvasRenderer),typeof(Image),typeof(CanvasGroup),typeof(StartScreenView));
+            root.GetComponent<Image>().color=new Color(.008f,.018f,.035f,1f);
+            var title=Text("Title","SUM//VIVE",64,TextAnchor.MiddleCenter,root.transform);title.fontStyle=FontStyle.Bold;title.color=new Color(.82f,.98f,1f);Set(title.rectTransform,0,1,1,1,50,-320,-50,-210);
+            var subtitle=Text("Subtitle","KEEP THE CORE ONLINE",24,TextAnchor.MiddleCenter,root.transform);subtitle.color=new Color(.35f,.78f,.88f);Set(subtitle.rectTransform,0,1,1,1,50,-390,-50,-325);
+            var core=UI("CoreVisual",typeof(CanvasRenderer),typeof(Image));core.transform.SetParent(root.transform,false);var coreImage=core.GetComponent<Image>();coreImage.color=new Color(.08f,.72f,.86f,.86f);Set(core.GetComponent<RectTransform>(),.5f,.5f,.5f,.5f,-105,80,105,290);core.transform.localRotation=Quaternion.Euler(0,0,45);
+            var center=UI("CoreCenter",typeof(CanvasRenderer),typeof(Image));center.transform.SetParent(core.transform,false);center.GetComponent<Image>().color=new Color(.7f,1f,1f,.95f);Set(center.GetComponent<RectTransform>(),.25f,.25f,.75f,.75f,0,0,0,0);
+            var state=Text("CoreStatus","CORE ONLINE",24,TextAnchor.MiddleCenter,root.transform);state.color=new Color(.35f,1f,.88f);Set(state.rectTransform,0,.5f,1,.5f,40,-40,-40,20);
+            var start=UI("StartButton",typeof(CanvasRenderer),typeof(Image),typeof(Button));start.transform.SetParent(root.transform,false);start.GetComponent<Image>().color=new Color(.05f,.58f,.72f,1);Set(start.GetComponent<RectTransform>(),.16f,.31f,.84f,.31f,0,-76,0,18);var startLabel=Text("Label","START RUN",32,TextAnchor.MiddleCenter,start.transform);startLabel.fontStyle=FontStyle.Bold;Stretch(startLabel.rectTransform,10);
+            var bestTime=Text("BestTime","BEST TIME  0.0s",24,TextAnchor.MiddleCenter,root.transform);Set(bestTime.rectTransform,.1f,.22f,.9f,.22f,0,-22,0,36);
+            var bestScore=Text("BestScore","BEST SCORE  0",24,TextAnchor.MiddleCenter,root.transform);Set(bestScore.rectTransform,.1f,.18f,.9f,.18f,0,-22,0,36);
+            var language=UI("LanguageButton",typeof(CanvasRenderer),typeof(Image),typeof(Button));language.transform.SetParent(root.transform,false);language.GetComponent<Image>().color=new Color(.04f,.10f,.16f,.92f);Set(language.GetComponent<RectTransform>(),.2f,.07f,.8f,.07f,0,-58,0,12);Stretch(Text("Label","English / 한국어",22,TextAnchor.MiddleCenter,language.transform).rectTransform,8);
+            root.GetComponent<StartScreenView>().Configure(root.GetComponent<CanvasGroup>(),title,subtitle,state,bestTime,bestScore,start.GetComponent<Button>(),language.GetComponent<Button>(),core.GetComponent<RectTransform>());
             return root;
         }
         static GameObject UI(string name,params Type[] extra){var types=new Type[extra.Length+1];types[0]=typeof(RectTransform);Array.Copy(extra,0,types,1,extra.Length);return new GameObject(name,types);}

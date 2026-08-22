@@ -84,67 +84,25 @@ namespace MathGame.Presentation.Unity
                 ApplySafeArea(true);
                 return;
             }
-            canvas = gameObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 100;
-            var scaler = gameObject.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
-            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            scaler.matchWidthOrHeight = .5f;
-            gameObject.AddComponent<GraphicRaycaster>();
-
-            safeArea = Rect("SafeArea", transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            var hud = Panel("HUD", safeArea, new Color(.035f, .055f, .09f, .96f),
-                new Vector2(0, 1), Vector2.one, new Vector2(24, -390), new Vector2(-24, -24));
-            var title = Label("Title", hud, "MATH GAME PROTOTYPE", 38, TextAnchor.MiddleCenter, FontStyle.Bold);
-            SetRect(title.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(20, -72), new Vector2(-20, -14));
-
-            var mainStats = Rect("MainStats", hud, new Vector2(0, 1), Vector2.one, new Vector2(24, -184), new Vector2(-24, -82));
-            var statsGrid = mainStats.gameObject.AddComponent<GridLayoutGroup>();
-            statsGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            statsGrid.constraintCount = 3;
-            statsGrid.cellSize = new Vector2(320, 92);
-            statsGrid.spacing = new Vector2(20, 0);
-            statsGrid.childAlignment = TextAnchor.MiddleCenter;
-            target = Stat(mainStats, "Target");
-            moves = Stat(mainStats, "Moves");
-            score = Stat(mainStats, "Score");
-
-            var resources = Rect("Resources", hud, new Vector2(0, 1), Vector2.one, new Vector2(24, -264), new Vector2(-24, -194));
-            restoration = Label("Restoration", resources, "Restoration 0/0", 29, TextAnchor.MiddleLeft, FontStyle.Normal);
-            SetRect(restoration.rectTransform, new Vector2(0, 0), new Vector2(.5f, 1), Vector2.zero, new Vector2(-10, 0));
-            fever = Label("Fever", resources, "Fever 0/0", 29, TextAnchor.MiddleRight, FontStyle.Normal);
-            SetRect(fever.rectTransform, new Vector2(.5f, 0), Vector2.one, new Vector2(10, 0), Vector2.zero);
-
-            var objectiveRoot = Rect("Objectives", hud, new Vector2(0, 0), Vector2.one, new Vector2(24, 28), new Vector2(-24, 116));
-            objectiveContainer=objectiveRoot;
-            var objectiveLayout = objectiveRoot.gameObject.AddComponent<VerticalLayoutGroup>();
-            objectiveLayout.spacing = 6;
-            objectiveLayout.childControlHeight = true;
-            objectiveLayout.childForceExpandHeight = true;
-
-            var bottom = Panel("BottomHUD", safeArea, new Color(.035f, .055f, .09f, .96f),
-                Vector2.zero, new Vector2(1, 0), new Vector2(24, 24), new Vector2(-24, 280));
-            status = Label("Status", bottom, "Starting prototype...", 26, TextAnchor.UpperCenter, FontStyle.Normal);
-            SetRect(status.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(24, -104), new Vector2(-24, -16));
-            selectionSum = Label("SelectionSum", bottom, "SELECTED SUM  0", 30, TextAnchor.MiddleCenter, FontStyle.Bold);
-            SetRect(selectionSum.rectTransform, new Vector2(0, 1), Vector2.one, new Vector2(24, -154), new Vector2(-24, -104));
-            var actions = Rect("Actions", bottom, Vector2.zero, Vector2.one, new Vector2(20, 18), new Vector2(-20, -116));
-            var actionLayout = actions.gameObject.AddComponent<HorizontalLayoutGroup>();
-            actionLayout.spacing = 12;
-            actionLayout.childControlWidth = true;
-            actionLayout.childForceExpandWidth = true;
-            targetRetryButton = Action(actions, "Retry Target", onTargetRetry);
-            languageButton = Action(actions, "Language", onLanguage);
-            ApplySafeArea(true);
+            throw new InvalidOperationException(
+                "Serialized production HUD is missing. Expected PrototypeCanvas/SafeArea/TopSlot/HUD; " +
+                "runtime UI creation is disabled to prevent duplicate TopSlot/HUD hierarchies.");
         }
 
-        void EnsureEventSystem()
+        public void EnsureEventSystem()
         {
             if(FindFirstObjectByType<EventSystem>()!=null)return;
             var events=new GameObject("EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));events.transform.SetParent(transform.parent,false);
         }
+
+#if UNITY_EDITOR
+        public static void EnsureSerializedEventSystem(GameObject root)
+        {
+            if (root == null || root.GetComponentInChildren<EventSystem>(true) != null) return;
+            var events = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            events.transform.SetParent(root.transform, false);
+        }
+#endif
 
         void BindPrefabHierarchy(Action onTargetRetry,Action onLanguage)
         {

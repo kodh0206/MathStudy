@@ -10,39 +10,47 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
-  m_Name: Result Shared Data
+  m_Name: Start Shared Data
   m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
-  m_TableCollectionName: Result
-  m_TableCollectionNameGuidString: ae569781f3f819544a0adc85716e68ac
+  m_TableCollectionName: Start
+  m_TableCollectionNameGuidString: ac042fb46f1a7c34fbb977b606837e73
   m_Entries:
-  - m_Id: 495005696
-    m_Key: result.summary
+  - m_Id: 658583552
+    m_Key: start.title
     m_Metadata:
       m_Items: []
-  - m_Id: 574697472
-    m_Key: result.play_again
+  - m_Id: 708915200
+    m_Key: start.subtitle
     m_Metadata:
       m_Items: []
-  - m_Id: 574697473
-    m_Key: result.best_score
+  - m_Id: 708915201
+    m_Key: start.core_online
     m_Metadata:
       m_Items: []
-  - m_Id: 574697474
-    m_Key: result.new_best
+  - m_Id: 708915202
+    m_Key: start.system_online
     m_Metadata:
       m_Items: []
-  - m_Id: 2526544950013952
-    m_Key: result.home
+  - m_Id: 713109504
+    m_Key: start.run
+    m_Metadata:
+      m_Items: []
+  - m_Id: 713109505
+    m_Key: start.best_time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 713109506
+    m_Key: start.best_score
     m_Metadata:
       m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
-    rid: 8260650990455750907
+    rid: 8260651150164099536
   references:
     version: 2
     RefIds:
-    - rid: 8260650990455750907
+    - rid: 8260651150164099536
       type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
       data:
-        m_CustomEpoch: 1786771567946
+        m_CustomEpoch: 1787373943221

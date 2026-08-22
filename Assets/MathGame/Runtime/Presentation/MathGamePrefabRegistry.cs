@@ -11,6 +11,6 @@ namespace MathGame.Presentation.Unity
         public GameObject BlockPrefab;
         public GameObject HudPrefab;
         public GameObject RunResultPopupPrefab;
-        public GameObject BlockRemovalEffectPrefab;
+        public GameObject StartViewPrefab;
     }
 }
