@@ -173,7 +173,7 @@ namespace MathGame.Presentation.Unity
                 camera.backgroundColor = new Color(.008f, .018f, .035f);
             }
             uiLayout = presentationHost.UILayout;
-            uiLayout.Build(camera, boardView, Continue, Restart, Abandon, RetryTarget, ToggleLanguage, presentationHost.Registry);
+            uiLayout.Build(camera, boardView, RetryTarget, ToggleLanguage, presentationHost.Registry);
             uiLayout.SetRunMode(true);
             stage.BeginTargetPresentation();
             stage.EnablePlayerInput();
@@ -460,24 +460,6 @@ namespace MathGame.Presentation.Unity
             boardView?.SetSelectedPositions(selected);
             boardView?.SetSelectionPath(selected);
             boardView?.SetSelectionMatched(selected.Count > 0 && SelectedSum() == target.Value);
-        }
-
-        void Abandon()
-        {
-            if(stage.State!=StageState.FailedPendingDecision)return;
-            session.TryDiscardFailedAttempt();stage.Fail();status="Abandoned";
-        }
-
-        void Continue()
-        {
-            if (!session.TryContinueFailedAttempt(5) || stage.ResumeFromContinue() != TransitionResult.Succeeded)
-            { status = "Continue rejected."; return; }
-            var recovered = obstacleFlow.RecoverAfterContinue(history,targetConfig);
-            if (!recovered.IsInputReady) { status = "Continue target recovery failed: "+recovered.Status;targetRecoveryPending=true; return; }
-            history = recovered.History; target = recovered.SelectedTarget.Target;
-            boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None,0));
-            stage.BeginTargetPresentation(); stage.EnablePlayerInput(); targetStarted = Time.unscaledTime;
-            status = "Continued with +5 moves; restoration preserved.";
         }
 
         void Restart()

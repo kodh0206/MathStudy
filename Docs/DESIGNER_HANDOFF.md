@@ -1,173 +1,123 @@
-# MathGame Designer Handoff
+# MathGame Production Presentation — Designer Handoff
 
-This guide describes the presentation assets that exist now. Gameplay remains owned by the Domain/Application assemblies; visual assets must not become gameplay authorities.
-
-## 1. Gameplay Screen Structure
-
-`Assets/Scenes/GameScene.unity` is the entry scene. Its managed presentation is an instance of `Assets/MathGame/Prefabs/Core/GameRoot.prefab`:
+## Current production hierarchy
 
 ```text
 GameScene
 ├── GameController
-├── PrototypeGameSceneComposition
-├── GameRoot
-│   ├── GameplayRoot (Canvas, CanvasScaler, GraphicRaycaster)
-│   │   ├── BoardSlot
-│   │   │   └── BoardView
-│   │   │       ├── CellRoot
-│   │   │       │   └── Cell_0_0 ... Cell_7_7
-│   │   │       ├── BlockRoot
-│   │   │       ├── EffectRoot
-│   │   │       └── SelectionLine
-│   │   └── EffectSlot
-│   ├── UIRoot
-│   │   └── PrototypeCanvas (Canvas, CanvasScaler, PrototypeUILayout)
-│   │       └── SafeArea
-│   │           ├── TopSlot/HUD
-│   │           │   ├── MainStats/Target, Moves, Score
-│   │           │   ├── RunStats/Time, Fever, Combo, Tier
-│   │           │   ├── Resources
-│   │           │   └── Objectives
-│   │           ├── CenterSlot/BoardArea
-│   │           ├── BottomSlot/BottomHUD
-│   │           │   ├── Status
-│   │           │   ├── SelectionSum
-│   │           │   └── Actions
-│   │           └── OverlaySlot
-│   │               ├── StageClearPopup
-│   │               └── RunResultPopup
-│   └── PresentationRoot
-└── Main Camera
+│   ├── MathGameBootstrap
+│   └── ApplicationLifecycleRelay
+├── GameSceneComposition
+│   ├── PrototypeGameSceneController (serialization-safe retained name)
+│   └── PortraitOnlyPolicy
+└── GameRoot (prefab instance)
+    ├── GameplayRoot
+    │   ├── Backdrop
+    │   ├── BoardSlot
+    │   │   └── BoardView
+    │   │       ├── CellRoot / 64 serialized CellViews
+    │   │       ├── BlockRoot
+    │   │       ├── EffectRoot
+    │   │       └── SelectionLine
+    │   └── EffectSlot
+    ├── UIRoot
+    │   └── PrototypeCanvas (serialization-safe retained name)
+    │       └── SafeArea
+    │           ├── TopSlot/HUD/RunHUD
+    │           │   ├── SurvivalPanel
+    │           │   ├── ScorePanel
+    │           │   ├── TargetPanel
+    │           │   ├── SecondaryStats
+    │           │   └── FeverPanel
+    │           ├── CenterSlot
+    │           ├── BottomSlot/BottomHUD
+    │           │   ├── Status
+    │           │   ├── SelectionSum
+    │           │   └── Actions
+    │           │       ├── RetryTarget
+    │           │       └── Language
+    │           └── OverlaySlot/RunResultPopup
+    └── PresentationRoot
 ```
 
-The Stage-only objects are retained for compatibility but hidden in Continuous Run mode.
+There is intentionally no manual Pause control. Background, focus-loss, and platform interruption pausing remains application-owned.
 
-## 2. Main Prefabs
+## Production visual source of truth
 
-| Visual area | Asset / prefab | Purpose | Safe to edit? |
-|---|---|---|---|
-| Composition | `Assets/MathGame/Prefabs/Core/GameRoot.prefab` | Serialized roots, slots, HUD bottom area and required references | Limited |
-| HUD | `Assets/MathGame/Prefabs/UI/HUD.prefab` | Target, Score, Time, Fever, Combo and Tier | Yes, preserve named bindings |
-| Board | `Assets/MathGame/Prefabs/Board/Board.prefab` | Serialized 8×8 visual capacity and selection line | Limited |
-| Cell/block | `Assets/MathGame/Prefabs/Board/Cell.prefab` | Actual active number block, cell and obstacle visuals | Yes, preserve component references |
-| Legacy block | `Assets/MathGame/Prefabs/Board/Block.prefab` | Registered legacy world-space block asset; not the active prebuilt-cell number visual | Do not use as the primary redesign target |
-| Result | `Assets/MathGame/Prefabs/UI/RunResultPopup.prefab` | Run summary and Play Again; New Best is not currently implemented | Yes, preserve required references |
-| Removal effect | `Assets/MathGame/Prefabs/Effects/BlockRemovalEffect.prefab` | Pooled correct-answer removal feedback | Yes |
-| Registry | `Assets/MathGame/Prefabs/MathGamePrefabRegistry.asset` | Serialized prefab lookup | References only |
+| Area | Asset | Designer may edit |
+|---|---|---|
+| Run HUD | `Assets/MathGame/Prefabs/UI/HUD.prefab` | Fonts, colors, spacing, anchors, gauge appearance |
+| Board | `Assets/MathGame/Prefabs/Board/Board.prefab` | Board frame/background and selection-line appearance |
+| Cell | `Assets/MathGame/Prefabs/Board/Cell.prefab` | Cell background, border, number and obstacle typography |
+| Block | `Assets/MathGame/Prefabs/Board/Block.prefab` | Optional block visual styling |
+| Run result | `Assets/MathGame/Prefabs/UI/RunResultPopup.prefab` | Result layout, typography and Play Again appearance |
+| Removal feedback | `Assets/MathGame/Prefabs/Effects/BlockRemovalEffect.prefab` | Image sprite/color/material/size, duration and travel distance |
+| Composition | `Assets/MathGame/Prefabs/Core/GameRoot.prefab` | Slot layout and prefab composition; preserve host references |
 
-## 3. What Designers Can Change
+Runtime binds state into these serialized assets. It does not instantiate another BoardView or rebuild permanent cells.
 
-- Image colors and sprites, fonts, font sizes and text alignment.
-- Panel backgrounds, spacing, padding and visual hierarchy inside the existing bound roots.
-- `Cell.prefab` background and number/obstacle appearance.
-- Selection-line color and width through `SelectionLineGraphic`.
-- Removal-effect dot colors, sprites, UI materials and sizes, plus the exposed duration and travel distance.
-- Run Result panel appearance and button styling.
-- Script-exposed presentation durations and visual intensity values.
+## Binding contracts — do not break
 
-Use Prefab Mode and keep changes as prefab overrides/assets. Do not edit generated YAML manually.
+- Keep `GamePresentationHost` references assigned.
+- Keep `BoardView` below `GameplayRoot/BoardSlot`.
+- Keep exactly one serialized `GameplayPresentationRoot` and its 64 coordinate-stable `PrototypeCellView` children.
+- Keep `RunHUDView`, `RunResultPopupView`, `SelectionLineGraphic`, and `BlockRemovalEffectPool` references assigned.
+- Keep `SelectionSum` as Current Sum. It uses authoritative `ConnectionPathSnapshot.Sum`; do not calculate it in UI.
+- Keep `EffectSlot` and the registry's `BlockRemovalEffectPrefab` reference.
+- Decorative graphics above the board must not intercept raycasts.
 
-## 4. What Designers Should Not Change
+## Responsive layout
 
-- Do not rename or remove paths used by `PrototypeUILayout`: `MainStats/Target/Value`, `MainStats/Score/Value`, `RunStats/*/Value`, `BottomHUD/SelectionSum`, or the named action buttons.
-- Do not remove `GamePresentationHost`, `PrototypeUILayout`, `GameplayPresentationRoot`, `PrototypeCellView`, `RunResultPopupView`, `SelectionLineGraphic`, or `BlockRemovalEffectView`.
-- Do not change the serialized row/column identity on a cell or create duplicate positions.
-- Do not move `BoardView` out of `GameplayRoot/BoardSlot`, create another BoardView, or delete prebuilt cells.
-- Do not detach `RunResultPopup` from `OverlaySlot` or the effect slot from `GameplayRoot`.
-- Do not replace button objects without restoring their serialized `Button` and view references.
-- Do not put gameplay state or rules into Animator events, particles, or UI scripts.
+- Canvas Scaler: Scale With Screen Size.
+- Reference resolution: 1080 × 1920.
+- Match Width Or Height: 0.5.
+- `PrototypeUILayout` applies `Screen.safeArea` and fits the board into BoardSlot.
+- Validate 720 × 1280, 1080 × 1920, and 1440 × 2560 portrait.
 
-The normal builder preserves current-contract designer assets. The explicit **Recreate Prototype Prefabs** command is destructive and should not be used after art production begins without source-control review.
+## Animation ownership
 
-## 5. Block Design
+- HUD feedback and Current Sum pulses: `PrototypeUILayout`.
+- Cell selection/removal/arrival/damage: `PrototypeCellView`.
+- Connection line: `SelectionLineGraphic`.
+- Run result entrance: `RunResultPopupView`.
+- Removal particles: pooled `BlockRemovalEffectView` instances.
 
-Edit `Assets/MathGame/Prefabs/Board/Cell.prefab`:
+Avoid adding an Animator that drives the same scale, color, or anchored position unless the script-owned effect is migrated first.
 
-- Cell surface: root `Image`.
-- Number container: `BlockRoot`.
-- Number font, color and size: `BlockRoot/ValueText` (`UnityEngine.UI.Text`). Runtime assigns the number and value palette color.
-- Obstacle label: `ObstacleRoot/ObstacleText`.
-- Selected state: `PrototypeCellView` script animates root scale and background tint.
-- Removal/arrival/damage feedback: `PrototypeCellView` animates scale by coroutine.
-- Removal particles: edit `Assets/MathGame/Prefabs/Effects/BlockRemovalEffect.prefab`.
+## Localization
 
-Keep `PrototypeCellView`'s background, value text, obstacle text, block root and obstacle root references assigned.
+Runtime labels use Unity Localization tables for English and Korean. Do not replace bound labels with permanent hard-coded player-facing text. Verify both locales after hierarchy changes.
 
-## 6. Board Design
+## Editor workflow
 
-`GameRoot/GameplayRoot/BoardSlot` controls the board viewport. `GameplayPresentationRoot` fits the active logical rectangle into the serialized cells; `PrototypeCellView.SetGridLayout` controls cell anchors and currently applies 6 pixels of cell padding.
+Use:
 
-The Board prefab has no dedicated art background today; visible board color comes from each Cell root Image. Add decorative content only if it does not intercept raycasts or alter Cell rects. `BoardView/SelectionLine` uses `SelectionLineGraphic`, with script-driven points. Width/color are designer-editable; its RectTransform and component must remain.
+- `MathGame/Production/Build Game Scene`
+- `MathGame/Production/Validate Game Scene`
+- `MathGame/Production/Validate Production Prefabs`
 
-Gravity and refill visuals are script-owned reactions on the same prebuilt CellViews. Never rearrange cell identity to simulate movement.
+The older Prototype-named commands remain compatibility aliases. Do not use `MathGame/Development/Recreate Prototype Prefabs` after designer work begins; it is explicitly destructive.
 
-## 7. HUD Design
+## Legacy / Do Not Edit
 
-- Target and Score: `Assets/MathGame/Prefabs/UI/HUD.prefab` → `MainStats`.
-- Survival Time, Fever, Combo and Difficulty: the same prefab → `RunStats`.
-- Current Sum: `Assets/MathGame/Prefabs/Core/GameRoot.prefab` → `UIRoot/PrototypeCanvas/SafeArea/BottomSlot/BottomHUD/SelectionSum`.
-- Pause/Resume: the same BottomHUD → `Actions/Restart`; Continuous Run relabels and binds this serialized button as Pause/Resume.
+Domain Stage mode remains for compatibility and tests, but Moves/Objectives/Restoration/Stage Clear UI is not part of the primary Continuous Run presentation.
 
-`PrototypeUILayout` updates values, selection-sum target-match color/pulse, low-time warning, combo/target/Fever pulses, and pause labels. Preserve its bound hierarchy and avoid an Animator that also drives the same text scale, color, or anchored position.
+These active production components retain `Prototype` names because an ad-hoc rename risks Unity script GUID and serialized-reference breakage:
 
-## 8. Result UI
+- `PrototypeGameSceneController`
+- `PrototypeUILayout`
+- `PrototypeCellView`
+- `PrototypeGeneratedRoot`
 
-Edit `Assets/MathGame/Prefabs/UI/RunResultPopup.prefab`. `RunResultPopupView` owns the localized summary binding, Play Again button binding and a short script-driven scale entrance. Preserve `Result` and `PlayAgainButton` references/hierarchy required by the component. A **New Best** label/presentation is not currently implemented in this popup; do not design against a nonexistent binding. Do not add an Animator that drives the popup root scale unless the script transition is first migrated.
+Do not remove them. A future scripted serialization migration may rename them safely.
 
-## 9. Particles / Effects
+## Manual acceptance checklist
 
-`Assets/MathGame/Prefabs/Effects/BlockRemovalEffect.prefab` is the theme-neutral removal effect. The registry reference is `MathGamePrefabRegistry.BlockRemovalEffectPrefab`. Runtime pools instances under `GameplayRoot/EffectSlot`, places them at removed cell positions, and releases them without gating board mutation or presentation acknowledgement.
-
-The current placeholder is eight UI `Image` dots, not a Unity `ParticleSystem`. Designers may change each Image sprite, UI material, color and size, and tune `BlockRemovalEffectView` duration/travel distance in the Inspector. Preserve `BlockRemovalEffectView`, keep the effect self-contained, and do not add gameplay callbacks. A later visual redesign may replace this prefab with another self-contained implementation while keeping the same view contract. Fever, answer, timing and obstacle cues currently use script-driven transforms/colors plus synthesized placeholder audio rather than separate designer effect prefabs.
-
-## 10. Localization Constraints
-
-The project uses Unity Localization through `MathGameLocalization` and `LocalizationSettings`. It does **not** currently use `LocalizeStringEvent` or TMP; visible text is legacy `UnityEngine.UI.Text` updated by scripts. English and Korean string tables are generated by the localization builder.
-
-Do not replace runtime-bound labels with hard-coded text. Allow additional width for Korean and English, keep best-fit/wrapping settings, and validate both locales after font changes.
-
-## 11. Responsive Layout
-
-Both presentation Canvases use **Scale With Screen Size**, reference resolution **1080×1920**, Match Width Or Height at 0.5. `PrototypeUILayout` applies `Screen.safeArea`. Preserve the SafeArea stretch anchors, Top/Center/Bottom/Overlay slots, BoardSlot bounds and layout groups. Validate 1080×1920, 720×1280 and 1440×2560 portrait, including notched devices.
-
-## 12. Animation Ownership
-
-- Current Sum, HUD warnings and stat feedback: `PrototypeUILayout` coroutines.
-- Cell selection/removal/arrival/obstacle damage: `PrototypeCellView` coroutines.
-- Selection path: `SelectionLineGraphic` script.
-- Run Result entrance: `RunResultPopupView` coroutine.
-- Removal effect: `BlockRemovalEffectView` drives the prefab's UI `Image` particles. There is no `ParticleSystem` dependency in the current mobile-friendly placeholder.
-- Audio/haptics: `PlaceholderPresentationFeedback`.
-- DOTween: not used in the current Presentation implementation.
-- Animator: not used by current managed presentation prefabs.
-
-Avoid animating the same scale, color, or anchored-position properties with a new Animator until the corresponding script ownership is deliberately migrated.
-
-## Design Modification Map
-
-Change number block design  
-→ Edit `Assets/MathGame/Prefabs/Board/Cell.prefab` (`BlockRoot` and `ValueText`)
-
-Change cell/board surface  
-→ Edit `Assets/MathGame/Prefabs/Board/Cell.prefab`; keep `Board.prefab` cell identities intact
-
-Change selection line  
-→ Edit `Assets/MathGame/Prefabs/Board/Board.prefab` → `SelectionLine`
-
-Change Target or Score panel  
-→ Edit `Assets/MathGame/Prefabs/UI/HUD.prefab` → `MainStats`
-
-Change Time, Fever, Combo or Tier  
-→ Edit `Assets/MathGame/Prefabs/UI/HUD.prefab` → `RunStats`
-
-Change Current Sum  
-→ Edit `Assets/MathGame/Prefabs/Core/GameRoot.prefab` → `BottomHUD/SelectionSum`
-
-Change Pause button  
-→ Edit `Assets/MathGame/Prefabs/Core/GameRoot.prefab` → `BottomHUD/Actions/Restart`
-
-Change removal particle  
-→ Edit `Assets/MathGame/Prefabs/Effects/BlockRemovalEffect.prefab`
-
-Change Run Result or Play Again  
-→ Edit `Assets/MathGame/Prefabs/UI/RunResultPopup.prefab`
+1. Open GameScene and confirm one GameRoot and one BoardView.
+2. Confirm Time, Target, Score, Combo, Fever, Current Sum, and Difficulty update.
+3. Drag an orthogonal path; Current Sum updates immediately and resets after release.
+4. Confirm removal effects, gravity, refill, Fever, and target recovery.
+5. Let Time reach zero; only RunResultPopup appears.
+6. Press Play Again; the same BoardView is reused and transient effects reset.
+7. Confirm no Moves, Objectives, Restoration, Stage Clear, Next Stage, Continue, Retry-stage, Abandon, or manual Pause UI appears.
+8. Verify English and Korean, all three portrait resolutions, and focus/background resume behavior.

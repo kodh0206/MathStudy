@@ -147,7 +147,7 @@ GameObject:
   - component: {fileID: 421128107}
   - component: {fileID: 421128108}
   m_Layer: 0
-  m_Name: PrototypeGameSceneComposition
+  m_Name: GameSceneComposition
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

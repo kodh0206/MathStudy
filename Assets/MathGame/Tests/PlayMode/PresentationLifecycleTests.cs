@@ -108,7 +108,7 @@ namespace MathGame.Tests
             var existingEventSystem = Object.FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
             var gameObject = new GameObject("HUD");
             var layout = gameObject.AddComponent<PrototypeUILayout>();
-            layout.Build(null, null, null, null, null, null, null);
+            layout.Build(null, null, null, null, null);
             var selection = gameObject.transform.Find("SafeArea/BottomHUD/SelectionSum") as RectTransform;
             var authored = selection.anchoredPosition;
             layout.SetSelectionSum(7, 2);

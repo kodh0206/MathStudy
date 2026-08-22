@@ -32,11 +32,7 @@ namespace MathGame.Presentation.Unity
         Text runTier;
         GameObject runStats;
         RunHUDView runHud;
-        Button continueButton;
-        Button retryButton;
-        Button abandonButton;
         Button targetRetryButton;
-        Button restartButton;
         Button languageButton;
         Transform objectiveContainer;
         MathGamePrefabRegistry prefabRegistry;
@@ -68,13 +64,12 @@ namespace MathGame.Presentation.Unity
 
         void RefreshLocalizedControls()
         {
-            var restartLabel = restartButton?.GetComponentInChildren<Text>();
-            if (restartLabel != null) restartLabel.text = MathGameLocalization.Get("Common", "common.restart");
             var languageLabel = languageButton?.GetComponentInChildren<Text>();
             if (languageLabel != null) languageLabel.text = MathGameLocalization.Get("Settings", "settings.language_button");
         }
 
-        public void Build(Camera camera, GameplayPresentationRoot serializedBoardView, Action onContinue, Action onRestart, Action onAbandon, Action onTargetRetry, Action onLanguage, MathGamePrefabRegistry registry=null)
+        public void Build(Camera camera, GameplayPresentationRoot serializedBoardView, Action onTargetRetry,
+            Action onLanguage, MathGamePrefabRegistry registry=null)
         {
             boardCamera = camera;
             boardView = serializedBoardView;
@@ -83,7 +78,7 @@ namespace MathGame.Presentation.Unity
             var existingCanvas = GetComponent<Canvas>();
             if (existingCanvas != null && transform.Find("SafeArea/TopSlot/HUD") != null)
             {
-                BindPrefabHierarchy(onContinue,onRestart,onAbandon,onTargetRetry,onLanguage);
+                BindPrefabHierarchy(onTargetRetry,onLanguage);
                 ValidateBoundHierarchy();
                 ConfigureResponsiveHud();
                 ApplySafeArea(true);
@@ -140,11 +135,7 @@ namespace MathGame.Presentation.Unity
             actionLayout.spacing = 12;
             actionLayout.childControlWidth = true;
             actionLayout.childForceExpandWidth = true;
-            continueButton = Action(actions, "Continue +5", onContinue);
-            retryButton = Action(actions, "Retry", onRestart);
-            abandonButton = Action(actions, "Abandon", onAbandon);
             targetRetryButton = Action(actions, "Retry Target", onTargetRetry);
-            restartButton = Action(actions, "Restart", onRestart);
             languageButton = Action(actions, "Language", onLanguage);
             ApplySafeArea(true);
         }
@@ -155,7 +146,7 @@ namespace MathGame.Presentation.Unity
             var events=new GameObject("EventSystem",typeof(EventSystem),typeof(InputSystemUIInputModule));events.transform.SetParent(transform.parent,false);
         }
 
-        void BindPrefabHierarchy(Action onContinue,Action onRetry,Action onAbandon,Action onTargetRetry,Action onLanguage)
+        void BindPrefabHierarchy(Action onTargetRetry,Action onLanguage)
         {
             canvas=GetComponent<Canvas>();safeArea=transform.Find("SafeArea") as RectTransform;
             target=FindText("SafeArea/TopSlot/HUD/MainStats/Target/Value");moves=FindText("SafeArea/TopSlot/HUD/MainStats/Moves/Value");
@@ -170,11 +161,9 @@ namespace MathGame.Presentation.Unity
             selectionSum=FindText("SafeArea/BottomSlot/BottomHUD/SelectionSum");
             objectiveContainer=transform.Find("SafeArea/TopSlot/HUD/Objectives");objectives.Clear();
             if(objectiveContainer!=null)foreach(Transform child in objectiveContainer){var value=child.GetComponent<Text>()??child.GetComponentInChildren<Text>();if(value!=null)objectives.Add(value);}
-            continueButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Continue");retryButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Retry");
-            abandonButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Abandon");targetRetryButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/RetryTarget");
-            restartButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Restart");
+            targetRetryButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/RetryTarget");
             languageButton=FindButton("SafeArea/BottomSlot/BottomHUD/Actions/Language");
-            Wire(continueButton,onContinue);Wire(retryButton,onRetry);Wire(abandonButton,onAbandon);Wire(targetRetryButton,onTargetRetry);Wire(restartButton,onRetry);Wire(languageButton,onLanguage);
+            Wire(targetRetryButton,onTargetRetry);Wire(languageButton,onLanguage);
         }
 
         Text FindText(string path)=>transform.Find(path)?.GetComponent<Text>();
@@ -182,7 +171,7 @@ namespace MathGame.Presentation.Unity
         static void Wire(Button button,Action callback){if(button==null)return;button.onClick.RemoveAllListeners();if(callback!=null)button.onClick.AddListener(()=>callback());}
         void ValidateBoundHierarchy()
         {
-            if(safeArea==null||status==null||selectionSum==null||targetRetryButton==null||restartButton==null||languageButton==null||runHud?.IsComplete!=true)
+            if(safeArea==null||status==null||selectionSum==null||targetRetryButton==null||languageButton==null||runHud?.IsComplete!=true)
                 throw new InvalidOperationException("GameRoot/HUD prefab contract is incomplete. Rebuild or migrate the presentation prefab explicitly.");
         }
 
@@ -268,62 +257,6 @@ namespace MathGame.Presentation.Unity
             text.resizeTextMaxSize = 26;
         }
 
-        public void Refresh(StageSessionSnapshot snapshot, int targetValue, int gauge, int maximumGauge,
-            string message, bool failedDecision, bool targetRecovery, bool terminal)
-        {
-            if (snapshot == null) return;
-            target.text = "TARGET\n" + targetValue;
-            moves.text = "MOVES\n" + snapshot.RemainingMoves;
-            score.text = "SCORE\n" + snapshot.Score;
-            restoration.text = "RESTORATION  " + snapshot.ProvisionalRestoration + "/" + snapshot.StageRestorationCapacity;
-            fever.text = "FEVER  " + gauge + "/" + maximumGauge;
-            status.text = message ?? string.Empty;
-            EnsureObjectiveCount(snapshot.Objectives.Count);
-            for (var i = 0; i < objectives.Count; i++)
-            {
-                if (i < snapshot.Objectives.Count)
-                {
-                    var objective = snapshot.Objectives[i];
-                    objectives[i].gameObject.SetActive(true);
-                    objectives[i].text = DescribeObjective(objective) + "   " + objective.Current + " / " + objective.Required +
-                        (objective.IsComplete ? "   COMPLETE" : string.Empty);
-                }
-                else objectives[i].gameObject.SetActive(false);
-            }
-            continueButton.gameObject.SetActive(failedDecision && !snapshot.ContinueUsed);
-            retryButton.gameObject.SetActive(failedDecision || terminal);
-            abandonButton.gameObject.SetActive(failedDecision);
-            targetRetryButton.gameObject.SetActive(targetRecovery);
-            restartButton.gameObject.SetActive(!failedDecision && !targetRecovery && !terminal);
-            ApplySafeArea(false);
-        }
-
-        static string DescribeObjective(ObjectiveProgressSnapshot objective)
-        {
-            var definition = objective.Definition;
-            switch (definition.Kind)
-            {
-                case StageObjectiveKind.RemoveNumberBlocks:
-                    return "Remove number blocks";
-                case StageObjectiveKind.CompleteTarget:
-                    return "Complete target " + definition.Target.Value;
-                case StageObjectiveKind.CompleteLongConnection:
-                    return "Make connections of " + definition.MinimumConnectionLength + "+ blocks";
-                case StageObjectiveKind.RemoveObstacle:
-                    return definition.ObstacleKind.HasValue
-                        ? "Destroy " + definition.ObstacleKind.Value + " obstacles"
-                        : "Destroy obstacles";
-                case StageObjectiveKind.EarnRestorationEnergy:
-                    return "Earn restoration energy";
-                case StageObjectiveKind.CreateSpecial:
-                    return "Create special blocks";
-                case StageObjectiveKind.UseSpecial:
-                    return "Use special blocks";
-                default:
-                    return "Complete objective";
-            }
-        }
-
         public void SetSelectionSum(long value,int count)
         {
             if(selectionSum==null)return;
@@ -357,7 +290,6 @@ namespace MathGame.Presentation.Unity
                 target?.transform.parent.gameObject.SetActive(!useAuthoredRunHud);
                 score?.transform.parent.gameObject.SetActive(!useAuthoredRunHud);
                 languageButton?.gameObject.SetActive(false);
-                restartButton?.gameObject.SetActive(false);
             }
             else
             {
@@ -365,9 +297,6 @@ namespace MathGame.Presentation.Unity
                 score?.transform.parent.gameObject.SetActive(true);
                 languageButton?.gameObject.SetActive(true);
             }
-            continueButton?.gameObject.SetActive(false);
-            abandonButton?.gameObject.SetActive(false);
-            retryButton?.gameObject.SetActive(false);
             if (active && target != null)
             {
                 var stats = target.transform.parent.parent.GetComponent<GridLayoutGroup>();
@@ -418,7 +347,6 @@ namespace MathGame.Presentation.Unity
                 runTime.color = remainingTime > 0 && remainingTime <= lowTimeWarningSeconds ? LowTimeColor : Color.white;
             if (status != null)
                 status.text = Time.unscaledTime < transientFeedbackUntil ? transientFeedback : string.Empty;
-            if (runHud == null && restartButton != null) restartButton.gameObject.SetActive(!ended);
             if (targetRetryButton != null) targetRetryButton.gameObject.SetActive(!ended && targetRecovery);
             ApplySafeArea(false);
         }

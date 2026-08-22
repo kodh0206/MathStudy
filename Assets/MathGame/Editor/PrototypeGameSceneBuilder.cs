@@ -17,7 +17,8 @@ namespace MathGame.Editor.SceneBuilder
     {
         public const string ScenePath = "Assets/Scenes/GameScene.unity";
         const string ControllerName = "GameController";
-        const string CompositionName = "PrototypeGameSceneComposition";
+        const string CompositionName = "GameSceneComposition";
+        const string LegacyCompositionName = "PrototypeGameSceneComposition";
         const string GameRootName = "GameRoot";
 
         [MenuItem("MathGame/Build Prototype Scene", priority = 10)]
@@ -33,7 +34,9 @@ namespace MathGame.Editor.SceneBuilder
             EnsureComponent<ApplicationLifecycleRelay>(controller);
             EnsureComponent<MathGameBootstrap>(controller);
 
-            var composition = FindRoot(scene, CompositionName) ?? new GameObject(CompositionName);
+            var composition = FindRoot(scene, CompositionName) ?? FindRoot(scene, LegacyCompositionName);
+            if (composition == null) composition = new GameObject(CompositionName);
+            else if (composition.name == LegacyCompositionName) composition.name = CompositionName;
             EnsureComponent<PrototypeGameSceneController>(composition);
             EnsureComponent<PortraitOnlyPolicy>(composition);
 
@@ -72,10 +75,13 @@ namespace MathGame.Editor.SceneBuilder
 
             var validation = ValidateScene(scene);
             if (validation == null)
-                Debug.Log("MathGame prototype scene built successfully. Open GameScene and press Play.");
+                Debug.Log("MathGame production game scene built successfully. Open GameScene and press Play.");
             else
                 Debug.LogError("MathGame prototype scene validation failed: " + validation);
         }
+
+        [MenuItem("MathGame/Production/Build Game Scene", priority = 2)]
+        public static void BuildProductionGameScene() => BuildPrototypeScene();
 
         [MenuItem("MathGame/Validate Prototype Scene", priority = 11)]
         public static void ValidatePrototypeScene()
@@ -87,10 +93,13 @@ namespace MathGame.Editor.SceneBuilder
                 : EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             var error = ValidateScene(scene);
             if (error == null)
-                Debug.Log("MathGame prototype scene validation passed.");
+                Debug.Log("MathGame production game scene validation passed.");
             else
                 Debug.LogError("MathGame prototype scene validation failed: " + error);
         }
+
+        [MenuItem("MathGame/Production/Validate Game Scene", priority = 3)]
+        public static void ValidateProductionGameScene() => ValidatePrototypeScene();
 
         static string ValidateScene(Scene scene)
         {
@@ -100,7 +109,7 @@ namespace MathGame.Editor.SceneBuilder
             if (controller.GetComponent<ApplicationLifecycleRelay>() == null) return "ApplicationLifecycleRelay is missing.";
             if (controller.GetComponent<MathGameBootstrap>() == null) return "MathGameBootstrap is missing.";
             var composition = FindRoot(scene, CompositionName);
-            if (composition == null) return "PrototypeGameSceneComposition is missing.";
+            if (composition == null) return "GameSceneComposition is missing.";
             if (composition.GetComponent<PrototypeGameSceneController>() == null) return "PrototypeGameSceneController is missing.";
             var gameRoot=FindRoot(scene,GameRootName);
             if(gameRoot==null||PrefabUtility.GetCorrespondingObjectFromSource(gameRoot)==null)return "GameRoot prefab instance is missing.";
