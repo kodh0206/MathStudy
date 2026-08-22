@@ -432,13 +432,13 @@ namespace MathGame.Editor.SceneBuilder
             var root=UI("HUD",typeof(Image));root.GetComponent<Image>().color=new Color(.035f,.055f,.09f,.96f);
             var title=Text("Title","MATH GAME PROTOTYPE",38,TextAnchor.MiddleCenter,root.transform);Set(title.rectTransform,0,1,1,1,20,-72,-20,-14);
             var stats=UI("MainStats",typeof(GridLayoutGroup));stats.transform.SetParent(root.transform,false);Set(stats.GetComponent<RectTransform>(),0,1,1,1,24,-184,-24,-82);
-            var grid=stats.GetComponent<GridLayoutGroup>();grid.constraint=GridLayoutGroup.Constraint.FixedColumnCount;grid.constraintCount=3;grid.cellSize=new Vector2(320,92);grid.spacing=new Vector2(20,0);
+            var grid=stats.GetComponent<GridLayoutGroup>();grid.constraint=GridLayoutGroup.Constraint.FixedColumnCount;grid.constraintCount=3;grid.cellSize=new Vector2(320,92);grid.spacing=new Vector2(12,0);
             foreach(var name in new[]{"Target","Moves","Score"}){var stat=UI(name,typeof(Image));stat.transform.SetParent(stats.transform,false);stat.GetComponent<Image>().color=new Color(.11f,.17f,.26f,1);Stretch(Text("Value",name.ToUpperInvariant()+"\n0",30,TextAnchor.MiddleCenter,stat.transform).rectTransform,8);}
             var resources=UI("Resources");resources.transform.SetParent(root.transform,false);Set(resources.GetComponent<RectTransform>(),0,1,1,1,24,-264,-24,-194);
             var restoration=Text("Restoration","RESTORATION  0/100",29,TextAnchor.MiddleLeft,resources.transform);Set(restoration.rectTransform,0,0,.5f,1,0,0,-10,0);
             var fever=Text("Fever","FEVER  0/50",29,TextAnchor.MiddleRight,resources.transform);Set(fever.rectTransform,.5f,0,1,1,10,0,0,0);
-            var runStats=UI("RunStats",typeof(GridLayoutGroup));runStats.transform.SetParent(root.transform,false);Set(runStats.GetComponent<RectTransform>(),0,1,1,1,24,-286,-24,-194);
-            var runGrid=runStats.GetComponent<GridLayoutGroup>();runGrid.constraint=GridLayoutGroup.Constraint.FixedColumnCount;runGrid.constraintCount=4;runGrid.cellSize=new Vector2(242,82);runGrid.spacing=new Vector2(10,0);runGrid.childAlignment=TextAnchor.MiddleCenter;
+            var runStats=UI("RunStats",typeof(GridLayoutGroup));runStats.transform.SetParent(root.transform,false);Set(runStats.GetComponent<RectTransform>(),0,1,1,1,24,-374,-24,-194);
+            var runGrid=runStats.GetComponent<GridLayoutGroup>();runGrid.constraint=GridLayoutGroup.Constraint.FixedColumnCount;runGrid.constraintCount=2;runGrid.cellSize=new Vector2(486,84);runGrid.spacing=new Vector2(12,10);runGrid.childAlignment=TextAnchor.MiddleCenter;
             foreach(var pair in new[]{("Time","TIME\n30.0s"),("Fever","FEVER\n0/50"),("Combo","COMBO\nx0"),("Tier","TIER\n1")})
             {var item=UI(pair.Item1,typeof(Image));item.transform.SetParent(runStats.transform,false);item.GetComponent<Image>().color=new Color(.08f,.13f,.2f,1);Stretch(Text("Value",pair.Item2,25,TextAnchor.MiddleCenter,item.transform).rectTransform,6);}
             runStats.SetActive(false);

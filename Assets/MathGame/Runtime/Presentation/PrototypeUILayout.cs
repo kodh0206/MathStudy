@@ -42,6 +42,8 @@ namespace MathGame.Presentation.Unity
         Camera boardCamera;
         GameplayPresentationRoot boardView;
         Rect lastSafeArea;
+        int lastScreenWidth;
+        int lastScreenHeight;
         bool runMode;
         bool pauseState;
         readonly Dictionary<RectTransform, Coroutine> pulses = new Dictionary<RectTransform, Coroutine>();
@@ -186,11 +188,13 @@ namespace MathGame.Presentation.Unity
         {
             var hud = transform.Find("SafeArea/TopSlot/HUD") as RectTransform;
             var mainStats = transform.Find("SafeArea/TopSlot/HUD/MainStats") as RectTransform;
+            var runStatsRect = transform.Find("SafeArea/TopSlot/HUD/RunStats") as RectTransform;
             var resources = transform.Find("SafeArea/TopSlot/HUD/Resources") as RectTransform;
             var objectiveRoot = objectiveContainer as RectTransform;
             if (hud != null) SetRect(hud, new Vector2(0, 1), Vector2.one, new Vector2(24, -404), new Vector2(-24, -24));
             if (mainStats != null) SetRect(mainStats, new Vector2(0, 1), Vector2.one, new Vector2(24, -184), new Vector2(-24, -82));
             if (resources != null) SetRect(resources, new Vector2(0, 1), Vector2.one, new Vector2(24, -274), new Vector2(-24, -194));
+            if (runStatsRect != null) SetRect(runStatsRect, new Vector2(0, 1), Vector2.one, new Vector2(24, -374), new Vector2(-24, -194));
             // Fixed prototype HUD placement requested by design: centered at Y 60.
             if (objectiveRoot != null) SetRect(objectiveRoot, Vector2.zero, new Vector2(1, 0), new Vector2(24, 11), new Vector2(-24, 109));
 
@@ -199,10 +203,22 @@ namespace MathGame.Presentation.Unity
             {
                 stats.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
                 stats.constraintCount = 3;
-                stats.cellSize = new Vector2(320, 92);
-                stats.spacing = new Vector2(20, 0);
+                stats.spacing = new Vector2(12, 0);
                 stats.childAlignment = TextAnchor.MiddleCenter;
             }
+
+            var runGrid = runStatsRect != null ? runStatsRect.GetComponent<GridLayoutGroup>() : null;
+            if (runGrid != null)
+            {
+                runGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                runGrid.constraintCount = 2;
+                runGrid.spacing = new Vector2(12, 10);
+                runGrid.childAlignment = TextAnchor.MiddleCenter;
+            }
+
+            Canvas.ForceUpdateCanvases();
+            ResizeGridToAvailableWidth(stats, mainStats, runMode ? 2 : 3, 92);
+            ResizeGridToAvailableWidth(runGrid, runStatsRect, 2, 84);
 
             var objectiveLayout = objectiveRoot != null ? objectiveRoot.GetComponent<VerticalLayoutGroup>() : null;
             if (objectiveLayout != null)
@@ -330,7 +346,7 @@ namespace MathGame.Presentation.Unity
             if (active && target != null)
             {
                 var stats = target.transform.parent.parent.GetComponent<GridLayoutGroup>();
-                if (stats != null) { stats.constraintCount = 2; stats.cellSize = new Vector2(480, 92); }
+                if (stats != null) stats.constraintCount = 2;
                 foreach (var value in new[] { runTime, runFever, runCombo, runTier })
                 {
                     value.resizeTextForBestFit = true;
@@ -338,6 +354,9 @@ namespace MathGame.Presentation.Unity
                     value.resizeTextMaxSize = 25;
                 }
             }
+            Canvas.ForceUpdateCanvases();
+            var mainStats = target != null ? target.transform.parent.parent as RectTransform : null;
+            ResizeGridToAvailableWidth(mainStats != null ? mainStats.GetComponent<GridLayoutGroup>() : null, mainStats, active ? 2 : 3, 92);
             RefreshLocalizedControls();
         }
 
@@ -490,8 +509,10 @@ namespace MathGame.Presentation.Unity
         void ApplySafeArea(bool force)
         {
             var area = Screen.safeArea;
-            if (!force && area == lastSafeArea) return;
+            if (!force && area == lastSafeArea && lastScreenWidth == Screen.width && lastScreenHeight == Screen.height) return;
             lastSafeArea = area;
+            lastScreenWidth = Screen.width;
+            lastScreenHeight = Screen.height;
             safeArea.anchorMin = new Vector2(area.xMin / Screen.width, area.yMin / Screen.height);
             safeArea.anchorMax = new Vector2(area.xMax / Screen.width, area.yMax / Screen.height);
             safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
@@ -502,6 +523,22 @@ namespace MathGame.Presentation.Unity
                 boardCamera.rect=new Rect(normalizedSafe.x+.08f*normalizedSafe.width,normalizedSafe.y+.18f*normalizedSafe.height,.84f*normalizedSafe.width,.56f*normalizedSafe.height);
                 boardView?.FrameCamera(boardCamera);
             }
+            Canvas.ForceUpdateCanvases();
+            var mainStats = transform.Find("SafeArea/TopSlot/HUD/MainStats") as RectTransform;
+            var runStatsRect = transform.Find("SafeArea/TopSlot/HUD/RunStats") as RectTransform;
+            ResizeGridToAvailableWidth(mainStats != null ? mainStats.GetComponent<GridLayoutGroup>() : null, mainStats, runMode ? 2 : 3, 92);
+            ResizeGridToAvailableWidth(runStatsRect != null ? runStatsRect.GetComponent<GridLayoutGroup>() : null, runStatsRect, 2, 84);
+        }
+
+        static void ResizeGridToAvailableWidth(GridLayoutGroup grid, RectTransform rect, int columns, float cellHeight)
+        {
+            if (grid == null || rect == null || columns < 1) return;
+            var width = rect.rect.width;
+            if (width <= 0) return;
+            var usable = width - grid.padding.horizontal - grid.spacing.x * (columns - 1);
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = columns;
+            grid.cellSize = new Vector2(Mathf.Max(1, Mathf.Floor(usable / columns)), cellHeight);
         }
 
         static RectTransform Rect(string name, Transform parent, Vector2 min, Vector2 max, Vector2 offsetMin, Vector2 offsetMax)
