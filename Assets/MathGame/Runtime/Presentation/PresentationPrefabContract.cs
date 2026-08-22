@@ -1,8 +1,21 @@
+using UnityEngine;
+
 namespace MathGame.Presentation.Unity
 {
-    // Matching MonoScript file keeps PresentationPrefabContract serializable as its
-    // own Unity component instead of depending on the multi-type architecture file.
-    public sealed partial class PresentationPrefabContract
+    public sealed class PresentationPrefabContract : MonoBehaviour
     {
+        [SerializeField] string contractId;
+        [SerializeField] int version;
+
+        public string ContractId => contractId;
+        public int Version => version;
+
+#if UNITY_EDITOR
+        public void Configure(string id, int value)
+        {
+            contractId = id;
+            version = value;
+        }
+#endif
     }
 }

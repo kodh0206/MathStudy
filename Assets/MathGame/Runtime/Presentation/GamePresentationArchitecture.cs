@@ -213,15 +213,6 @@ namespace MathGame.Presentation.Unity
         void OnDisable() => ResetAll();
     }
 
-    public sealed partial class PresentationPrefabContract : MonoBehaviour
-    {
-        [SerializeField] string contractId;
-        [SerializeField] int version;
-        public string ContractId=>contractId;public int Version=>version;
-#if UNITY_EDITOR
-        public void Configure(string id,int value){contractId=id;version=value;}
-#endif
-    }
     public sealed class GamePresentationContext
     {
         public GamePresentationContext(Transform gameplayRoot,Transform boardSlot,Transform effectSlot,

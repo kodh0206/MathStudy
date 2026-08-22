@@ -46,7 +46,6 @@ namespace MathGame.Presentation.Unity
         int lastScreenWidth;
         int lastScreenHeight;
         bool runMode;
-        bool pauseState;
         readonly Dictionary<RectTransform, Coroutine> pulses = new Dictionary<RectTransform, Coroutine>();
         int displayedTarget = int.MinValue;
         int displayedCombo;
@@ -69,14 +68,13 @@ namespace MathGame.Presentation.Unity
 
         void RefreshLocalizedControls()
         {
-            var pauseLabel = restartButton?.GetComponentInChildren<Text>();
-            if (pauseLabel != null) pauseLabel.text = MathGameLocalization.Get("Common",
-                runMode ? (pauseState ? "common.resume" : "common.pause") : "common.restart");
+            var restartLabel = restartButton?.GetComponentInChildren<Text>();
+            if (restartLabel != null) restartLabel.text = MathGameLocalization.Get("Common", "common.restart");
             var languageLabel = languageButton?.GetComponentInChildren<Text>();
             if (languageLabel != null) languageLabel.text = MathGameLocalization.Get("Settings", "settings.language_button");
         }
 
-        public void Build(Camera camera, GameplayPresentationRoot serializedBoardView, Action onContinue, Action onRetry, Action onAbandon, Action onTargetRetry, Action onLanguage, MathGamePrefabRegistry registry=null)
+        public void Build(Camera camera, GameplayPresentationRoot serializedBoardView, Action onContinue, Action onRestart, Action onAbandon, Action onTargetRetry, Action onLanguage, MathGamePrefabRegistry registry=null)
         {
             boardCamera = camera;
             boardView = serializedBoardView;
@@ -85,10 +83,9 @@ namespace MathGame.Presentation.Unity
             var existingCanvas = GetComponent<Canvas>();
             if (existingCanvas != null && transform.Find("SafeArea/TopSlot/HUD") != null)
             {
-                BindPrefabHierarchy(onContinue,onRetry,onAbandon,onTargetRetry,onLanguage);
+                BindPrefabHierarchy(onContinue,onRestart,onAbandon,onTargetRetry,onLanguage);
                 ValidateBoundHierarchy();
                 ConfigureResponsiveHud();
-                runHud?.BindPause(onRetry);
                 ApplySafeArea(true);
                 return;
             }
@@ -144,10 +141,10 @@ namespace MathGame.Presentation.Unity
             actionLayout.childControlWidth = true;
             actionLayout.childForceExpandWidth = true;
             continueButton = Action(actions, "Continue +5", onContinue);
-            retryButton = Action(actions, "Retry", onRetry);
+            retryButton = Action(actions, "Retry", onRestart);
             abandonButton = Action(actions, "Abandon", onAbandon);
             targetRetryButton = Action(actions, "Retry Target", onTargetRetry);
-            restartButton = Action(actions, "Restart", onRetry);
+            restartButton = Action(actions, "Restart", onRestart);
             languageButton = Action(actions, "Language", onLanguage);
             ApplySafeArea(true);
         }
@@ -185,7 +182,7 @@ namespace MathGame.Presentation.Unity
         static void Wire(Button button,Action callback){if(button==null)return;button.onClick.RemoveAllListeners();if(callback!=null)button.onClick.AddListener(()=>callback());}
         void ValidateBoundHierarchy()
         {
-            if(safeArea==null||target==null||moves==null||score==null||restoration==null||fever==null||status==null||selectionSum==null||objectiveContainer==null||continueButton==null||retryButton==null||abandonButton==null||targetRetryButton==null||restartButton==null||languageButton==null||runStats==null||runTime==null||runFever==null||runCombo==null||runTier==null)
+            if(safeArea==null||status==null||selectionSum==null||targetRetryButton==null||restartButton==null||languageButton==null||runHud?.IsComplete!=true)
                 throw new InvalidOperationException("GameRoot/HUD prefab contract is incomplete. Rebuild or migrate the presentation prefab explicitly.");
         }
 
@@ -395,37 +392,35 @@ namespace MathGame.Presentation.Unity
             if (displayedTarget != targetValue)
             {
                 displayedTarget = targetValue;
-                Pulse(target.rectTransform, 1.1f, .14f);
+                if (target != null) Pulse(target.rectTransform, 1.1f, .14f);
                 runHud?.PulseTarget();
             }
-            target.text = MathGameLocalization.Get("Gameplay", "gameplay.target", targetValue);
-            score.text = MathGameLocalization.Get("Gameplay", "gameplay.score", snapshot.Score);
-            runTime.text = MathGameLocalization.Get("Gameplay", "gameplay.time", remainingTime);
-            runFever.text = MathGameLocalization.Get("Gameplay", "gameplay.fever", gauge, maximumGauge);
-            runCombo.text = MathGameLocalization.Get("Gameplay", "gameplay.combo", combo);
-            runTier.text = MathGameLocalization.Get("Gameplay", "gameplay.tier", difficultyTier + 1);
+            if (runHud == null)
+            {
+                if (target != null) target.text = MathGameLocalization.Get("Gameplay", "gameplay.target", targetValue);
+                if (score != null) score.text = MathGameLocalization.Get("Gameplay", "gameplay.score", snapshot.Score);
+                if (runTime != null) runTime.text = MathGameLocalization.Get("Gameplay", "gameplay.time", remainingTime);
+                if (runFever != null) runFever.text = MathGameLocalization.Get("Gameplay", "gameplay.fever", gauge, maximumGauge);
+                if (runCombo != null) runCombo.text = MathGameLocalization.Get("Gameplay", "gameplay.combo", combo);
+                if (runTier != null) runTier.text = MathGameLocalization.Get("Gameplay", "gameplay.tier", difficultyTier + 1);
+            }
             runHud?.Present(targetValue, remainingTime, maximumTime, snapshot.Score, combo, difficultyTier, gauge, maximumGauge);
             if (!double.IsNaN(displayedTime) && remainingTime > displayedTime + .01)
-                Pulse(runTime.rectTransform, 1.12f, .16f);
+                if (runTime != null) Pulse(runTime.rectTransform, 1.12f, .16f);
             if (combo != displayedCombo)
-                Pulse(runCombo.rectTransform, combo > displayedCombo ? 1.05f + Mathf.Min(combo, 8) * .012f : 1.03f, .13f);
+                if (runCombo != null) Pulse(runCombo.rectTransform, combo > displayedCombo ? 1.05f + Mathf.Min(combo, 8) * .012f : 1.03f, .13f);
             if (displayedGauge >= 0 && gauge > displayedGauge)
-                Pulse(runFever.rectTransform, gauge >= maximumGauge ? 1.13f : 1.04f, gauge >= maximumGauge ? .18f : .09f);
+                if (runFever != null) Pulse(runFever.rectTransform, gauge >= maximumGauge ? 1.13f : 1.04f, gauge >= maximumGauge ? .18f : .09f);
             displayedTime = remainingTime;
             displayedCombo = combo;
             displayedGauge = gauge;
-            runTime.color = remainingTime > 0 && remainingTime <= lowTimeWarningSeconds ? LowTimeColor : Color.white;
-            status.text = Time.unscaledTime < transientFeedbackUntil ? transientFeedback : string.Empty;
-            if (runHud == null) restartButton.gameObject.SetActive(!ended);
-            targetRetryButton.gameObject.SetActive(!ended && targetRecovery);
+            if (runTime != null)
+                runTime.color = remainingTime > 0 && remainingTime <= lowTimeWarningSeconds ? LowTimeColor : Color.white;
+            if (status != null)
+                status.text = Time.unscaledTime < transientFeedbackUntil ? transientFeedback : string.Empty;
+            if (runHud == null && restartButton != null) restartButton.gameObject.SetActive(!ended);
+            if (targetRetryButton != null) targetRetryButton.gameObject.SetActive(!ended && targetRecovery);
             ApplySafeArea(false);
-        }
-
-        public void SetPauseState(bool paused)
-        {
-            pauseState = paused;
-            if (paused) StopTransientResponses();
-            RefreshLocalizedControls();
         }
 
         public void PresentCorrect(MathGame.Answer.SpeedGrade grade, double recoveredTime)
@@ -540,7 +535,6 @@ namespace MathGame.Presentation.Unity
             while(objectives.Count<count)
             {
                 GameObject instance=null;
-                if(prefabRegistry!=null&&prefabRegistry.ObjectiveItemPrefab!=null)instance=Instantiate(prefabRegistry.ObjectiveItemPrefab,objectiveContainer);
                 if(instance==null){var value=Label("ObjectiveItem",objectiveContainer,"Objective",26,TextAnchor.MiddleLeft,FontStyle.Normal);objectives.Add(value);continue;}
                 var text=instance.GetComponent<Text>()??instance.GetComponentInChildren<Text>();if(text==null)throw new InvalidOperationException("Objective item prefab requires a Text component.");objectives.Add(text);
                 ConfigureObjectiveText(text);

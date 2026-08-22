@@ -17,9 +17,5 @@ MonoBehaviour:
   CellPrefab: {fileID: 6531439821401011555, guid: 5cee45328eedc364ab235b5e48d182bb, type: 3}
   BlockPrefab: {fileID: 1751187331457035607, guid: ad7ac33e890bab546a48d4ed4a0365b2, type: 3}
   HudPrefab: {fileID: 8012752457760047532, guid: 7a0d1a380bc9468428b13fe08c31ef2b, type: 3}
-  ObjectiveItemPrefab: {fileID: 765537884406063569, guid: 8dd984b554bb6af4386d0dfdbc991362, type: 3}
-  FeverGaugePrefab: {fileID: 3305643594054481619, guid: eee1687f4dac8ac4988cf640a7fc12f0, type: 3}
-  RestorationGaugePrefab: {fileID: 3779349327831654651, guid: b9d7ddc9c3423454a9dbf311eea96172, type: 3}
-  StageClearPopupPrefab: {fileID: 7869812185683083841, guid: c1657f8ddf41f4541b9b7be1951fa1a7, type: 3}
   RunResultPopupPrefab: {fileID: 4852848889435920081, guid: 02bbbdbdb4945e64e88f2288eb3d1f94, type: 3}
   BlockRemovalEffectPrefab: {fileID: 7043727423992370916, guid: 2d5073173b9b7ce4388d1e00ee505049, type: 3}

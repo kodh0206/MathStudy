@@ -2381,11 +2381,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7100073070244213659, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
       propertyPath: m_ReferenceResolution.x
-      value: 720
+      value: 1080
       objectReference: {fileID: 0}
     - target: {fileID: 7100073070244213659, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
       propertyPath: m_ReferenceResolution.y
-      value: 1080
+      value: 1920
       objectReference: {fileID: 0}
     - target: {fileID: 7122044797594778716, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
       propertyPath: m_IsActive

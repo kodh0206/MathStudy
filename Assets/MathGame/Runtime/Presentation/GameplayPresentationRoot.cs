@@ -241,7 +241,8 @@ namespace MathGame.Presentation.Unity
             if (playback != null) StopCoroutine(playback);
             playback = null;
             selectionLine?.Clear();
-            foreach (var view in prebuiltCells.Values) view.ResetVisualState();
+            foreach (var view in prebuiltCells.Values)
+                if (view != null) view.ResetVisualState();
             removalEffects?.ResetAll();
             cells.Clear(); blocks.Clear(); obstacles.Clear(); appliedEvents.Clear();
         }

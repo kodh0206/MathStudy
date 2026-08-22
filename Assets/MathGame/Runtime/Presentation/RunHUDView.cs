@@ -17,7 +17,6 @@ namespace MathGame.Presentation.Unity
         [SerializeField] Text tierValue;
         [SerializeField] Text feverValue;
         [SerializeField] Image feverFill;
-        [SerializeField] Button pauseButton;
         bool critical;
         Coroutine timePulse;
         Coroutine targetPulse;
@@ -27,20 +26,12 @@ namespace MathGame.Presentation.Unity
         static readonly Color Critical = new Color(1f, .24f, .22f, 1f);
 
         public bool IsComplete => content != null && targetValue != null && timeValue != null && timeFill != null &&
-            scoreValue != null && comboValue != null && tierValue != null && feverValue != null && feverFill != null &&
-            pauseButton != null;
+            scoreValue != null && comboValue != null && tierValue != null && feverValue != null && feverFill != null;
 
         public void SetVisible(bool value)
         {
             if (content != null) content.SetActive(value);
             if (!value) ResetTransientState();
-        }
-
-        public void BindPause(Action callback)
-        {
-            if (pauseButton == null) return;
-            pauseButton.onClick.RemoveAllListeners();
-            if (callback != null) pauseButton.onClick.AddListener(() => callback());
         }
 
         public void Present(int target, double remainingTime, double maximumTime, long score, int combo,
@@ -122,7 +113,7 @@ namespace MathGame.Presentation.Unity
 
 #if UNITY_EDITOR
         public void Configure(GameObject root, Text target, Text time, Image timeGauge, Text score, Text combo,
-            Text tier, Text fever, Image feverGauge, Button pause)
+            Text tier, Text fever, Image feverGauge)
         {
             content = root;
             targetValue = target;
@@ -133,7 +124,6 @@ namespace MathGame.Presentation.Unity
             tierValue = tier;
             feverValue = fever;
             feverFill = feverGauge;
-            pauseButton = pause;
         }
 #endif
     }

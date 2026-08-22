@@ -76,10 +76,10 @@ namespace MathGame.Tests
             var combo = Label("Combo"); var tier = Label("Tier"); var fever = Label("Fever");
             var timeFill = new GameObject("TimeFill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
             var feverFill = new GameObject("FeverFill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
-            var pause = new GameObject("Pause", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button)).GetComponent<Button>();
 #if UNITY_EDITOR
-            view.Configure(root, target, time, timeFill, score, combo, tier, fever, feverFill, pause);
+            view.Configure(root, target, time, timeFill, score, combo, tier, fever, feverFill);
 #endif
+            Assert.That(view.IsComplete, Is.True, "The run HUD contract must not require a manual Pause control.");
             view.Present(8, 15, 30, 1240, 4, 2, 25, 50);
             Assert.That(target.text, Is.EqualTo("8"));
             Assert.That(timeFill.fillAmount, Is.EqualTo(.5f).Within(.001f));
@@ -88,7 +88,7 @@ namespace MathGame.Tests
             Object.DestroyImmediate(root);
             Object.DestroyImmediate(target.gameObject); Object.DestroyImmediate(time.gameObject); Object.DestroyImmediate(score.gameObject);
             Object.DestroyImmediate(combo.gameObject); Object.DestroyImmediate(tier.gameObject); Object.DestroyImmediate(fever.gameObject);
-            Object.DestroyImmediate(timeFill.gameObject); Object.DestroyImmediate(feverFill.gameObject); Object.DestroyImmediate(pause.gameObject);
+            Object.DestroyImmediate(timeFill.gameObject); Object.DestroyImmediate(feverFill.gameObject);
         }
 
         [Test]

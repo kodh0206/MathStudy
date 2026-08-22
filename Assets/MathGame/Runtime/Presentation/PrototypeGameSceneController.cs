@@ -47,7 +47,6 @@ namespace MathGame.Presentation.Unity
         RefillValueRange refill;
         WorldRestorationProgress world;
         PrototypeUILayout uiLayout;
-        StageClearPopupView stageClearPopup;
         RunResultPopupView runResultPopup;
         SurvivalRunSession run;
         double maximumRunTime;
@@ -155,14 +154,6 @@ namespace MathGame.Presentation.Unity
             boardView.Configure(new PresentationTiming(45, 80, 100, 80, 180));
             boardView.ConfigureRegistry(presentationHost.Registry);
             var context = presentationHost.CreateContext();
-            stageClearPopup = context.OverlayRoot.GetComponentInChildren<StageClearPopupView>(true);
-            if (stageClearPopup == null)
-            {
-                status = "Serialized StageClearPopup is missing from OverlaySlot.";
-                return;
-            }
-            stageClearPopup.Bind(Restart, NextStageRequested, false);
-            stageClearPopup.Hide();
             runResultPopup = context.OverlayRoot.GetComponentInChildren<RunResultPopupView>(true);
             if (runResultPopup == null)
             {
@@ -182,7 +173,7 @@ namespace MathGame.Presentation.Unity
                 camera.backgroundColor = new Color(.008f, .018f, .035f);
             }
             uiLayout = presentationHost.UILayout;
-            uiLayout.Build(camera, boardView, Continue, TogglePause, Abandon, RetryTarget, ToggleLanguage, presentationHost.Registry);
+            uiLayout.Build(camera, boardView, Continue, Restart, Abandon, RetryTarget, ToggleLanguage, presentationHost.Registry);
             uiLayout.SetRunMode(true);
             stage.BeginTargetPresentation();
             stage.EnablePlayerInput();
@@ -365,12 +356,6 @@ namespace MathGame.Presentation.Unity
             var kind = presentation.ActiveEnvelope?.AcknowledgementKind ?? PresentationAcknowledgementKind.None;
             var ack = presentation.CompletePlayback();
             if (ack != PresentationAcknowledgementStatus.Accepted) { status = "Presentation acknowledgement: " + ack; return; }
-            if (kind == PresentationAcknowledgementKind.Terminal && stage.State == StageState.Success)
-            {
-                stageClearPopup?.Show();
-                status = "Stage clear. The next prototype stage is not available yet.";
-                return;
-            }
             if ((kind == PresentationAcknowledgementKind.Answer || kind == PresentationAcknowledgementKind.FeverEnd) &&
                 stage.State == StageState.PresentingTarget)
                 PreparePlan(new PresentationPlan(Envelope(PresentationAcknowledgementKind.TargetReady,
@@ -503,7 +488,6 @@ namespace MathGame.Presentation.Unity
                 status = MathGameLocalization.Get("Gameplay", "gameplay.save_failed");
                 return;
             }
-            stageClearPopup?.Hide();
             runResultPopup?.Hide();
             boardView?.PlayAgainCue();
             uiLayout?.ResetPolish();
@@ -536,36 +520,6 @@ namespace MathGame.Presentation.Unity
             else terminalProgressHandled = true;
         }
 
-        void TogglePause()
-        {
-            if (run == null || run.Status == SurvivalRunStatus.Ended) return;
-            if (stage.State == StageState.Paused)
-            {
-                if (stage.Resume(PauseReason.User) != TransitionResult.Succeeded)
-                {
-                    uiLayout?.SetPauseState(true);
-                    status = "Run remains paused by another interruption.";
-                    return;
-                }
-                uiLayout?.SetPauseState(false);
-                status = MathGameLocalization.Get("Gameplay", "gameplay.resumed");
-            }
-            else
-            {
-                if (stage.Pause(PauseReason.User) != TransitionResult.Succeeded)
-                {
-                    status = "Pause request rejected.";
-                    return;
-                }
-                uiLayout?.SetPauseState(true);
-                pointerDown = false;
-                selected.Clear();
-                uiLayout?.SetSelectionSum(0, 0);
-                UpdateLine();
-                status = MathGameLocalization.Get("Gameplay", "gameplay.paused");
-            }
-        }
-
         IEnumerator ShowRunResultAfterFeedback(RunResult result)
         {
             yield return new WaitForSecondsRealtime(.12f);
@@ -587,11 +541,6 @@ namespace MathGame.Presentation.Unity
             var saved = progressRepository.Save(updated);
             if (!saved.Succeeded) Debug.LogError("[MathGame][Localization] Locale preference save failed: " + saved.Diagnostic);
             status = MathGameLocalization.Get("Settings", "settings.language_changed");
-        }
-
-        void NextStageRequested()
-        {
-            status = "The next prototype stage is not available yet.";
         }
 
         IEnumerator RestartCleanly()

@@ -107,8 +107,6 @@ namespace MathGame.Editor.SceneBuilder
             var ownership=gameRoot.GetComponent<PrototypeGeneratedRoot>();
             if(ownership==null||!ownership.IsMathGameOwned)return "GameRoot MathGame ownership marker is missing or invalid.";
             var host=gameRoot.GetComponent<GamePresentationHost>();if(host==null||!host.HasValidContext)return "GameRoot presentation context is incomplete.";
-            if (host.CreateContext().OverlayRoot.GetComponentInChildren<StageClearPopupView>(true) == null)
-                return "Serialized StageClearPopup is missing from OverlaySlot.";
             if (host.CreateContext().OverlayRoot.GetComponentInChildren<RunResultPopupView>(true) == null)
                 return "Serialized RunResultPopup is missing from OverlaySlot.";
             if (host.Registry.BlockRemovalEffectPrefab == null ||
