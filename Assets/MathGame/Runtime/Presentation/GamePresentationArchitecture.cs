@@ -10,6 +10,7 @@ namespace MathGame.Presentation.Unity
     public sealed partial class SelectionLineGraphic : Graphic
     {
         [SerializeField, Min(2f)] float lineWidth = 10f;
+        [SerializeField, Min(0f)] float endpointInset = 34f;
         readonly List<Vector2> points = new List<Vector2>();
         Color normalColor = new Color(.18f, .88f, 1f, .86f);
         Color matchColor = new Color(.72f, 1f, 1f, 1f);
@@ -41,7 +42,11 @@ namespace MathGame.Presentation.Unity
                 var to = points[i];
                 var delta = to - from;
                 if (delta.sqrMagnitude < .001f) continue;
-                var perpendicular = new Vector2(-delta.y, delta.x).normalized * (lineWidth * .5f);
+                var direction = delta.normalized;
+                var inset = Mathf.Min(endpointInset, delta.magnitude * .35f);
+                from += direction * inset;
+                to -= direction * inset;
+                var perpendicular = new Vector2(-direction.y, direction.x) * (lineWidth * .5f);
                 var start = helper.currentVertCount;
                 Add(helper, from - perpendicular);
                 Add(helper, from + perpendicular);
@@ -61,9 +66,10 @@ namespace MathGame.Presentation.Unity
         }
 
 #if UNITY_EDITOR
-        public void Configure(float width, Color value)
+        public void Configure(float width, Color value, float inset = 34f)
         {
             lineWidth = width;
+            endpointInset = Mathf.Max(0, inset);
             normalColor = value;
             color = normalColor;
             raycastTarget = false;

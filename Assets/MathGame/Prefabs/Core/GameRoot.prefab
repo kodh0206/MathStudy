@@ -137,8 +137,8 @@ RectTransform:
   - {fileID: 7139142593992662633}
   m_Father: {fileID: 5230605120856816641}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.04, y: 0.19}
-  m_AnchorMax: {x: 0.96, y: 0.75}
+  m_AnchorMin: {x: 0.045, y: 0.215}
+  m_AnchorMax: {x: 0.955, y: 0.755}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -297,8 +297,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -4, y: 1301.5}
-  m_SizeDelta: {x: -48, y: 50}
+  m_AnchoredPosition: {x: 0, y: -141}
+  m_SizeDelta: {x: -48, y: 98}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3389903515204004028
 CanvasRenderer:
@@ -321,7 +321,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Text
   m_Material: {fileID: 0}
-  m_Color: {r: 0.35, g: 0.9, b: 1, a: 1}
+  m_Color: {r: 0.55, g: 0.9, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -330,11 +330,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 34
+    m_FontSize: 42
     m_FontStyle: 1
     m_BestFit: 1
     m_MinSize: 22
-    m_MaxSize: 34
+    m_MaxSize: 42
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -494,8 +494,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 122}
-  m_SizeDelta: {x: -48, y: 196}
+  m_AnchoredPosition: {x: 0, y: 132}
+  m_SizeDelta: {x: -48, y: 216}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7062225199101554012
 CanvasRenderer:
@@ -518,7 +518,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.035, g: 0.055, b: 0.09, a: 0.96}
+  m_Color: {r: 0.012, g: 0.035, b: 0.065, a: 0.97}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -593,7 +593,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.004, g: 0.012, b: 0.028, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -684,7 +684,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PresentationPrefabContract
   contractId: GameRoot
-  version: 11
+  version: 12
 --- !u!114 &5700716657681421388
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -698,7 +698,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PrototypeGeneratedRoot
   ownerId: MathGame.Prototype.GameRoot
-  schemaVersion: 11
+  schemaVersion: 12
 --- !u!1 &5504286107261467772
 GameObject:
   m_ObjectHideFlags: 0
@@ -1434,7 +1434,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -60}
+  m_AnchoredPosition: {x: 0, y: -56}
   m_SizeDelta: {x: -48, y: 88}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9034005573625155096
@@ -1467,8 +1467,8 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
-    m_FontSize: 26
-    m_FontStyle: 0
+    m_FontSize: 32
+    m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
     m_MaxSize: 40
@@ -1478,7 +1478,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Starting prototype...
+  m_Text: 
 --- !u!1 &8992896399368508641
 GameObject:
   m_ObjectHideFlags: 0

@@ -45,12 +45,12 @@ namespace MathGame.Presentation.Unity
             DisplayedBlockId = snapshot.Block?.Id;
 
             var obstacle = snapshot.HasBox
-                ? "×\n" + new string('◆', snapshot.Box.Value.CurrentHitPoints)
-                : snapshot.HasDust ? "▒" : string.Empty;
+                ? "X"
+                : snapshot.HasDust ? "✕" : string.Empty;
             obstacleRoot.SetActive(obstacle.Length > 0);
             obstacleText.text = obstacle;
             obstacleText.alignment = TextAnchor.MiddleCenter;
-            obstacleText.color = snapshot.HasBox ? new Color(1f,.28f,.25f,1f) : new Color(.45f,.72f,.78f,.8f);
+            obstacleText.color = snapshot.HasBox ? new Color(1f,.20f,.18f,1f) : new Color(1f,.36f,.28f,.82f);
             authoritativeBackground = snapshot.HasBox ? new Color(.10f,.035f,.05f,.99f) : NodeColor;
             if (border != null) border.effectColor = snapshot.HasBox
                 ? new Color(.72f,.10f,.14f,.95f) : new Color(.12f,.48f,.64f,.85f);
@@ -221,7 +221,7 @@ namespace MathGame.Presentation.Unity
             valueText.text = blockRoot.activeSelf ? value.ToString() : string.Empty;
             valueText.color = NumberColor;
             obstacleRoot.SetActive(!string.IsNullOrEmpty(obstacle));
-            obstacleText.text = obstacle != null && obstacle.StartsWith("B") ? "×\n◆◆" : string.IsNullOrEmpty(obstacle) ? string.Empty : "▒";
+            obstacleText.text = obstacle != null && obstacle.StartsWith("B") ? "X" : string.IsNullOrEmpty(obstacle) ? string.Empty : "✕";
             obstacleText.alignment = TextAnchor.MiddleCenter;
             background.color = obstacle != null && obstacle.StartsWith("B")
                 ? new Color(.10f,.035f,.05f,.99f)

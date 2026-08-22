@@ -11,7 +11,7 @@ namespace MathGame.Editor.SceneBuilder
 {
     public static class PrototypePrefabBuilder
     {
-        const int ContractVersion=11;
+        const int ContractVersion=12;
         public const string Root = "Assets/MathGame/Prefabs";
         public const string GameRootPath = Root + "/Core/GameRoot.prefab";
         public const string BoardPath = Root + "/Board/Board.prefab";
@@ -201,6 +201,7 @@ namespace MathGame.Editor.SceneBuilder
                     if (path == GameRootPath) UpgradeRunLayout(contents);
                     if (path == CellPath) UpgradeCellStyle(contents);
                     if (path == BoardPath) UpgradeBoardStyle(contents);
+                    if (path == HudPath) ApplyDigitalCoreHudStyle(contents);
                     contents.GetComponent<PresentationPrefabContract>().Configure(Path.GetFileNameWithoutExtension(path), ContractVersion);
                     if (path == GameRootPath)
                     {
@@ -546,8 +547,8 @@ namespace MathGame.Editor.SceneBuilder
             var selectionLine=UI("SelectionLine",typeof(CanvasRenderer),typeof(SelectionLineGraphic));
             selectionLine.transform.SetParent(root.transform,false);
             Stretch(selectionLine.GetComponent<RectTransform>(),0);
-            selectionLine.GetComponent<SelectionLineGraphic>().Configure(12f,new Color(.18f,.88f,1f,.90f));
-            selectionLine.transform.SetAsFirstSibling();
+            selectionLine.GetComponent<SelectionLineGraphic>().Configure(10f,new Color(.18f,.92f,1f,.88f),34f);
+            selectionLine.transform.SetAsLastSibling();
             var cellPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(CellPath);
             for(var row=0;row<8;row++)for(var column=0;column<8;column++)
             {
@@ -583,6 +584,7 @@ namespace MathGame.Editor.SceneBuilder
             var objectives=UI("Objectives",typeof(VerticalLayoutGroup));objectives.transform.SetParent(root.transform,false);Set(objectives.GetComponent<RectTransform>(),0,0,1,1,24,28,-24,116);
             var vertical=objectives.GetComponent<VerticalLayoutGroup>();vertical.spacing=6;vertical.childControlHeight=true;vertical.childForceExpandHeight=true;
             EnsureRunHudHierarchy(root);
+            ApplyDigitalCoreHudStyle(root);
             return root;
         }
 
@@ -635,9 +637,9 @@ namespace MathGame.Editor.SceneBuilder
             var outline=cell.GetComponent<Outline>()??cell.AddComponent<Outline>();
             outline.effectColor=new Color(.12f,.48f,.64f,.85f);outline.effectDistance=new Vector2(2,-2);
             var value=cell.transform.Find("BlockRoot/ValueText")?.GetComponent<Text>();
-            if(value!=null){value.color=new Color(.90f,.97f,1f);value.fontStyle=FontStyle.Bold;value.fontSize=40;}
+            if(value!=null){value.color=new Color(.94f,.99f,1f);value.fontStyle=FontStyle.Bold;value.fontSize=46;}
             var obstacle=cell.transform.Find("ObstacleRoot/ObstacleText")?.GetComponent<Text>();
-            if(obstacle!=null){obstacle.alignment=TextAnchor.MiddleCenter;obstacle.color=new Color(1f,.28f,.25f);}
+            if(obstacle!=null){obstacle.alignment=TextAnchor.MiddleCenter;obstacle.color=new Color(1f,.20f,.18f);obstacle.fontStyle=FontStyle.Bold;obstacle.fontSize=36;}
         }
 
         static void UpgradeBoardStyle(GameObject board)
@@ -647,7 +649,46 @@ namespace MathGame.Editor.SceneBuilder
             var outline=board.GetComponent<Outline>()??board.AddComponent<Outline>();
             outline.effectColor=new Color(.08f,.58f,.72f,.70f);outline.effectDistance=new Vector2(3,-3);
             var line=board.GetComponentInChildren<SelectionLineGraphic>(true);
-            if(line!=null){line.Configure(12f,new Color(.18f,.88f,1f,.90f));line.transform.SetAsFirstSibling();}
+            if(line!=null){line.Configure(10f,new Color(.18f,.92f,1f,.88f),34f);line.transform.SetAsLastSibling();}
+        }
+
+        static void ApplyDigitalCoreHudStyle(GameObject hud)
+        {
+            var background=hud.GetComponent<Image>();
+            if(background!=null){background.color=new Color(.012f,.035f,.065f,.97f);background.raycastTarget=false;}
+            var run=hud.transform.Find("RunHUD");
+            if(run==null)return;
+            StyleText(run.Find("SurvivalPanel/Label"),22,new Color(.22f,.88f,1f),TextAnchor.UpperLeft,false);
+            StyleText(run.Find("SurvivalPanel/Value"),44,Color.white,TextAnchor.UpperRight,true);
+            StyleText(run.Find("ScorePanel/Score"),31,Color.white,TextAnchor.UpperRight,true);
+            StyleText(run.Find("ScorePanel/Tier"),18,new Color(.48f,.68f,.78f),TextAnchor.LowerRight,false);
+            StyleText(run.Find("TargetPanel/Label"),23,new Color(.22f,.88f,1f),TextAnchor.UpperCenter,false);
+            StyleText(run.Find("TargetPanel/Value"),104,Color.white,TextAnchor.MiddleCenter,true);
+            StyleText(run.Find("SecondaryStats/Combo"),32,Color.white,TextAnchor.MiddleLeft,true);
+            StyleText(run.Find("FeverPanel/Label"),21,new Color(1f,.60f,.16f),TextAnchor.UpperLeft,true);
+            var targetPanel=run.Find("TargetPanel")?.gameObject;
+            if(targetPanel!=null)
+            {
+                var image=targetPanel.GetComponent<Image>()??targetPanel.AddComponent<Image>();
+                image.color=new Color(.02f,.12f,.18f,.42f);image.raycastTarget=false;
+                var outline=targetPanel.GetComponent<Outline>()??targetPanel.AddComponent<Outline>();
+                outline.effectColor=new Color(.12f,.72f,.86f,.45f);outline.effectDistance=new Vector2(2,-2);
+            }
+            var feverPanel=run.Find("FeverPanel");
+            var segments=feverPanel?.Find("Segments");
+            if(feverPanel!=null&&segments==null)
+            {
+                var segmentRoot=UI("Segments",typeof(HorizontalLayoutGroup));segmentRoot.transform.SetParent(feverPanel,false);
+                Set(segmentRoot.GetComponent<RectTransform>(),.36f,.25f,1,.72f,0,0,-4,0);
+                var layout=segmentRoot.GetComponent<HorizontalLayoutGroup>();layout.spacing=5;layout.childControlWidth=true;layout.childForceExpandWidth=true;layout.childControlHeight=true;layout.childForceExpandHeight=true;
+                for(var i=0;i<7;i++){var segment=UI("Segment_"+(i+1),typeof(CanvasRenderer),typeof(Image));segment.transform.SetParent(segmentRoot.transform,false);segment.GetComponent<Image>().color=new Color(.16f,.12f,.10f,.92f);segment.GetComponent<Image>().raycastTarget=false;}
+                var gauge=feverPanel.Find("Gauge");if(gauge!=null)gauge.gameObject.SetActive(false);
+            }
+        }
+
+        static void StyleText(Transform value,int size,Color color,TextAnchor alignment,bool bold)
+        {
+            var text=value?.GetComponent<Text>();if(text==null)return;text.fontSize=size;text.color=color;text.alignment=alignment;text.fontStyle=bold?FontStyle.Bold:FontStyle.Normal;text.resizeTextForBestFit=true;text.resizeTextMinSize=Mathf.Max(16,size-10);text.resizeTextMaxSize=size;
         }
 
         static GameObject Panel(string name,Transform parent,Color color)
@@ -658,13 +699,21 @@ namespace MathGame.Editor.SceneBuilder
         static void UpgradeRunLayout(GameObject root)
         {
             var boardSlot=root.transform.Find("GameplayRoot/BoardSlot") as RectTransform;
-            if(boardSlot!=null)Set(boardSlot,.04f,.19f,.96f,.75f,0,0,0,0);
+            if(boardSlot!=null)Set(boardSlot,.045f,.215f,.955f,.755f,0,0,0,0);
             var bottom=root.transform.Find("UIRoot/PrototypeCanvas/SafeArea/BottomSlot/BottomHUD") as RectTransform;
-            if(bottom!=null)Set(bottom,0,0,1,0,24,24,-24,220);
-            var gameplay=root.transform.Find("GameplayRoot");
-            if(gameplay!=null&&gameplay.Find("Backdrop")==null)
+            if(bottom!=null)
             {
-                var backdrop=Panel("Backdrop",gameplay,Color.black);Stretch(backdrop.GetComponent<RectTransform>(),0);
+                Set(bottom,0,0,1,0,24,24,-24,240);
+                var image=bottom.GetComponent<Image>();if(image!=null)image.color=new Color(.012f,.035f,.065f,.97f);
+                var sum=bottom.Find("SelectionSum")?.GetComponent<Text>();if(sum!=null){sum.fontSize=42;sum.fontStyle=FontStyle.Bold;sum.color=new Color(.55f,.9f,1f);sum.alignment=TextAnchor.MiddleCenter;Set(sum.rectTransform,0,1,1,1,24,-190,-24,-92);}
+                var status=bottom.Find("Status")?.GetComponent<Text>();if(status!=null){status.fontSize=32;status.fontStyle=FontStyle.Bold;status.text=string.Empty;Set(status.rectTransform,0,1,1,1,24,-100,-24,-12);}
+            }
+            var gameplay=root.transform.Find("GameplayRoot");
+            if(gameplay!=null)
+            {
+                var backdrop=gameplay.Find("Backdrop")?.gameObject;
+                if(backdrop==null)backdrop=Panel("Backdrop",gameplay,new Color(.004f,.012f,.028f,1f));
+                backdrop.GetComponent<Image>().color=new Color(.004f,.012f,.028f,1f);Stretch(backdrop.GetComponent<RectTransform>(),0);
                 backdrop.GetComponent<Image>().raycastTarget=false;backdrop.transform.SetAsFirstSibling();
             }
         }
@@ -677,8 +726,8 @@ namespace MathGame.Editor.SceneBuilder
             var gameplay=UI("GameplayRoot",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));gameplay.transform.SetParent(root.transform,false);
             var gameplayCanvas=gameplay.GetComponent<Canvas>();gameplayCanvas.renderMode=RenderMode.ScreenSpaceOverlay;gameplayCanvas.sortingOrder=10;
             var gameplayScaler=gameplay.GetComponent<CanvasScaler>();gameplayScaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;gameplayScaler.referenceResolution=new Vector2(1080,1920);gameplayScaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;gameplayScaler.matchWidthOrHeight=.5f;
-            var backdrop=Panel("Backdrop",gameplay.transform,Color.black);Stretch(backdrop.GetComponent<RectTransform>(),0);backdrop.GetComponent<Image>().raycastTarget=false;
-            var boardSlot=UI("BoardSlot");boardSlot.transform.SetParent(gameplay.transform,false);Set(boardSlot.GetComponent<RectTransform>(),.04f,.19f,.96f,.75f,0,0,0,0);
+            var backdrop=Panel("Backdrop",gameplay.transform,new Color(.004f,.012f,.028f,1f));Stretch(backdrop.GetComponent<RectTransform>(),0);backdrop.GetComponent<Image>().raycastTarget=false;
+            var boardSlot=UI("BoardSlot");boardSlot.transform.SetParent(gameplay.transform,false);Set(boardSlot.GetComponent<RectTransform>(),.045f,.215f,.955f,.755f,0,0,0,0);
             var effectSlot=UI("EffectSlot");effectSlot.transform.SetParent(gameplay.transform,false);Stretch(effectSlot.GetComponent<RectTransform>(),0);
             var board=PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(BoardPath)) as GameObject;board.transform.SetParent(boardSlot.transform,false);
             Stretch(board.GetComponent<RectTransform>(),0);
@@ -694,9 +743,9 @@ namespace MathGame.Editor.SceneBuilder
             var overlaySlot=UI("OverlaySlot");overlaySlot.transform.SetParent(safe.transform,false);Stretch(overlaySlot.GetComponent<RectTransform>(),0);
             var hud=PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(HudPath)) as GameObject;hud.transform.SetParent(topSlot.transform,false);Set(hud.GetComponent<RectTransform>(),0,1,1,1,24,-390,-24,-24);
             var boardArea=UI("BoardArea");boardArea.transform.SetParent(centerSlot.transform,false);Set(boardArea.GetComponent<RectTransform>(),0,0,1,1,70,300,-70,-410);
-            var bottom=UI("BottomHUD",typeof(Image));bottom.transform.SetParent(bottomSlot.transform,false);bottom.GetComponent<Image>().color=new Color(.035f,.055f,.09f,.96f);Set(bottom.GetComponent<RectTransform>(),0,0,1,0,24,24,-24,220);
-            var status=Text("Status","Starting prototype...",26,TextAnchor.UpperCenter,bottom.transform);Set(status.rectTransform,0,1,1,1,24,-104,-24,-16);
-            var selectionSum=Text("SelectionSum","SELECTED SUM  0",30,TextAnchor.MiddleCenter,bottom.transform);Set(selectionSum.rectTransform,0,1,1,1,24,-154,-24,-104);
+            var bottom=UI("BottomHUD",typeof(Image));bottom.transform.SetParent(bottomSlot.transform,false);bottom.GetComponent<Image>().color=new Color(.012f,.035f,.065f,.97f);Set(bottom.GetComponent<RectTransform>(),0,0,1,0,24,24,-24,240);
+            var status=Text("Status","",32,TextAnchor.UpperCenter,bottom.transform);status.fontStyle=FontStyle.Bold;Set(status.rectTransform,0,1,1,1,24,-100,-24,-12);
+            var selectionSum=Text("SelectionSum","CURRENT\n0 / 0",42,TextAnchor.MiddleCenter,bottom.transform);selectionSum.fontStyle=FontStyle.Bold;selectionSum.color=new Color(.55f,.9f,1f);Set(selectionSum.rectTransform,0,1,1,1,24,-190,-24,-92);
             var actions=UI("Actions",typeof(HorizontalLayoutGroup));actions.transform.SetParent(bottom.transform,false);Set(actions.GetComponent<RectTransform>(),0,0,1,1,20,18,-20,-116);var row=actions.GetComponent<HorizontalLayoutGroup>();row.spacing=12;row.childControlWidth=true;row.childForceExpandWidth=true;
             foreach(var pair in new[]{("RetryTarget","Retry Target"),("Language","English / 한국어")})Button(pair.Item1,pair.Item2,actions.transform);
             var presentation=new GameObject("PresentationRoot");presentation.transform.SetParent(root.transform,false);

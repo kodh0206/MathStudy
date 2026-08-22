@@ -59,6 +59,23 @@ namespace MathGame.Presentation.Unity
             feverFill.color = fever >= maximumFever
                 ? new Color(1f, .78f, .22f, 1f)
                 : new Color(.96f, .48f, .12f, 1f);
+            PresentFeverSegments(fever, maximumFever);
+        }
+
+        void PresentFeverSegments(int fever, int maximumFever)
+        {
+            var root = content != null ? content.transform.Find("FeverPanel/Segments") : null;
+            if (root == null) return;
+            var ratio = maximumFever <= 0 ? 0f : Mathf.Clamp01(fever / (float)maximumFever);
+            var lit = Mathf.CeilToInt(ratio * root.childCount);
+            for (var i = 0; i < root.childCount; i++)
+            {
+                var image = root.GetChild(i).GetComponent<Image>();
+                if (image == null) continue;
+                image.color = i < lit
+                    ? (ratio >= 1f ? new Color(1f, .82f, .24f, 1f) : new Color(1f, .48f, .10f, 1f))
+                    : new Color(.16f, .12f, .10f, .92f);
+            }
         }
 
         void EnsureProgressBars()

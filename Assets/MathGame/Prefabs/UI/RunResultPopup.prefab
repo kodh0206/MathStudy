@@ -263,7 +263,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PresentationPrefabContract
   contractId: RunResultPopup
-  version: 11
+  version: 12
 --- !u!1 &4865734812251879999
 GameObject:
   m_ObjectHideFlags: 0

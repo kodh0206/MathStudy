@@ -527,6 +527,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4614675630438172544, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4685007961674731215, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
       propertyPath: m_Name
       value: GameRoot
@@ -570,6 +574,14 @@ PrefabInstance:
     - target: {fileID: 7699155360115708333, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7750467481591034042, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8992896399368508641, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9207926995616041607, guid: 1fbec8236f3a33041a1df6c1e3018502, type: 3}
       propertyPath: m_AnchorMax.y

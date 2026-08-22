@@ -35,10 +35,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6487973696345886985}
   - {fileID: 6227003214078289136}
   - {fileID: 3986965251364144421}
   - {fileID: 3150991656607822216}
+  - {fileID: 6487973696345886985}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -180,7 +180,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PresentationPrefabContract
   contractId: Board
-  version: 11
+  version: 12
 --- !u!222 &6351135155972600086
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -327,10 +327,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.SelectionLineGraphic
   m_Material: {fileID: 0}
-  m_Color: {r: 0.18, g: 0.88, b: 1, a: 0.9}
+  m_Color: {r: 0.18, g: 0.92, b: 1, a: 0.88}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  lineWidth: 12
+  lineWidth: 10
+  endpointInset: 34
 --- !u!1 &5174531341670232138
 GameObject:
   m_ObjectHideFlags: 0
