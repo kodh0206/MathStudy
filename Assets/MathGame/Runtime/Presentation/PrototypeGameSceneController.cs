@@ -383,7 +383,8 @@ namespace MathGame.Presentation.Unity
             }
             if (result.AnswerFlow?.History != null) history = result.AnswerFlow.History;
             if (result.AnswerFlow?.SelectedTarget != null) target = result.AnswerFlow.SelectedTarget.Target;
-            boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
+            if(result.AnswerFlow?.TargetResult?.BoardChanged!=true)
+                boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
             status = MathGameLocalization.Get("Gameplay", "gameplay.resolved",
                 MathGameLocalization.Get("Gameplay", "gameplay.grade." + result.Answer.Grade.ToString().ToLowerInvariant()));
 
@@ -430,13 +431,14 @@ namespace MathGame.Presentation.Unity
             if (result.EndFlow?.History != null) history = result.EndFlow.History;
             if (result.EndFlow?.SelectedTarget != null) target = result.EndFlow.SelectedTarget.Target;
             uiLayout?.PresentFever(false);
-            boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
+            if(result.EndFlow?.TargetResult?.BoardChanged!=true)
+                boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
             if(result.EndFlow.Status==ObstacleEndFlowStatus.StageTerminal)
                 PreparePlan(ObstaclePresentationPlanBuilder.ForTerminal(Envelope(PresentationAcknowledgementKind.Terminal,
                     result.EndFlow.GameplayToken.SourceId),Settings(),true));
             else
-                PreparePlan(new PresentationPlan(Envelope(PresentationAcknowledgementKind.FeverEnd,
-                    result.EndFlow.GameplayToken.SourceId), Settings()));
+                PreparePlan(ObstaclePresentationPlanBuilder.ForFeverEnd(Envelope(PresentationAcknowledgementKind.FeverEnd,
+                    result.EndFlow.GameplayToken.SourceId), Settings(),result.EndFlow));
         }
 
         void RetryTarget()

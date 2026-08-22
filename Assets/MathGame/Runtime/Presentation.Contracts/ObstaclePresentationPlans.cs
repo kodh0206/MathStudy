@@ -10,7 +10,7 @@ namespace MathGame.Presentation
     public enum PresentationEventKind
     {
         RemoveSelected, RemoveCollateral, DamageObstacle, DestroyObstacle,
-        MoveBlock, SpawnBlock, ShuffleBlock, PresentTarget, RestorationMilestone,
+        MoveBlock, SpawnBlock, ReconfigurationStart, ShuffleBlock, ReconfigurationComplete, PresentTarget, RestorationMilestone,
         Miss, FeverEntry, FeverEnd, StageSuccess, StageFailure, Reconcile
     }
 
@@ -64,8 +64,12 @@ namespace MathGame.Presentation
                 throw new ArgumentException("A committed obstacle result is required.");
             var events = ResolutionEvents(result.ResolutionResult);
             if (result.TargetResult?.BoardChanged == true)
+            {
+                events.Add(new PresentationEvent(PresentationEventKind.ReconfigurationStart, default, result.TargetResult.ShuffleAttemptCount));
                 foreach (var delta in result.TargetResult.Deltas)
                     events.Add(new PresentationEvent(PresentationEventKind.ShuffleBlock, delta.To, delta.Block.Id.Value, delta.From));
+                events.Add(new PresentationEvent(PresentationEventKind.ReconfigurationComplete, default, result.SelectedTarget.Target.Value));
+            }
             if (result.SelectedTarget != null) events.Add(new PresentationEvent(PresentationEventKind.PresentTarget, default, result.SelectedTarget.Target.Value));
             events.Add(new PresentationEvent(PresentationEventKind.Reconcile, default, envelope.Gameplay.Token.Revision));
             return new ObstaclePresentationPlan(envelope, settings, events, true);
@@ -77,11 +81,31 @@ namespace MathGame.Presentation
                 throw new ArgumentException("A successful target retry is required.");
             var events = new List<PresentationEvent>();
             if (result.TargetResult.BoardChanged)
+            {
+                events.Add(new PresentationEvent(PresentationEventKind.ReconfigurationStart, default, result.TargetResult.ShuffleAttemptCount));
                 foreach (var delta in result.TargetResult.Deltas)
                     events.Add(new PresentationEvent(PresentationEventKind.ShuffleBlock, delta.To, delta.Block.Id.Value, delta.From));
+                events.Add(new PresentationEvent(PresentationEventKind.ReconfigurationComplete, default, result.SelectedTarget.Target.Value));
+            }
             events.Add(new PresentationEvent(PresentationEventKind.PresentTarget, default, result.SelectedTarget.Target.Value));
             events.Add(new PresentationEvent(PresentationEventKind.Reconcile, default, envelope.Gameplay.Token.Revision));
             return new ObstaclePresentationPlan(envelope, settings, events, false);
+        }
+
+        public static ObstaclePresentationPlan ForFeverEnd(PresentationEnvelope envelope, PresentationSettings settings, ObstacleEndFlowResult result)
+        {
+            if(envelope==null||settings==null||result?.ResolutionResult==null||!result.ResolutionResult.Succeeded)
+                throw new ArgumentException("A committed Fever-end result is required.");
+            var events=ResolutionEvents(result.ResolutionResult);
+            if(result.TargetResult?.BoardChanged==true)
+            {
+                events.Add(new PresentationEvent(PresentationEventKind.ReconfigurationStart,default,result.TargetResult.ShuffleAttemptCount));
+                foreach(var delta in result.TargetResult.Deltas)events.Add(new PresentationEvent(PresentationEventKind.ShuffleBlock,delta.To,delta.Block.Id.Value,delta.From));
+                events.Add(new PresentationEvent(PresentationEventKind.ReconfigurationComplete,default,result.SelectedTarget.Target.Value));
+            }
+            if(result.SelectedTarget!=null)events.Add(new PresentationEvent(PresentationEventKind.PresentTarget,default,result.SelectedTarget.Target.Value));
+            events.Add(new PresentationEvent(PresentationEventKind.Reconcile,default,envelope.Gameplay.Token.Revision));
+            return new ObstaclePresentationPlan(envelope,settings,events,false);
         }
 
         public static IReadOnlyList<PresentationEvent> ForWorldCommit(WorldRestorationCommitResult result, ExactlyOnceMilestoneTracker tracker)

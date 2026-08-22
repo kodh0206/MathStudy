@@ -369,7 +369,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PresentationPrefabContract
   contractId: StartView
-  version: 12
+  version: 13
 --- !u!1 &4599709655778421951
 GameObject:
   m_ObjectHideFlags: 0

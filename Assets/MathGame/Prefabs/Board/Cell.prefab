@@ -342,7 +342,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PresentationPrefabContract
   contractId: Cell
-  version: 12
+  version: 13
 --- !u!114 &8387869483871529034
 MonoBehaviour:
   m_ObjectHideFlags: 0

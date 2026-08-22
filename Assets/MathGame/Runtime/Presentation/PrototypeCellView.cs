@@ -97,6 +97,7 @@ namespace MathGame.Presentation.Unity
             StartResponse(MoveBlock(destinationWorld, reducedMotion ? .03f : .16f));
         public void PlaySpawn(bool reducedMotion) => StartResponse(SpawnBlock(reducedMotion ? .03f : .15f));
         public void PlayDamage(bool reducedMotion) => StartResponse(DamagePulse(reducedMotion ? .03f : .09f));
+        public void PlayReconfigurationFlicker(bool reducedMotion) => StartResponse(FlickerNumber(reducedMotion ? .04f : .14f));
         public void ResetVisualState()
         {
             StopResponse();
@@ -167,6 +168,16 @@ namespace MathGame.Presentation.Unity
             }
             obstacleRoot.transform.localScale = Vector3.one;
             response = null;
+        }
+
+        IEnumerator FlickerNumber(float duration)
+        {
+            if(valueText==null)yield break;var original=valueText.color;
+            for(var elapsed=0f;elapsed<duration;elapsed+=Time.unscaledDeltaTime)
+            {
+                var color=original;color.a=Mathf.Lerp(.2f,1f,Mathf.PingPong(elapsed/(duration*.25f),1f));valueText.color=color;yield return null;
+            }
+            valueText.color=original;response=null;
         }
 
         IEnumerator MoveBlock(Vector3 destinationWorld, float duration)

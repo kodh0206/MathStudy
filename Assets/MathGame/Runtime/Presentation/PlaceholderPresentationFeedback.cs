@@ -47,6 +47,9 @@ namespace MathGame.Presentation.Unity
                 PresentationFeedbackCue.ObstacleDestroyed=>420f, PresentationFeedbackCue.FeverEntry=>900f,
                 PresentationFeedbackCue.FeverEnd=>620f, PresentationFeedbackCue.Success=>1040f,
                 PresentationFeedbackCue.RunEnd=>150f, PresentationFeedbackCue.PlayAgain=>620f,
+                PresentationFeedbackCue.ReconfigurationStart=>360f,
+                PresentationFeedbackCue.ReconfigurationScan=>540f,
+                PresentationFeedbackCue.ReconfigurationComplete=>880f,
                 PresentationFeedbackCue.Failure=>140f, _=>680f
             };
             const int rate=22050;const float duration=.075f;var samples=new float[(int)(rate*duration)];

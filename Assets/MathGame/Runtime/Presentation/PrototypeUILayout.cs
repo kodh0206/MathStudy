@@ -44,6 +44,8 @@ namespace MathGame.Presentation.Unity
         bool runMode;
         readonly Dictionary<RectTransform, Coroutine> pulses = new Dictionary<RectTransform, Coroutine>();
         int displayedTarget = int.MinValue;
+        long displayedSelectionSum;
+        int displayedSelectionCount;
         int displayedCombo;
         int displayedGauge = -1;
         double displayedTime = double.NaN;
@@ -217,18 +219,25 @@ namespace MathGame.Presentation.Unity
 
         public void SetSelectionSum(long value,int count)
         {
+            displayedSelectionSum = value;
+            displayedSelectionCount = count;
+            RenderSelectionSum();
+        }
+
+        void RenderSelectionSum()
+        {
             if(selectionSum==null)return;
             CaptureSelectionSumBaseline();
-            selectionSum.text=MathGameLocalization.Get("Gameplay","gameplay.selected_sum",value,
+            selectionSum.text=MathGameLocalization.Get("Gameplay","gameplay.selected_sum",displayedSelectionSum,
                 displayedTarget == int.MinValue ? 0 : displayedTarget);
-            if (displayedTarget != int.MinValue && value == displayedTarget && count > 0)
+            if (displayedTarget != int.MinValue && displayedSelectionSum == displayedTarget && displayedSelectionCount > 0)
                 selectionSum.text += "\n" + MathGameLocalization.Get("Gameplay", "gameplay.match");
-            selectionSum.color = displayedTarget != int.MinValue && value == displayedTarget && count > 0
+            selectionSum.color = displayedTarget != int.MinValue && displayedSelectionSum == displayedTarget && displayedSelectionCount > 0
                 ? new Color(.45f, 1f, .68f, 1f)
-                : displayedTarget != int.MinValue && value > displayedTarget
+                : displayedTarget != int.MinValue && displayedSelectionSum > displayedTarget
                     ? new Color(1f, .55f, .24f, 1f)
                     : new Color(.55f, .9f, 1f, 1f);
-            Pulse(selectionSum.rectTransform, displayedTarget != int.MinValue && value == displayedTarget ? 1.12f : 1.05f, .09f);
+            Pulse(selectionSum.rectTransform, displayedTarget != int.MinValue && displayedSelectionSum == displayedTarget ? 1.12f : 1.05f, .09f);
         }
 
         public void SetRunMode(bool active)
@@ -279,6 +288,7 @@ namespace MathGame.Presentation.Unity
             if (displayedTarget != targetValue)
             {
                 displayedTarget = targetValue;
+                RenderSelectionSum();
                 if (target != null) Pulse(target.rectTransform, 1.1f, .14f);
                 runHud?.PulseTarget();
             }
@@ -355,6 +365,8 @@ namespace MathGame.Presentation.Unity
             foreach (var transformValue in pulses.Keys) if (transformValue != null) transformValue.localScale = Vector3.one;
             pulses.Clear();
             displayedTarget = int.MinValue;
+            displayedSelectionSum = 0;
+            displayedSelectionCount = 0;
             displayedCombo = 0;
             displayedGauge = -1;
             displayedTime = double.NaN;

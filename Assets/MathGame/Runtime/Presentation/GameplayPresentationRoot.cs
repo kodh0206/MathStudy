@@ -22,6 +22,7 @@ namespace MathGame.Presentation.Unity
         Transform cellRoot,blockRoot,effectRoot;
         readonly Dictionary<BoardPosition,PrototypeCellView> prebuiltCells=new Dictionary<BoardPosition,PrototypeCellView>();
         SelectionLineGraphic selectionLine;
+        BoardReconfigurationView reconfiguration;
 
         public event Action PlaybackCompleted;
         public IReadOnlyList<PresentationEvent> AppliedEvents => appliedEvents.AsReadOnly();
@@ -231,6 +232,7 @@ namespace MathGame.Presentation.Unity
             if (playback != null) StopCoroutine(playback);
             playback = null;
             selectionLine?.Clear();
+            reconfiguration?.ResetImmediate();
             foreach (var view in prebuiltCells.Values)
                 if (view != null) view.ResetVisualState();
             cells.Clear(); blocks.Clear(); obstacles.Clear(); appliedEvents.Clear();
@@ -264,6 +266,14 @@ namespace MathGame.Presentation.Unity
             appliedEvents.Add(value);
             switch (value.Kind)
             {
+                case PresentationEventKind.ReconfigurationStart:
+                    selectionLine?.Clear();
+                    foreach (var cell in prebuiltCells.Values) if (cell != null) cell.SetSelected(false);
+                    reconfiguration ??= GetComponent<BoardReconfigurationView>();
+                    reconfiguration?.Begin(plan.Settings.ReducedMotion);
+                    feedback?.Play(PresentationFeedbackCue.ReconfigurationStart, plan.Settings.AudioEnabled, false);
+                    feedback?.Play(PresentationFeedbackCue.ReconfigurationScan, plan.Settings.AudioEnabled, false);
+                    break;
                 case PresentationEventKind.RemoveSelected:
                 case PresentationEventKind.RemoveCollateral:
                     var blockId = new BlockId((int)value.Identity);
@@ -276,13 +286,16 @@ namespace MathGame.Presentation.Unity
                     }
                     break;
                 case PresentationEventKind.MoveBlock:
-                case PresentationEventKind.ShuffleBlock:
                     var movedId = new BlockId((int)value.Identity);
                     if (blocks.TryGetValue(movedId, out var moved) && moved != null && cells.TryGetValue(value.Position, out var destination))
                     {if(moved.GetComponent<PrototypeCellView>()==null)moved.transform.SetParent(destination.transform, false);}
                     if(value.From.HasValue && prebuiltCells.TryGetValue(value.From.Value,out var sourceView) &&
                         prebuiltCells.TryGetValue(value.Position,out var destinationView))
                         sourceView.PlayMoveTo(destinationView.RectTransform.TransformPoint(destinationView.RectTransform.rect.center), plan.Settings.ReducedMotion);
+                    break;
+                case PresentationEventKind.ShuffleBlock:
+                    if(value.From.HasValue&&prebuiltCells.TryGetValue(value.From.Value,out var shuffleSource))shuffleSource.PlayReconfigurationFlicker(plan.Settings.ReducedMotion);
+                    if(prebuiltCells.TryGetValue(value.Position,out var shuffleDestination))shuffleDestination.PlayReconfigurationFlicker(plan.Settings.ReducedMotion);
                     break;
                 case PresentationEventKind.SpawnBlock:
                     if(prebuiltCells.TryGetValue(value.Position,out var spawnedView))spawnedView.PlaySpawn(plan.Settings.ReducedMotion);
@@ -302,6 +315,14 @@ namespace MathGame.Presentation.Unity
                     break;
                 case PresentationEventKind.PresentTarget:
                     overlay?.SetTarget((int)value.Identity);
+                    break;
+                case PresentationEventKind.ReconfigurationComplete:
+                    // Reveal the already-authoritative recovered Board at the visual midpoint.
+                    // The coordinator still performs its normal final reconciliation before acknowledgement.
+                    ApplyFinalState(plan);
+                    reconfiguration ??= GetComponent<BoardReconfigurationView>();
+                    reconfiguration?.Complete(plan.Settings.ReducedMotion);
+                    feedback?.Play(PresentationFeedbackCue.ReconfigurationComplete, plan.Settings.AudioEnabled, false);
                     break;
                 case PresentationEventKind.RestorationMilestone:
                     overlay?.ShowMilestone(value.Identity);
@@ -357,16 +378,21 @@ namespace MathGame.Presentation.Unity
         }
         int DurationFor(PresentationEventKind kind)=>kind switch
         {PresentationEventKind.RemoveSelected or PresentationEventKind.RemoveCollateral or PresentationEventKind.DamageObstacle or PresentationEventKind.DestroyObstacle=>Timing.RemovalMilliseconds,
+         PresentationEventKind.ReconfigurationStart=>120,
          PresentationEventKind.MoveBlock or PresentationEventKind.ShuffleBlock=>Timing.GravityMilliseconds,
+         PresentationEventKind.ReconfigurationComplete=>180,
          PresentationEventKind.SpawnBlock=>Timing.RefillMilliseconds,
          PresentationEventKind.RestorationMilestone=>Timing.RestorationMilestoneMilliseconds,_=>Timing.SelectionMilliseconds};
         static int PhaseFor(PresentationEventKind kind)=>kind switch
         {
             PresentationEventKind.RemoveSelected or PresentationEventKind.RemoveCollateral or
             PresentationEventKind.DamageObstacle or PresentationEventKind.DestroyObstacle => 1,
-            PresentationEventKind.MoveBlock or PresentationEventKind.ShuffleBlock => 2,
+            PresentationEventKind.ReconfigurationStart => 2,
+            PresentationEventKind.ShuffleBlock => 3,
+            PresentationEventKind.ReconfigurationComplete => 4,
+            PresentationEventKind.MoveBlock => 2,
             PresentationEventKind.SpawnBlock => 3,
-            _ => 4
+            _ => 5
         };
         void ReconcileIdentityViews(MathGame.Board.Board board)
         {

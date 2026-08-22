@@ -137,7 +137,7 @@ namespace MathGame.Presentation
     {
         Selection, Correct, Miss, Perfect, Fast, TimeRecovery, Combo,
         ObstacleDamaged, ObstacleDestroyed, FeverEntry, FeverEnd, Milestone,
-        RunEnd, PlayAgain, Success, Failure
+        RunEnd, PlayAgain, ReconfigurationStart, ReconfigurationScan, ReconfigurationComplete, Success, Failure
     }
     public interface IPresentationFeedbackPort { void Play(PresentationFeedbackCue cue, bool audioEnabled, bool hapticsEnabled); }
 

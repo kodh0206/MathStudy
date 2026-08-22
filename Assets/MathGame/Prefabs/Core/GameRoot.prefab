@@ -684,7 +684,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PresentationPrefabContract
   contractId: GameRoot
-  version: 12
+  version: 13
 --- !u!114 &5700716657681421388
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -698,7 +698,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PrototypeGeneratedRoot
   ownerId: MathGame.Prototype.GameRoot
-  schemaVersion: 12
+  schemaVersion: 13
 --- !u!1 &5504286107261467772
 GameObject:
   m_ObjectHideFlags: 0

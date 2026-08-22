@@ -11,7 +11,7 @@ namespace MathGame.Editor.SceneBuilder
 {
     public static class PrototypePrefabBuilder
     {
-        const int ContractVersion=12;
+        const int ContractVersion=13;
         public const string Root = "Assets/MathGame/Prefabs";
         public const string GameRootPath = Root + "/Core/GameRoot.prefab";
         public const string BoardPath = Root + "/Board/Board.prefab";
@@ -555,6 +555,7 @@ namespace MathGame.Editor.SceneBuilder
                 var cell=PrefabUtility.InstantiatePrefab(cellPrefab) as GameObject;cell.name="Cell_"+column+"_"+row;cell.transform.SetParent(cells.transform,false);
                 cell.GetComponent<PrototypeCellView>().Configure(column,row,cell.GetComponent<Image>(),cell.transform.Find("BlockRoot/ValueText")?.GetComponent<Text>(),cell.transform.Find("ObstacleRoot/ObstacleText")?.GetComponent<Text>(),cell.transform.Find("BlockRoot")?.gameObject,cell.transform.Find("ObstacleRoot")?.gameObject);
             }
+            EnsureBoardReconfigurationView(root,boardOutline);
             return root;
         }
 
@@ -650,6 +651,24 @@ namespace MathGame.Editor.SceneBuilder
             outline.effectColor=new Color(.08f,.58f,.72f,.70f);outline.effectDistance=new Vector2(3,-3);
             var line=board.GetComponentInChildren<SelectionLineGraphic>(true);
             if(line!=null){line.Configure(10f,new Color(.18f,.92f,1f,.88f),34f);line.transform.SetAsLastSibling();}
+            EnsureBoardReconfigurationView(board,outline);
+        }
+
+        static void EnsureBoardReconfigurationView(GameObject board,Outline outline)
+        {
+            var cellRoot=board.transform.Find("CellRoot");if(cellRoot==null)return;
+            var group=cellRoot.GetComponent<CanvasGroup>()??cellRoot.gameObject.AddComponent<CanvasGroup>();
+            var overlay=board.transform.Find("ReconfigurationOverlay")?.gameObject;
+            if(overlay==null)
+            {
+                overlay=UI("ReconfigurationOverlay",typeof(CanvasRenderer),typeof(Image));overlay.transform.SetParent(board.transform,false);Stretch(overlay.GetComponent<RectTransform>(),0);
+                var overlayImage=overlay.GetComponent<Image>();overlayImage.color=new Color(.01f,.08f,.12f,.16f);overlayImage.raycastTarget=false;
+                var label=Text("Message","RECONFIGURING...",28,TextAnchor.UpperCenter,overlay.transform);label.fontStyle=FontStyle.Bold;label.color=new Color(.25f,.95f,1f);Set(label.rectTransform,0,.72f,1,.9f,20,0,-20,0);
+                var scan=UI("ScanLine",typeof(CanvasRenderer),typeof(Image));scan.transform.SetParent(overlay.transform,false);var scanImage=scan.GetComponent<Image>();scanImage.color=new Color(.25f,.95f,1f,.82f);scanImage.raycastTarget=false;Set(scan.GetComponent<RectTransform>(),0,1,1,1,12,-4,-12,4);
+            }
+            var view=board.GetComponent<BoardReconfigurationView>()??board.AddComponent<BoardReconfigurationView>();
+            view.Configure(group,overlay,overlay.transform.Find("ScanLine") as RectTransform,overlay.transform.Find("Message")?.GetComponent<Text>(),outline);
+            overlay.SetActive(false);overlay.transform.SetAsLastSibling();
         }
 
         static void ApplyDigitalCoreHudStyle(GameObject hud)

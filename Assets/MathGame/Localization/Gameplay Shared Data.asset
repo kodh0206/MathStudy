@@ -127,6 +127,10 @@ MonoBehaviour:
     m_Key: gameplay.feedback.miss
     m_Metadata:
       m_Items: []
+  - m_Id: 2575505337430016
+    m_Key: gameplay.reconfiguring
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

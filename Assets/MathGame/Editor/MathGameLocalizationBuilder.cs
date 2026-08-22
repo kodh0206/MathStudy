@@ -58,6 +58,7 @@ namespace MathGame.Editor.SceneBuilder
                 ,["gameplay.miss"] = ("MISS — no penalty.", "실패 — 불이익이 없습니다.")
                 ,["gameplay.resolved"] = ("{0} — board resolved.", "{0} — 보드 해결 완료.")
                 ,["gameplay.target_pending"] = ("Finding a playable target…", "플레이 가능한 목표를 찾는 중…")
+                ,["gameplay.reconfiguring"] = ("RECONFIGURING...", "재구성 중...")
                 ,["gameplay.paused"] = ("Run paused.", "게임이 일시정지되었습니다.")
                 ,["gameplay.resumed"] = ("Run resumed.", "게임을 계속합니다.")
                 ,["gameplay.save_failed"] = ("Local save failed. Please try again.", "로컬 저장에 실패했습니다. 다시 시도해 주세요.")
