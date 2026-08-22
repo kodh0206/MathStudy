@@ -91,6 +91,42 @@ MonoBehaviour:
     m_Key: gameplay.grade.perfect
     m_Metadata:
       m_Items: []
+  - m_Id: 2479630556672000
+    m_Key: gameplay.label.target
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2479630627975168
+    m_Key: gameplay.label.time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2479630627975169
+    m_Key: gameplay.label.fever
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2479630627975170
+    m_Key: gameplay.label.overdrive
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2484499271200768
+    m_Key: gameplay.match
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2484499317338112
+    m_Key: gameplay.feedback.normal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2484499317338113
+    m_Key: gameplay.feedback.fast
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2484499317338114
+    m_Key: gameplay.feedback.perfect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2484499317338115
+    m_Key: gameplay.feedback.miss
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

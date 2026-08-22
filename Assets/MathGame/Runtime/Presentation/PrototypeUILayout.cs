@@ -31,6 +31,7 @@ namespace MathGame.Presentation.Unity
         Text runCombo;
         Text runTier;
         GameObject runStats;
+        RunHUDView runHud;
         Button continueButton;
         Button retryButton;
         Button abandonButton;
@@ -55,6 +56,8 @@ namespace MathGame.Presentation.Unity
         static readonly Color LowTimeColor = new Color(1f, .42f, .32f, 1f);
         Vector2 selectionSumBaseline;
         bool hasSelectionSumBaseline;
+        string transientFeedback;
+        float transientFeedbackUntil;
 
         void OnEnable() => LocalizationSettings.SelectedLocaleChanged += LocaleChanged;
         void OnDisable()
@@ -85,6 +88,7 @@ namespace MathGame.Presentation.Unity
                 BindPrefabHierarchy(onContinue,onRetry,onAbandon,onTargetRetry,onLanguage);
                 ValidateBoundHierarchy();
                 ConfigureResponsiveHud();
+                runHud?.BindPause(onRetry);
                 ApplySafeArea(true);
                 return;
             }
@@ -161,6 +165,7 @@ namespace MathGame.Presentation.Unity
             score=FindText("SafeArea/TopSlot/HUD/MainStats/Score/Value");restoration=FindText("SafeArea/TopSlot/HUD/Resources/Restoration");
             fever=FindText("SafeArea/TopSlot/HUD/Resources/Fever");status=FindText("SafeArea/BottomSlot/BottomHUD/Status");
             runStats=transform.Find("SafeArea/TopSlot/HUD/RunStats")?.gameObject;
+            runHud=transform.Find("SafeArea/TopSlot/HUD")?.GetComponent<RunHUDView>();
             runTime=FindText("SafeArea/TopSlot/HUD/RunStats/Time/Value");
             runFever=FindText("SafeArea/TopSlot/HUD/RunStats/Fever/Value");
             runCombo=FindText("SafeArea/TopSlot/HUD/RunStats/Combo/Value");
@@ -326,9 +331,15 @@ namespace MathGame.Presentation.Unity
         {
             if(selectionSum==null)return;
             CaptureSelectionSumBaseline();
-            selectionSum.text=MathGameLocalization.Get("Gameplay","gameplay.selected_sum",value);
+            selectionSum.text=MathGameLocalization.Get("Gameplay","gameplay.selected_sum",value,
+                displayedTarget == int.MinValue ? 0 : displayedTarget);
+            if (displayedTarget != int.MinValue && value == displayedTarget && count > 0)
+                selectionSum.text += "\n" + MathGameLocalization.Get("Gameplay", "gameplay.match");
             selectionSum.color = displayedTarget != int.MinValue && value == displayedTarget && count > 0
-                ? new Color(.45f, 1f, .68f, 1f) : Color.white;
+                ? new Color(.45f, 1f, .68f, 1f)
+                : displayedTarget != int.MinValue && value > displayedTarget
+                    ? new Color(1f, .55f, .24f, 1f)
+                    : new Color(.55f, .9f, 1f, 1f);
             Pulse(selectionSum.rectTransform, displayedTarget != int.MinValue && value == displayedTarget ? 1.12f : 1.05f, .09f);
         }
 
@@ -339,7 +350,24 @@ namespace MathGame.Presentation.Unity
             restoration?.gameObject.SetActive(!active);
             fever?.gameObject.SetActive(!active);
             objectiveContainer?.gameObject.SetActive(!active);
-            runStats?.SetActive(active);
+            runStats?.SetActive(active && runHud == null);
+            runHud?.SetVisible(active);
+            var title = transform.Find("SafeArea/TopSlot/HUD/Title");
+            if (title != null) title.gameObject.SetActive(!active);
+            if (active)
+            {
+                var useAuthoredRunHud = runHud?.IsComplete == true;
+                target?.transform.parent.gameObject.SetActive(!useAuthoredRunHud);
+                score?.transform.parent.gameObject.SetActive(!useAuthoredRunHud);
+                languageButton?.gameObject.SetActive(false);
+                restartButton?.gameObject.SetActive(false);
+            }
+            else
+            {
+                target?.transform.parent.gameObject.SetActive(true);
+                score?.transform.parent.gameObject.SetActive(true);
+                languageButton?.gameObject.SetActive(true);
+            }
             continueButton?.gameObject.SetActive(false);
             abandonButton?.gameObject.SetActive(false);
             retryButton?.gameObject.SetActive(false);
@@ -361,13 +389,14 @@ namespace MathGame.Presentation.Unity
         }
 
         public void RefreshRun(StageSessionSnapshot snapshot, int targetValue, int gauge, int maximumGauge,
-            string message, double remainingTime, int difficultyTier, int combo, bool ended, bool targetRecovery)
+            string message, double remainingTime, double maximumTime, int difficultyTier, int combo, bool ended, bool targetRecovery)
         {
             if (snapshot == null) return;
             if (displayedTarget != targetValue)
             {
                 displayedTarget = targetValue;
                 Pulse(target.rectTransform, 1.1f, .14f);
+                runHud?.PulseTarget();
             }
             target.text = MathGameLocalization.Get("Gameplay", "gameplay.target", targetValue);
             score.text = MathGameLocalization.Get("Gameplay", "gameplay.score", snapshot.Score);
@@ -375,6 +404,7 @@ namespace MathGame.Presentation.Unity
             runFever.text = MathGameLocalization.Get("Gameplay", "gameplay.fever", gauge, maximumGauge);
             runCombo.text = MathGameLocalization.Get("Gameplay", "gameplay.combo", combo);
             runTier.text = MathGameLocalization.Get("Gameplay", "gameplay.tier", difficultyTier + 1);
+            runHud?.Present(targetValue, remainingTime, maximumTime, snapshot.Score, combo, difficultyTier, gauge, maximumGauge);
             if (!double.IsNaN(displayedTime) && remainingTime > displayedTime + .01)
                 Pulse(runTime.rectTransform, 1.12f, .16f);
             if (combo != displayedCombo)
@@ -385,8 +415,8 @@ namespace MathGame.Presentation.Unity
             displayedCombo = combo;
             displayedGauge = gauge;
             runTime.color = remainingTime > 0 && remainingTime <= lowTimeWarningSeconds ? LowTimeColor : Color.white;
-            status.text = message ?? string.Empty;
-            restartButton.gameObject.SetActive(!ended);
+            status.text = Time.unscaledTime < transientFeedbackUntil ? transientFeedback : string.Empty;
+            if (runHud == null) restartButton.gameObject.SetActive(!ended);
             targetRetryButton.gameObject.SetActive(!ended && targetRecovery);
             ApplySafeArea(false);
         }
@@ -400,18 +430,27 @@ namespace MathGame.Presentation.Unity
 
         public void PresentCorrect(MathGame.Answer.SpeedGrade grade, double recoveredTime)
         {
+            transientFeedback = MathGameLocalization.Get("Gameplay", "gameplay.feedback." + grade.ToString().ToLowerInvariant(), recoveredTime);
+            transientFeedbackUntil = Time.unscaledTime + .65f;
             if (status != null)
             {
+                status.text = transientFeedback;
                 status.color = grade == MathGame.Answer.SpeedGrade.Perfect
                     ? new Color(1f, .86f, .32f) : grade == MathGame.Answer.SpeedGrade.Fast
                         ? new Color(.42f, .9f, 1f) : Color.white;
                 Pulse(status.rectTransform, grade == MathGame.Answer.SpeedGrade.Perfect ? 1.12f : 1.07f, .15f);
             }
-            if (recoveredTime > 0 && runTime != null) Pulse(runTime.rectTransform, 1.14f, .18f);
+            if (recoveredTime > 0)
+            {
+                if (runTime != null) Pulse(runTime.rectTransform, 1.14f, .18f);
+                runHud?.PulseTimeGain();
+            }
         }
 
         public void PresentMiss()
         {
+            transientFeedback = MathGameLocalization.Get("Gameplay", "gameplay.feedback.miss");
+            transientFeedbackUntil = Time.unscaledTime + .45f;
             if (selectionSum != null) StartCoroutine(Shake(selectionSum.rectTransform, .12f));
             if (status != null) { status.color = new Color(1f, .52f, .48f); Pulse(status.rectTransform, 1.06f, .10f); }
         }
@@ -438,6 +477,8 @@ namespace MathGame.Presentation.Unity
             displayedCombo = 0;
             displayedGauge = -1;
             displayedTime = double.NaN;
+            transientFeedback = null;
+            transientFeedbackUntil = 0;
             if (selectionSum != null) { selectionSum.color = Color.white; selectionSum.rectTransform.localScale = Vector3.one; }
             if (selectionSum != null && hasSelectionSumBaseline) selectionSum.rectTransform.anchoredPosition = selectionSumBaseline;
             if (status != null) { status.color = Color.white; status.rectTransform.localScale = Vector3.one; }

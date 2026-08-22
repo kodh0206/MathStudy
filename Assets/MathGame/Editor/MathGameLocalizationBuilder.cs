@@ -41,7 +41,16 @@ namespace MathGame.Editor.SceneBuilder
                 ["gameplay.combo"] = ("COMBO\nx{0}", "콤보\nx{0}"),
                 ["gameplay.fever"] = ("FEVER\n{0}/{1}", "피버\n{0}/{1}"),
                 ["gameplay.tier"] = ("TIER\n{0}", "단계\n{0}"),
-                ["gameplay.selected_sum"] = ("SELECTED SUM  {0}", "선택 합계  {0}")
+                ["gameplay.selected_sum"] = ("CURRENT\n{0} / {1}", "현재 합계\n{0} / {1}")
+                ,["gameplay.match"] = ("MATCH", "일치")
+                ,["gameplay.label.target"] = ("TARGET", "목표")
+                ,["gameplay.label.time"] = ("TIME", "시간")
+                ,["gameplay.label.fever"] = ("FEVER", "피버")
+                ,["gameplay.label.overdrive"] = ("OVERDRIVE", "오버드라이브")
+                ,["gameplay.feedback.normal"] = ("RESOLVED  +{0:0.#} SEC", "해결  +{0:0.#}초")
+                ,["gameplay.feedback.fast"] = ("FAST!  +{0:0.#} SEC", "빠름!  +{0:0.#}초")
+                ,["gameplay.feedback.perfect"] = ("✓ PERFECT!  +{0:0.#} SEC", "✓ 완벽!  +{0:0.#}초")
+                ,["gameplay.feedback.miss"] = ("NO MATCH", "불일치")
                 ,["gameplay.ready"] = ("Drag across adjacent cells, then release.", "인접한 칸을 드래그한 뒤 놓으세요.")
                 ,["gameplay.run_over"] = ("RUN OVER", "게임 종료")
                 ,["gameplay.fever_active"] = ("FEVER ACTIVE", "피버 활성화")

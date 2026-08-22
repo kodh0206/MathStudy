@@ -62,6 +62,13 @@ namespace MathGame.Presentation.Unity
             selectionLine.SetPoints(points);
         }
 
+        public void SetSelectionMatched(bool value)
+        {
+            selectionLine?.SetMatched(value);
+            foreach (var pair in prebuiltCells)
+                if (pair.Value.gameObject.activeSelf) pair.Value.SetMatched(value);
+        }
+
         public void FrameCamera(Camera camera)
         {
             if(transform is RectTransform)return;
@@ -150,6 +157,8 @@ namespace MathGame.Presentation.Unity
         void ConfigureRemovalEffects()
         {
             removalEffects ??= GetComponent<BlockRemovalEffectPool>();
+            if (removalEffects == null)
+                throw new InvalidOperationException("Serialized BoardView is missing BlockRemovalEffectPool. Rebuild the managed Board prefab before Play Mode.");
             removalEffects?.Configure(prefabRegistry?.BlockRemovalEffectPrefab,effectRoot);
         }
         void IndexPrebuiltCells()
@@ -282,10 +291,12 @@ namespace MathGame.Presentation.Unity
                     var movedId = new BlockId((int)value.Identity);
                     if (blocks.TryGetValue(movedId, out var moved) && moved != null && cells.TryGetValue(value.Position, out var destination))
                     {if(moved.GetComponent<PrototypeCellView>()==null)moved.transform.SetParent(destination.transform, false);}
-                    if(prebuiltCells.TryGetValue(value.Position,out var movedView))movedView.PlayArrival(plan.Settings.ReducedMotion);
+                    if(value.From.HasValue && prebuiltCells.TryGetValue(value.From.Value,out var sourceView) &&
+                        prebuiltCells.TryGetValue(value.Position,out var destinationView))
+                        sourceView.PlayMoveTo(destinationView.RectTransform.TransformPoint(destinationView.RectTransform.rect.center), plan.Settings.ReducedMotion);
                     break;
                 case PresentationEventKind.SpawnBlock:
-                    if(prebuiltCells.TryGetValue(value.Position,out var spawnedView))spawnedView.PlayArrival(plan.Settings.ReducedMotion);
+                    if(prebuiltCells.TryGetValue(value.Position,out var spawnedView))spawnedView.PlaySpawn(plan.Settings.ReducedMotion);
                     break;
                 case PresentationEventKind.DamageObstacle:
                     var damageId = new ObstacleId((int)value.Identity);

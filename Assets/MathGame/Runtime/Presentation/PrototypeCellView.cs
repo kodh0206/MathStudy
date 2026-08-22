@@ -17,7 +17,13 @@ namespace MathGame.Presentation.Unity
         [SerializeField] GameObject obstacleRoot;
         Coroutine response;
         bool selected;
+        bool matched;
         Color authoritativeBackground;
+        Outline border;
+        static readonly Color NumberColor = new Color(.90f,.97f,1f,1f);
+        static readonly Color NodeColor = new Color(.035f,.09f,.16f,.98f);
+        static readonly Color SelectedColor = new Color(.08f,.38f,.55f,1f);
+        static readonly Color MatchedColor = new Color(.22f,.82f,.92f,1f);
 
         public BoardPosition Position => new BoardPosition(column, row);
         public RectTransform RectTransform => (RectTransform)transform;
@@ -26,21 +32,28 @@ namespace MathGame.Presentation.Unity
 
         public void Apply(BoardCellSnapshot snapshot)
         {
+            border ??= GetComponent<Outline>();
             gameObject.SetActive(true);
             blockRoot.SetActive(snapshot.Block.HasValue);
             if (snapshot.Block.HasValue)
             {
                 var value = snapshot.Block.Value.Value;
                 valueText.text = value.ToString();
-                valueText.color = ColorForValue(value);
+                valueText.color = NumberColor;
             }
             else valueText.text = string.Empty;
             DisplayedBlockId = snapshot.Block?.Id;
 
-            var obstacle = snapshot.HasBox ? "B" + snapshot.Box.Value.CurrentHitPoints : snapshot.HasDust ? "D" : string.Empty;
+            var obstacle = snapshot.HasBox
+                ? "×\n" + new string('◆', snapshot.Box.Value.CurrentHitPoints)
+                : snapshot.HasDust ? "▒" : string.Empty;
             obstacleRoot.SetActive(obstacle.Length > 0);
             obstacleText.text = obstacle;
-            authoritativeBackground = snapshot.HasBox ? new Color(.30f,.18f,.08f,.96f) : new Color(.92f,.95f,1f,.98f);
+            obstacleText.alignment = TextAnchor.MiddleCenter;
+            obstacleText.color = snapshot.HasBox ? new Color(1f,.28f,.25f,1f) : new Color(.45f,.72f,.78f,.8f);
+            authoritativeBackground = snapshot.HasBox ? new Color(.10f,.035f,.05f,.99f) : NodeColor;
+            if (border != null) border.effectColor = snapshot.HasBox
+                ? new Color(.72f,.10f,.14f,.95f) : new Color(.12f,.48f,.64f,.85f);
             ResetVisualState();
         }
 
@@ -61,27 +74,48 @@ namespace MathGame.Presentation.Unity
         {
             if (selected == value) return;
             selected = value;
-            StartResponse(ScaleAndTint(value ? 1.06f : 1f,
-                value ? new Color(.45f,.9f,1f,1f) : authoritativeBackground, .07f));
+            if (border != null) border.effectColor = value
+                ? (matched ? new Color(.75f,1f,1f,1f) : new Color(.18f,.88f,1f,1f))
+                : (authoritativeBackground == NodeColor ? new Color(.12f,.48f,.64f,.85f) : new Color(.72f,.10f,.14f,.95f));
+            StartResponse(ScaleAndTint(value ? 1.05f : 1f,
+                value ? (matched ? MatchedColor : SelectedColor) : authoritativeBackground, .10f));
+        }
+
+        public void SetMatched(bool value)
+        {
+            if (matched == value) return;
+            matched = value;
+            if (border != null && selected) border.effectColor = value
+                ? new Color(.75f,1f,1f,1f) : new Color(.18f,.88f,1f,1f);
+            if (selected) StartResponse(ScaleAndTint(value ? 1.07f : 1.05f,
+                value ? MatchedColor : SelectedColor, .08f));
         }
 
         public void PlayRemoval(bool reducedMotion) => StartResponse(PunchBlock(.72f, reducedMotion ? .03f : .09f));
         public void PlayArrival(bool reducedMotion) => StartResponse(PunchBlock(.84f, reducedMotion ? .03f : .10f));
+        public void PlayMoveTo(Vector3 destinationWorld, bool reducedMotion) =>
+            StartResponse(MoveBlock(destinationWorld, reducedMotion ? .03f : .16f));
+        public void PlaySpawn(bool reducedMotion) => StartResponse(SpawnBlock(reducedMotion ? .03f : .15f));
         public void PlayDamage(bool reducedMotion) => StartResponse(DamagePulse(reducedMotion ? .03f : .09f));
         public void ResetVisualState()
         {
             StopResponse();
             selected = false;
+            matched = false;
             RectTransform.localScale = Vector3.one;
             if (blockRoot != null) blockRoot.transform.localScale = Vector3.one;
+            if (blockRoot?.transform is RectTransform blockRect) blockRect.anchoredPosition = Vector2.zero;
             if (obstacleRoot != null) obstacleRoot.transform.localScale = Vector3.one;
             if (background != null) background.color = authoritativeBackground;
+            if (border != null) border.effectColor = authoritativeBackground == NodeColor
+                ? new Color(.12f,.48f,.64f,.85f) : new Color(.72f,.10f,.14f,.95f);
         }
 
         void StartResponse(IEnumerator routine)
         {
             StopResponse();
             if (blockRoot != null) blockRoot.transform.localScale = Vector3.one;
+            if (blockRoot?.transform is RectTransform blockRect) blockRect.anchoredPosition = Vector2.zero;
             if (obstacleRoot != null) obstacleRoot.transform.localScale = Vector3.one;
             if (isActiveAndEnabled) response = StartCoroutine(routine);
         }
@@ -135,15 +169,45 @@ namespace MathGame.Presentation.Unity
             response = null;
         }
 
+        IEnumerator MoveBlock(Vector3 destinationWorld, float duration)
+        {
+            if (blockRoot?.transform is not RectTransform blockRect) yield break;
+            var parent = blockRect.parent as RectTransform;
+            var destination = parent != null ? (Vector2)parent.InverseTransformPoint(destinationWorld) : Vector2.zero;
+            var origin = blockRect.anchoredPosition;
+            for (var elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
+            {
+                var t = Mathf.Clamp01(elapsed / duration);
+                t = 1f - (1f - t) * (1f - t);
+                blockRect.anchoredPosition = Vector2.LerpUnclamped(origin, destination, t);
+                yield return null;
+            }
+            blockRect.anchoredPosition = destination;
+            response = null;
+        }
+
+        IEnumerator SpawnBlock(float duration)
+        {
+            if (blockRoot?.transform is not RectTransform blockRect) yield break;
+            var distance = Mathf.Max(40, RectTransform.rect.height * 1.25f);
+            blockRect.anchoredPosition = new Vector2(0, distance);
+            blockRoot.transform.localScale = Vector3.one * .82f;
+            for (var elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
+            {
+                var t = Mathf.Clamp01(elapsed / duration);
+                t = 1f - (1f - t) * (1f - t);
+                blockRect.anchoredPosition = Vector2.Lerp(new Vector2(0, distance), Vector2.zero, t);
+                blockRoot.transform.localScale = Vector3.one * Mathf.Lerp(.82f, 1f, t);
+                yield return null;
+            }
+            blockRect.anchoredPosition = Vector2.zero;
+            blockRoot.transform.localScale = Vector3.one;
+            response = null;
+        }
+
         void OnDisable() => ResetVisualState();
         public void OnPointerEnter(PointerEventData eventData)=>PointerIsOver=true;
         public void OnPointerDown(PointerEventData eventData)=>PointerIsOver=true;
-
-        static Color ColorForValue(int value)
-        {
-            var palette=new[]{new Color(.10f,.32f,.72f),new Color(.72f,.18f,.22f),new Color(.12f,.52f,.28f),new Color(.55f,.22f,.72f),new Color(.85f,.38f,.08f),new Color(.04f,.52f,.58f),new Color(.72f,.12f,.48f),new Color(.38f,.30f,.18f),new Color(.18f,.42f,.62f)};
-            return palette[Mathf.Abs(value-1)%palette.Length];
-        }
 
 #if UNITY_EDITOR
         public void Configure(int valueColumn,int valueRow,Image visualBackground,Text number,Text obstacle,GameObject numberRoot,GameObject obstacleVisualRoot)
@@ -155,12 +219,13 @@ namespace MathGame.Presentation.Unity
             if (!visible) return;
             blockRoot.SetActive(string.IsNullOrEmpty(obstacle) || obstacle == "D");
             valueText.text = blockRoot.activeSelf ? value.ToString() : string.Empty;
-            valueText.color = ColorForValue(value);
+            valueText.color = NumberColor;
             obstacleRoot.SetActive(!string.IsNullOrEmpty(obstacle));
-            obstacleText.text = obstacle ?? string.Empty;
+            obstacleText.text = obstacle != null && obstacle.StartsWith("B") ? "×\n◆◆" : string.IsNullOrEmpty(obstacle) ? string.Empty : "▒";
+            obstacleText.alignment = TextAnchor.MiddleCenter;
             background.color = obstacle != null && obstacle.StartsWith("B")
-                ? new Color(.30f,.18f,.08f,.96f)
-                : new Color(.92f,.95f,1f,.98f);
+                ? new Color(.10f,.035f,.05f,.99f)
+                : NodeColor;
         }
 #endif
     }

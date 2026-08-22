@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using System.Collections.Generic;
 using MathGame.Board;
+using UnityEngine.UI;
 
 namespace MathGame.Tests
 {
@@ -47,6 +48,47 @@ namespace MathGame.Tests
             Assert.That(line.Points, Is.Empty);
             Assert.That(line.raycastTarget, Is.False);
             Object.DestroyImmediate(gameObject);
+        }
+
+        [Test]
+        public void SelectionLine_MatchStateBrightensWithoutChangingPath()
+        {
+            var gameObject = new GameObject("SelectionLine", typeof(RectTransform), typeof(CanvasRenderer), typeof(SelectionLineGraphic));
+            var line = gameObject.GetComponent<SelectionLineGraphic>();
+#if UNITY_EDITOR
+            line.Configure(12f, new Color(.18f, .88f, 1f, .9f));
+#endif
+            line.SetPoints(new[] { Vector2.zero, Vector2.right * 20 });
+            var normal = line.color;
+            line.SetMatched(true);
+            Assert.That(line.Points.Count, Is.EqualTo(2));
+            Assert.That(line.color, Is.Not.EqualTo(normal));
+            Object.DestroyImmediate(gameObject);
+        }
+
+        [Test]
+        public void RunHud_UsesConfiguredCapacityForTimeAndFeverGauges()
+        {
+            var root = new GameObject("RunHUD", typeof(RectTransform));
+            var view = root.AddComponent<RunHUDView>();
+            Text Label(string name) => new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text)).GetComponent<Text>();
+            var target = Label("Target"); var time = Label("Time"); var score = Label("Score");
+            var combo = Label("Combo"); var tier = Label("Tier"); var fever = Label("Fever");
+            var timeFill = new GameObject("TimeFill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
+            var feverFill = new GameObject("FeverFill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
+            var pause = new GameObject("Pause", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button)).GetComponent<Button>();
+#if UNITY_EDITOR
+            view.Configure(root, target, time, timeFill, score, combo, tier, fever, feverFill, pause);
+#endif
+            view.Present(8, 15, 30, 1240, 4, 2, 25, 50);
+            Assert.That(target.text, Is.EqualTo("8"));
+            Assert.That(timeFill.fillAmount, Is.EqualTo(.5f).Within(.001f));
+            Assert.That(feverFill.fillAmount, Is.EqualTo(.5f).Within(.001f));
+            Assert.That(combo.text, Does.Contain("x4"));
+            Object.DestroyImmediate(root);
+            Object.DestroyImmediate(target.gameObject); Object.DestroyImmediate(time.gameObject); Object.DestroyImmediate(score.gameObject);
+            Object.DestroyImmediate(combo.gameObject); Object.DestroyImmediate(tier.gameObject); Object.DestroyImmediate(fever.gameObject);
+            Object.DestroyImmediate(timeFill.gameObject); Object.DestroyImmediate(feverFill.gameObject); Object.DestroyImmediate(pause.gameObject);
         }
 
         [Test]

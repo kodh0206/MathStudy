@@ -50,6 +50,7 @@ namespace MathGame.Presentation.Unity
         StageClearPopupView stageClearPopup;
         RunResultPopupView runResultPopup;
         SurvivalRunSession run;
+        double maximumRunTime;
         IPlayerProgressRepository progressRepository;
         PlayerProgressService progressService;
         bool terminalProgressHandled;
@@ -114,6 +115,7 @@ namespace MathGame.Presentation.Unity
             var runContent = new RunConfigJsonRepository("RunContent/run-config").Load();
             if (!runContent.Succeeded) { status = "Run content failed: " + runContent.Error; return; }
             run = new SurvivalRunSession(runContent.Config, Guid.NewGuid().ToString("N"));
+            maximumRunTime = runContent.Config.MaximumTime;
             progressRepository = LocalPlayerProgressRepository.ForUnityPersistentData();
             var loadedProgress = progressRepository.Load();
             progressService = new PlayerProgressService(loadedProgress.Progress);
@@ -177,7 +179,7 @@ namespace MathGame.Presentation.Unity
             if (camera != null)
             {
                 camera.orthographic = true;
-                camera.backgroundColor = new Color(.07f, .09f, .13f);
+                camera.backgroundColor = new Color(.008f, .018f, .035f);
             }
             uiLayout = presentationHost.UILayout;
             uiLayout.Build(camera, boardView, Continue, TogglePause, Abandon, RetryTarget, ToggleLanguage, presentationHost.Registry);
@@ -211,7 +213,7 @@ namespace MathGame.Presentation.Unity
                 StartCoroutine(ShowRunResultAfterFeedback(run.Result));
             }
             uiLayout?.RefreshRun(currentSnapshot, target.Value, fever.Gauge, 50, status,
-                run?.RemainingTime ?? 0, run?.DifficultyTier ?? 0, currentCombo,
+                run?.RemainingTime ?? 0, maximumRunTime, run?.DifficultyTier ?? 0, currentCombo,
                 run?.Status == SurvivalRunStatus.Ended, targetRecoveryPending);
             /*uiLayout?.Refresh(currentSnapshot,target.Value,fever.Gauge,50,status,
                 stage.State==StageState.FailedPendingDecision,targetRecoveryPending,
@@ -472,6 +474,7 @@ namespace MathGame.Presentation.Unity
         {
             boardView?.SetSelectedPositions(selected);
             boardView?.SetSelectionPath(selected);
+            boardView?.SetSelectionMatched(selected.Count > 0 && SelectedSum() == target.Value);
         }
 
         void Abandon()

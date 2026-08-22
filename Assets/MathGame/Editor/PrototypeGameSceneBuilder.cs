@@ -113,7 +113,7 @@ namespace MathGame.Editor.SceneBuilder
                 return "Serialized RunResultPopup is missing from OverlaySlot.";
             if (host.Registry.BlockRemovalEffectPrefab == null ||
                 host.Registry.BlockRemovalEffectPrefab.GetComponent<BlockRemovalEffectView>() == null)
-                return "BlockRemovalEffect prefab registry reference is missing or invalid.";
+                return "BlockRemovalEffect prefab registry reference is missing or invalid. Run MathGame > Build Prototype Scene to generate and assign the managed effect prefab.";
             if (host.BoardView.GetComponent<BlockRemovalEffectPool>() == null)
                 return "Serialized BoardView is missing BlockRemovalEffectPool.";
             if (FindMainCamera(scene) == null) return "A tagged Main Camera is missing.";

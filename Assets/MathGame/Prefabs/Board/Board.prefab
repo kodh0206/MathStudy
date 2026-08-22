@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6714370790114768896}
   - component: {fileID: 7199402375140424295}
   - component: {fileID: 4701353497790835847}
+  - component: {fileID: 9000000000000000001}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -176,7 +177,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PresentationPrefabContract
   contractId: Board
-  version: 7
+  version: 10
+--- !u!114 &9000000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 362201674385496240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b74ee25fde044eae8de7c98e9fc89370, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.BlockRemovalEffectPool
+  maximumInstances: 16
 --- !u!1 &1032253611241057365
 GameObject:
   m_ObjectHideFlags: 0

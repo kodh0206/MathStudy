@@ -11,6 +11,8 @@ namespace MathGame.Presentation.Unity
     {
         [SerializeField, Min(2f)] float lineWidth = 10f;
         readonly List<Vector2> points = new List<Vector2>();
+        Color normalColor = new Color(.18f, .88f, 1f, .86f);
+        Color matchColor = new Color(.72f, 1f, 1f, 1f);
         public IReadOnlyList<Vector2> Points => points;
 
         public void SetPoints(IReadOnlyList<Vector2> value)
@@ -22,6 +24,12 @@ namespace MathGame.Presentation.Unity
         }
 
         public void Clear() => SetPoints(null);
+
+        public void SetMatched(bool value)
+        {
+            color = value ? matchColor : normalColor;
+            SetVerticesDirty();
+        }
 
         protected override void OnPopulateMesh(VertexHelper helper)
         {
@@ -56,7 +64,8 @@ namespace MathGame.Presentation.Unity
         public void Configure(float width, Color value)
         {
             lineWidth = width;
-            color = value;
+            normalColor = value;
+            color = normalColor;
             raycastTarget = false;
         }
 #endif
@@ -90,6 +99,7 @@ namespace MathGame.Presentation.Unity
                 if (particles[i] == null) continue;
                 particles[i].rectTransform.anchoredPosition = origins[i];
                 particles[i].rectTransform.localScale = Vector3.one;
+                particles[i].rectTransform.localRotation = Quaternion.identity;
                 var color = particles[i].color;
                 color.a = 1f;
                 particles[i].color = color;
@@ -106,9 +116,13 @@ namespace MathGame.Presentation.Unity
                 {
                     if (particles[i] == null) continue;
                     var angle = particles.Length == 0 ? 0f : i * Mathf.PI * 2f / particles.Length;
+                    angle += (i % 2 == 0 ? 1f : -1f) * t * .28f;
                     var direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-                    particles[i].rectTransform.anchoredPosition = origins[i] + direction * travelDistance * t;
-                    particles[i].rectTransform.localScale = Vector3.one * Mathf.Lerp(1f, .45f, t);
+                    var distance = travelDistance * (i % 3 == 0 ? 1.18f : i % 3 == 1 ? .88f : 1f);
+                    var eased = 1f - (1f - t) * (1f - t);
+                    particles[i].rectTransform.anchoredPosition = origins[i] + direction * distance * eased;
+                    particles[i].rectTransform.localRotation = Quaternion.Euler(0, 0, (i % 2 == 0 ? 1 : -1) * 120f * t);
+                    particles[i].rectTransform.localScale = Vector3.one * Mathf.Lerp(1.15f, .18f, t);
                     var color = particles[i].color;
                     color.a = 1f - t;
                     particles[i].color = color;
@@ -199,7 +213,7 @@ namespace MathGame.Presentation.Unity
         void OnDisable() => ResetAll();
     }
 
-    public sealed class PresentationPrefabContract : MonoBehaviour
+    public sealed partial class PresentationPrefabContract : MonoBehaviour
     {
         [SerializeField] string contractId;
         [SerializeField] int version;

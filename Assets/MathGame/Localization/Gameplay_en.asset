@@ -62,7 +62,9 @@ MonoBehaviour:
       m_Items:
       - rid: 8260650990455750912
   - m_Id: 1782657026
-    m_Localized: SELECTED SUM  {0}
+    m_Localized: 'CURRENT
+
+      {0} / {1}'
     m_Metadata:
       m_Items:
       - rid: 8260650990455750912
@@ -115,6 +117,45 @@ MonoBehaviour:
     m_Localized: PERFECT
     m_Metadata:
       m_Items: []
+  - m_Id: 2479630556672000
+    m_Localized: TARGET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2479630627975168
+    m_Localized: TIME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2479630627975169
+    m_Localized: FEVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2479630627975170
+    m_Localized: OVERDRIVE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2484499271200768
+    m_Localized: MATCH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2484499317338112
+    m_Localized: RESOLVED  +{0:0.#} SEC
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 2484499317338113
+    m_Localized: FAST!  +{0:0.#} SEC
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 2484499317338114
+    m_Localized: "\u2713 PERFECT!  +{0:0.#} SEC"
+    m_Metadata:
+      m_Items:
+      - rid: 8260650990455750912
+  - m_Id: 2484499317338115
+    m_Localized: NO MATCH
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds:
@@ -131,3 +172,6 @@ MonoBehaviour:
         - id: 1782657025
         - id: 1782657026
         - id: 1782657031
+        - id: 2484499317338112
+        - id: 2484499317338113
+        - id: 2484499317338114
