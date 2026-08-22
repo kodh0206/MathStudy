@@ -15,5 +15,6 @@ namespace MathGame.Presentation.Unity
         public GameObject RestorationGaugePrefab;
         public GameObject StageClearPopupPrefab;
         public GameObject RunResultPopupPrefab;
+        public GameObject BlockRemovalEffectPrefab;
     }
 }

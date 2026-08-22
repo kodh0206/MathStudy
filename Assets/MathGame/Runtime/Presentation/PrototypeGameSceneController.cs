@@ -283,11 +283,7 @@ namespace MathGame.Presentation.Unity
             var previousCount=selected.Count;
             selected.Clear();
             foreach (var entry in result.Path.Entries) selected.Add(entry.Position);
-            long sum=0;
-            foreach(var position in selected)
-                if(obstacleFlow.CurrentBoard.TryGetCell(position,out var cell)==CellLookupResult.Succeeded&&cell.Block.HasValue)
-                    sum+=cell.Block.Value.Value;
-            uiLayout?.SetSelectionSum(sum,selected.Count);
+            uiLayout?.SetSelectionSum(result.Path.Sum, selected.Count);
             if(selected.Count>previousCount)boardView?.PlaySelectionCue();
             UpdateLine();
         }

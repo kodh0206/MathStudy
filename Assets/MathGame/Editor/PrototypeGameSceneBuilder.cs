@@ -111,6 +111,11 @@ namespace MathGame.Editor.SceneBuilder
                 return "Serialized StageClearPopup is missing from OverlaySlot.";
             if (host.CreateContext().OverlayRoot.GetComponentInChildren<RunResultPopupView>(true) == null)
                 return "Serialized RunResultPopup is missing from OverlaySlot.";
+            if (host.Registry.BlockRemovalEffectPrefab == null ||
+                host.Registry.BlockRemovalEffectPrefab.GetComponent<BlockRemovalEffectView>() == null)
+                return "BlockRemovalEffect prefab registry reference is missing or invalid.";
+            if (host.BoardView.GetComponent<BlockRemovalEffectPool>() == null)
+                return "Serialized BoardView is missing BlockRemovalEffectPool.";
             if (FindMainCamera(scene) == null) return "A tagged Main Camera is missing.";
             if (!EditorBuildSettings.scenes.Any(item => item.path == ScenePath && item.enabled)) return "GameScene is not enabled in Build Settings.";
             return null;

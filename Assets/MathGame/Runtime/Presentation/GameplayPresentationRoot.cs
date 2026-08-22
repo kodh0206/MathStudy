@@ -22,6 +22,7 @@ namespace MathGame.Presentation.Unity
         Transform cellRoot,blockRoot,effectRoot;
         readonly Dictionary<BoardPosition,PrototypeCellView> prebuiltCells=new Dictionary<BoardPosition,PrototypeCellView>();
         SelectionLineGraphic selectionLine;
+        BlockRemovalEffectPool removalEffects;
 
         public event Action PlaybackCompleted;
         public IReadOnlyList<PresentationEvent> AppliedEvents => appliedEvents.AsReadOnly();
@@ -136,8 +137,21 @@ namespace MathGame.Presentation.Unity
                 : transform.TransformPoint(new Vector3(position.Column, position.Row, -.5f));
 
         public void Configure(PresentationTiming timing) => Timing = timing ?? throw new ArgumentNullException(nameof(timing));
-        public void ConfigureRegistry(MathGamePrefabRegistry registry)=>prefabRegistry=registry;
-        public void ConfigureSlots(Transform cellsSlot,Transform blocksSlot,Transform effectsSlot){cellRoot=cellsSlot;blockRoot=blocksSlot;effectRoot=effectsSlot;}
+        public void ConfigureRegistry(MathGamePrefabRegistry registry)
+        {
+            prefabRegistry=registry;
+            ConfigureRemovalEffects();
+        }
+        public void ConfigureSlots(Transform cellsSlot,Transform blocksSlot,Transform effectsSlot)
+        {
+            cellRoot=cellsSlot;blockRoot=blocksSlot;effectRoot=effectsSlot;
+            ConfigureRemovalEffects();
+        }
+        void ConfigureRemovalEffects()
+        {
+            removalEffects ??= GetComponent<BlockRemovalEffectPool>();
+            removalEffects?.Configure(prefabRegistry?.BlockRemovalEffectPrefab,effectRoot);
+        }
         void IndexPrebuiltCells()
         {
             prebuiltCells.Clear();
@@ -219,6 +233,7 @@ namespace MathGame.Presentation.Unity
             playback = null;
             selectionLine?.Clear();
             foreach (var view in prebuiltCells.Values) view.ResetVisualState();
+            removalEffects?.ResetAll();
             cells.Clear(); blocks.Clear(); obstacles.Clear(); appliedEvents.Clear();
         }
 
@@ -256,7 +271,11 @@ namespace MathGame.Presentation.Unity
                     // Prebuilt cells are never hidden or destroyed during playback. Their
                     // final number is rebound from the authoritative Board at reconciliation.
                     blocks.Remove(blockId);
-                    if(prebuiltCells.TryGetValue(value.Position,out var removedView))removedView.PlayRemoval(plan.Settings.ReducedMotion);
+                    if(prebuiltCells.TryGetValue(value.Position,out var removedView))
+                    {
+                        removedView.PlayRemoval(plan.Settings.ReducedMotion);
+                        removalEffects?.PlayAt(removedView.RectTransform.TransformPoint(removedView.RectTransform.rect.center));
+                    }
                     break;
                 case PresentationEventKind.MoveBlock:
                 case PresentationEventKind.ShuffleBlock:

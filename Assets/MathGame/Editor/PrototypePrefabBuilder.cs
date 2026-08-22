@@ -22,6 +22,7 @@ namespace MathGame.Editor.SceneBuilder
         public const string RestorationPath = Root + "/UI/RestorationGauge.prefab";
         public const string StageClearPopupPath = Root + "/UI/StageClearPopup.prefab";
         public const string RunResultPopupPath = Root + "/UI/RunResultPopup.prefab";
+        public const string BlockRemovalEffectPath = Root + "/Effects/BlockRemovalEffect.prefab";
         public const string RegistryPath = Root + "/MathGamePrefabRegistry.asset";
 
         [MenuItem("MathGame/Build Prototype Prefabs",priority=9)]
@@ -57,12 +58,14 @@ namespace MathGame.Editor.SceneBuilder
             CreateIfMissing(BlockPath,CreateBlock);
             CreateIfMissing(CellPath,CreateCell);
             CreateIfMissing(BoardPath,CreateBoard);
+            EnsureBlockRemovalPoolOnBoard();
             CreateIfMissing(ObjectivePath,()=>CreateLabelPanel("ObjectivePanel","Objective",26));
             CreateIfMissing(FeverPath,()=>CreateLabelPanel("FeverGauge","FEVER  0/50",29));
             CreateIfMissing(RestorationPath,()=>CreateLabelPanel("RestorationGauge","RESTORATION  0/100",29));
             RepairBrokenStageClearPopupAsset();
             CreateIfMissing(StageClearPopupPath,CreateStageClearPopup);
             CreateIfMissing(RunResultPopupPath,CreateRunResultPopup);
+            CreateIfMissing(BlockRemovalEffectPath,CreateBlockRemovalEffect);
             CreateIfMissing(HudPath,CreateHud);
             EnsureRegistry();
             CreateIfMissing(GameRootPath,CreateGameRoot);
@@ -246,7 +249,7 @@ namespace MathGame.Editor.SceneBuilder
         {
             GameRootPath, BoardPath, CellPath, BlockPath, HudPath, ObjectivePath,
             FeverPath, RestorationPath
-            , StageClearPopupPath, RunResultPopupPath
+            , StageClearPopupPath, RunResultPopupPath, BlockRemovalEffectPath
         };
 
         static void DeleteManagedPrefabSet()
@@ -258,7 +261,7 @@ namespace MathGame.Editor.SceneBuilder
 
         static void EnsureFolders()
         {
-            Directory.CreateDirectory(Root+"/Core");Directory.CreateDirectory(Root+"/Board");Directory.CreateDirectory(Root+"/UI");
+            Directory.CreateDirectory(Root+"/Core");Directory.CreateDirectory(Root+"/Board");Directory.CreateDirectory(Root+"/UI");Directory.CreateDirectory(Root+"/Effects");
         }
 
         static void EnsureRegistry()
@@ -271,7 +274,24 @@ namespace MathGame.Editor.SceneBuilder
             registry.FeverGaugePrefab=AssetDatabase.LoadAssetAtPath<GameObject>(FeverPath);registry.RestorationGaugePrefab=AssetDatabase.LoadAssetAtPath<GameObject>(RestorationPath);
             registry.StageClearPopupPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(StageClearPopupPath);
             registry.RunResultPopupPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(RunResultPopupPath);
+            registry.BlockRemovalEffectPrefab=AssetDatabase.LoadAssetAtPath<GameObject>(BlockRemovalEffectPath);
             EditorUtility.SetDirty(registry);
+        }
+
+        static void EnsureBlockRemovalPoolOnBoard()
+        {
+            var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(BoardPath);
+            var contract=prefab?.GetComponent<PresentationPrefabContract>();
+            if(prefab==null||contract==null||contract.ContractId!="Board"||contract.Version!=ContractVersion)
+                throw new InvalidOperationException("Managed Board ownership/contract could not be proven; BlockRemovalEffectPool was not added.");
+            if(prefab.GetComponent<BlockRemovalEffectPool>()!=null)return;
+            var contents=PrefabUtility.LoadPrefabContents(BoardPath);
+            try
+            {
+                contents.AddComponent<BlockRemovalEffectPool>();
+                PrefabUtility.SaveAsPrefabAsset(contents,BoardPath);
+            }
+            finally{PrefabUtility.UnloadPrefabContents(contents);}
         }
 
         static void EnsureRunResultPopupInGameRoot()
@@ -381,7 +401,7 @@ namespace MathGame.Editor.SceneBuilder
 
         static GameObject CreateBoard()
         {
-            var root=UI("BoardView",typeof(AudioSource),typeof(GameplayPresentationRoot),typeof(PlaceholderPresentationFeedback));
+            var root=UI("BoardView",typeof(AudioSource),typeof(GameplayPresentationRoot),typeof(PlaceholderPresentationFeedback),typeof(BlockRemovalEffectPool));
             var audio=root.GetComponent<AudioSource>();audio.playOnAwake=false;audio.spatialBlend=0f;audio.volume=.22f;
             var cells=UI("CellRoot");cells.transform.SetParent(root.transform,false);Stretch(cells.GetComponent<RectTransform>(),0);
             var blocks=UI("BlockRoot");blocks.transform.SetParent(root.transform,false);Stretch(blocks.GetComponent<RectTransform>(),0);
@@ -483,6 +503,21 @@ namespace MathGame.Editor.SceneBuilder
             var buttonRoot=UI("PlayAgainButton",typeof(CanvasRenderer),typeof(Image),typeof(Button));buttonRoot.transform.SetParent(panel.transform,false);buttonRoot.GetComponent<Image>().color=new Color(.12f,.42f,.62f,1);Set(buttonRoot.GetComponent<RectTransform>(),.18f,.06f,.82f,.25f,0,0,0,0);Stretch(Text("Label","PLAY AGAIN",28,TextAnchor.MiddleCenter,buttonRoot.transform).rectTransform,8);
             root.GetComponent<RunResultPopupView>().Configure(result,buttonRoot.GetComponent<Button>());
             root.SetActive(false);
+            return root;
+        }
+        static GameObject CreateBlockRemovalEffect()
+        {
+            var root=UI("BlockRemovalEffect",typeof(BlockRemovalEffectView));
+            var rect=root.GetComponent<RectTransform>();rect.anchorMin=rect.anchorMax=new Vector2(.5f,.5f);rect.pivot=new Vector2(.5f,.5f);rect.sizeDelta=new Vector2(24,24);
+            var particles=new Graphic[8];
+            for(var i=0;i<particles.Length;i++)
+            {
+                var particle=UI("Particle_"+i,typeof(CanvasRenderer),typeof(Image));particle.transform.SetParent(root.transform,false);
+                var image=particle.GetComponent<Image>();image.color=new Color(.35f,.9f,1f,.92f);image.raycastTarget=false;
+                var particleRect=particle.GetComponent<RectTransform>();particleRect.anchorMin=particleRect.anchorMax=new Vector2(.5f,.5f);particleRect.pivot=new Vector2(.5f,.5f);particleRect.anchoredPosition=Vector2.zero;particleRect.sizeDelta=new Vector2(10,10);
+                particles[i]=image;
+            }
+            root.GetComponent<BlockRemovalEffectView>().Configure(particles,.16f,34f);
             return root;
         }
         static GameObject UI(string name,params Type[] extra){var types=new Type[extra.Length+1];types[0]=typeof(RectTransform);Array.Copy(extra,0,types,1,extra.Length);return new GameObject(name,types);}

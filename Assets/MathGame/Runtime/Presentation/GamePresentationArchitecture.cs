@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -59,6 +60,143 @@ namespace MathGame.Presentation.Unity
             raycastTarget = false;
         }
 #endif
+    }
+
+    /// <summary>Reusable theme-neutral UI burst. Visual children and timing are prefab-owned.</summary>
+    public sealed partial class BlockRemovalEffectView : MonoBehaviour
+    {
+        [SerializeField] Graphic[] particles = Array.Empty<Graphic>();
+        [SerializeField, Min(.03f)] float duration = .16f;
+        [SerializeField, Min(1f)] float travelDistance = 34f;
+        Coroutine playback;
+        Vector2[] origins = Array.Empty<Vector2>();
+
+        public bool IsPlaying => playback != null;
+
+        public void Play(Action<BlockRemovalEffectView> completed)
+        {
+            ResetEffect();
+            gameObject.SetActive(true);
+            playback = StartCoroutine(Animate(completed));
+        }
+
+        public void ResetEffect()
+        {
+            if (playback != null) StopCoroutine(playback);
+            playback = null;
+            EnsureOrigins();
+            for (var i = 0; i < particles.Length; i++)
+            {
+                if (particles[i] == null) continue;
+                particles[i].rectTransform.anchoredPosition = origins[i];
+                particles[i].rectTransform.localScale = Vector3.one;
+                var color = particles[i].color;
+                color.a = 1f;
+                particles[i].color = color;
+            }
+        }
+
+        IEnumerator Animate(Action<BlockRemovalEffectView> completed)
+        {
+            EnsureOrigins();
+            for (var elapsed = 0f; elapsed < duration; elapsed += Time.unscaledDeltaTime)
+            {
+                var t = Mathf.Clamp01(elapsed / duration);
+                for (var i = 0; i < particles.Length; i++)
+                {
+                    if (particles[i] == null) continue;
+                    var angle = particles.Length == 0 ? 0f : i * Mathf.PI * 2f / particles.Length;
+                    var direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                    particles[i].rectTransform.anchoredPosition = origins[i] + direction * travelDistance * t;
+                    particles[i].rectTransform.localScale = Vector3.one * Mathf.Lerp(1f, .45f, t);
+                    var color = particles[i].color;
+                    color.a = 1f - t;
+                    particles[i].color = color;
+                }
+                yield return null;
+            }
+            playback = null;
+            completed?.Invoke(this);
+        }
+
+        void EnsureOrigins()
+        {
+            if (origins.Length == particles.Length) return;
+            origins = new Vector2[particles.Length];
+            for (var i = 0; i < particles.Length; i++)
+                if (particles[i] != null) origins[i] = particles[i].rectTransform.anchoredPosition;
+        }
+
+        void OnDisable() => ResetEffect();
+
+#if UNITY_EDITOR
+        public void Configure(Graphic[] values, float seconds, float distance)
+        {
+            particles = values ?? Array.Empty<Graphic>();
+            duration = seconds;
+            travelDistance = distance;
+            origins = Array.Empty<Vector2>();
+        }
+#endif
+    }
+
+    /// <summary>Small bounded pool; removal gameplay never waits for or depends on it.</summary>
+    public sealed partial class BlockRemovalEffectPool : MonoBehaviour
+    {
+        [SerializeField, Min(1)] int maximumInstances = 16;
+        readonly List<BlockRemovalEffectView> instances = new List<BlockRemovalEffectView>();
+        GameObject effectPrefab;
+        Transform effectRoot;
+
+        public int InstanceCount => instances.Count;
+
+        public void Configure(GameObject prefab, Transform root)
+        {
+            effectPrefab = prefab;
+            effectRoot = root;
+        }
+
+        public void PlayAt(Vector3 worldPosition)
+        {
+            var view = Acquire();
+            if (view == null) return;
+            view.transform.position = worldPosition;
+            view.transform.SetAsLastSibling();
+            view.Play(Release);
+        }
+
+        public void ResetAll()
+        {
+            foreach (var view in instances)
+            {
+                if (view == null) continue;
+                view.ResetEffect();
+                view.gameObject.SetActive(false);
+            }
+        }
+
+        BlockRemovalEffectView Acquire()
+        {
+            foreach (var view in instances)
+                if (view != null && !view.gameObject.activeSelf) return view;
+            if (effectPrefab == null || effectRoot == null || instances.Count >= maximumInstances) return null;
+            var instance = Instantiate(effectPrefab, effectRoot);
+            var effect = instance.GetComponent<BlockRemovalEffectView>();
+            if (effect == null)
+            {
+                Destroy(instance);
+                return null;
+            }
+            instances.Add(effect);
+            return effect;
+        }
+
+        static void Release(BlockRemovalEffectView view)
+        {
+            if (view != null) view.gameObject.SetActive(false);
+        }
+
+        void OnDisable() => ResetAll();
     }
 
     public sealed class PresentationPrefabContract : MonoBehaviour

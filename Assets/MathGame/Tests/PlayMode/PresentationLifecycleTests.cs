@@ -80,6 +80,36 @@ namespace MathGame.Tests
             yield return null;
         }
 
+        [UnityTest]
+        public IEnumerator RemovalEffectPool_ReusesCompletedInstance_AndResetsOnDisable()
+        {
+            var effectRoot = new GameObject("EffectRoot", typeof(RectTransform));
+            var prefab = new GameObject("RemovalEffect", typeof(RectTransform), typeof(BlockRemovalEffectView));
+            var dot = new GameObject("Dot", typeof(RectTransform), typeof(CanvasRenderer), typeof(UnityEngine.UI.Image));
+            dot.transform.SetParent(prefab.transform, false);
+#if UNITY_EDITOR
+            prefab.GetComponent<BlockRemovalEffectView>().Configure(
+                new UnityEngine.UI.Graphic[] { dot.GetComponent<UnityEngine.UI.Image>() }, .03f, 10f);
+#endif
+            prefab.SetActive(false);
+            var owner = new GameObject("Pool", typeof(BlockRemovalEffectPool));
+            var pool = owner.GetComponent<BlockRemovalEffectPool>();
+            pool.Configure(prefab, effectRoot.transform);
+
+            pool.PlayAt(Vector3.zero);
+            Assert.That(pool.InstanceCount, Is.EqualTo(1));
+            yield return new WaitForSecondsRealtime(.05f);
+            pool.PlayAt(Vector3.one);
+            Assert.That(pool.InstanceCount, Is.EqualTo(1));
+            owner.SetActive(false);
+            yield return null;
+
+            Object.Destroy(owner);
+            Object.Destroy(prefab);
+            Object.Destroy(effectRoot);
+            yield return null;
+        }
+
         [Test]
         public void InteractionTimings_RemainShort()
         {
