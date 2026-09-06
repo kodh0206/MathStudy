@@ -149,6 +149,8 @@ namespace MathGame.Presentation.Unity
             // Fixed prototype HUD placement requested by design: centered at Y 60.
             if (objectiveRoot != null) SetRect(objectiveRoot, Vector2.zero, new Vector2(1, 0), new Vector2(24, 11), new Vector2(-24, 109));
 
+            ConfigureResponsiveRunHud();
+
             var stats = mainStats != null ? mainStats.GetComponent<GridLayoutGroup>() : null;
             if (stats != null)
             {
@@ -186,6 +188,25 @@ namespace MathGame.Presentation.Unity
             ConfigureStatusText(restoration, TextAnchor.MiddleLeft);
             ConfigureStatusText(fever, TextAnchor.MiddleRight);
             foreach (var objective in objectives) ConfigureObjectiveText(objective);
+        }
+
+        void ConfigureResponsiveRunHud()
+        {
+            var root = transform.Find("SafeArea/TopSlot/HUD/RunHUD") as RectTransform;
+            if (root == null) return;
+            SetRect(root, Vector2.zero, Vector2.one, new Vector2(12, 12), new Vector2(-12, -12));
+            SetRunPanel(root, "SurvivalPanel", .03f, .69f, .64f, .91f);
+            SetRunPanel(root, "ScorePanel", .66f, .69f, .97f, .91f);
+            SetRunPanel(root, "TargetPanel", .24f, .23f, .76f, .68f);
+            SetRunPanel(root, "SecondaryStats", .03f, .03f, .40f, .20f);
+            SetRunPanel(root, "FeverPanel", .50f, .03f, .97f, .20f);
+        }
+
+        static void SetRunPanel(RectTransform root, string path, float minX, float minY, float maxX, float maxY)
+        {
+            var panel = root.Find(path) as RectTransform;
+            if (panel != null)
+                SetRect(panel, new Vector2(minX, minY), new Vector2(maxX, maxY), Vector2.zero, Vector2.zero);
         }
 
         static void ConfigureStatusText(Text text, TextAnchor alignment)
@@ -449,6 +470,7 @@ namespace MathGame.Presentation.Unity
             safeArea.anchorMin = new Vector2(area.xMin / Screen.width, area.yMin / Screen.height);
             safeArea.anchorMax = new Vector2(area.xMax / Screen.width, area.yMax / Screen.height);
             safeArea.offsetMin = safeArea.offsetMax = Vector2.zero;
+            ConfigureResponsiveRunHud();
             if (boardCamera != null)
             {
                 if(boardCamera.GetComponent<PhysicsRaycaster>()==null)boardCamera.gameObject.AddComponent<PhysicsRaycaster>();

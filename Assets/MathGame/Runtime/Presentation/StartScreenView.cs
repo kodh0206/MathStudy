@@ -20,6 +20,12 @@ namespace MathGame.Presentation.Unity
         Coroutine transition;
         float pulseTime;
 
+        void Awake()
+        {
+            if (canvasGroup == null) return;
+            canvasGroup.blocksRaycasts = false;
+            canvasGroup.interactable = false;
+        }
         void OnEnable() { LocalizationSettings.SelectedLocaleChanged += LocaleChanged; Render(); }
         void OnDisable() { LocalizationSettings.SelectedLocaleChanged -= LocaleChanged; if (transition != null) StopCoroutine(transition); transition = null; }
         void Update() { if (coreVisual == null) return; pulseTime += Time.unscaledDeltaTime; coreVisual.localScale = Vector3.one * (1f + Mathf.Sin(pulseTime * 1.8f) * .015f); coreVisual.Rotate(0, 0, Time.unscaledDeltaTime * 8f); }
@@ -29,7 +35,12 @@ namespace MathGame.Presentation.Unity
         void BeginStartTransition() { if(!startButton.interactable||transition!=null)return; startButton.interactable=false; canvasGroup.interactable=false; transition=StartCoroutine(StartTransition()); }
         IEnumerator StartTransition() { statusText.text=MathGameLocalization.Get("Start","start.system_online"); const float duration=.28f; for(var elapsed=0f;elapsed<duration;elapsed+=Time.unscaledDeltaTime){canvasGroup.alpha=1-Mathf.Clamp01(elapsed/duration);yield return null;} canvasGroup.blocksRaycasts=false;transition=null;startRequested?.Invoke(); }
         void LocaleChanged(Locale _) => Render();
-        void Render() { if(titleText==null)return; titleText.text=MathGameLocalization.Get("Start","start.title");subtitleText.text=MathGameLocalization.Get("Start","start.subtitle");statusText.text=MathGameLocalization.Get("Start","start.core_online");bestTimeText.text=MathGameLocalization.Get("Start","start.best_time",records.BestSurvivalDuration);bestScoreText.text=MathGameLocalization.Get("Start","start.best_score",records.BestScore);startButton.GetComponentInChildren<Text>().text=MathGameLocalization.Get("Start","start.run");languageButton.GetComponentInChildren<Text>().text=MathGameLocalization.Get("Settings","settings.language_button"); }
+        void Render()
+        {
+            if (titleText == null || !MathGameLocalization.IsTableReady("Start") ||
+                !MathGameLocalization.IsTableReady("Settings")) return;
+            titleText.text=MathGameLocalization.Get("Start","start.title");subtitleText.text=MathGameLocalization.Get("Start","start.subtitle");statusText.text=MathGameLocalization.Get("Start","start.core_online");bestTimeText.text=MathGameLocalization.Get("Start","start.best_time",records.BestSurvivalDuration);bestScoreText.text=MathGameLocalization.Get("Start","start.best_score",records.BestScore);startButton.GetComponentInChildren<Text>().text=MathGameLocalization.Get("Start","start.run");languageButton.GetComponentInChildren<Text>().text=MathGameLocalization.Get("Settings","settings.language_button");
+        }
 #if UNITY_EDITOR
         public void Configure(CanvasGroup group,Text title,Text subtitle,Text state,Text bestTime,Text bestScore,Button start,Button language,RectTransform core){canvasGroup=group;titleText=title;subtitleText=subtitle;statusText=state;bestTimeText=bestTime;bestScoreText=bestScore;startButton=start;languageButton=language;coreVisual=core;}
 #endif

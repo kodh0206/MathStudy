@@ -11,7 +11,7 @@ namespace MathGame.Editor.SceneBuilder
 {
     public static class PrototypePrefabBuilder
     {
-        const int ContractVersion=13;
+        const int ContractVersion=14;
         public const string Root = "Assets/MathGame/Prefabs";
         public const string GameRootPath = Root + "/Core/GameRoot.prefab";
         public const string BoardPath = Root + "/Board/Board.prefab";
@@ -602,25 +602,28 @@ namespace MathGame.Editor.SceneBuilder
 
             var root=UI("RunHUD");root.transform.SetParent(hud.transform,false);Stretch(root.GetComponent<RectTransform>(),12);
 
-            var survival=UI("SurvivalPanel");survival.transform.SetParent(root.transform,false);Set(survival.GetComponent<RectTransform>(),.02f,.73f,.62f,.98f,0,0,0,0);
+            // Keep a real top inset. WebGL embeds can crop the first few rendered
+            // pixels while their browser viewport settles, so edge-aligned glyphs
+            // are not a safe presentation contract.
+            var survival=UI("SurvivalPanel");survival.transform.SetParent(root.transform,false);Set(survival.GetComponent<RectTransform>(),.03f,.69f,.64f,.91f,0,0,0,0);
             var timeLabel=Text("Label","TIME",21,TextAnchor.UpperLeft,survival.transform);timeLabel.color=new Color(.35f,.82f,1f);Set(timeLabel.rectTransform,0,.52f,.45f,1,4,0,0,0);
             var timeValue=Text("Value","30.0",36,TextAnchor.UpperRight,survival.transform);timeValue.fontStyle=FontStyle.Bold;Set(timeValue.rectTransform,.42f,.48f,1,1,0,0,-4,0);
             var timeTrack=Panel("Gauge",survival.transform,new Color(.06f,.14f,.22f,1));Set(timeTrack.GetComponent<RectTransform>(),0,.08f,1,.34f,4,0,-4,0);
             var timeFill=UI("Fill",typeof(CanvasRenderer),typeof(Image));timeFill.transform.SetParent(timeTrack.transform,false);Stretch(timeFill.GetComponent<RectTransform>(),3);
             var timeImage=timeFill.GetComponent<Image>();timeImage.color=new Color(.18f,.88f,1f);timeImage.type=Image.Type.Filled;timeImage.fillMethod=Image.FillMethod.Horizontal;timeImage.fillOrigin=0;timeImage.fillAmount=1;
 
-            var scorePanel=UI("ScorePanel");scorePanel.transform.SetParent(root.transform,false);Set(scorePanel.GetComponent<RectTransform>(),.64f,.73f,.98f,.98f,0,0,0,0);
+            var scorePanel=UI("ScorePanel");scorePanel.transform.SetParent(root.transform,false);Set(scorePanel.GetComponent<RectTransform>(),.66f,.69f,.97f,.91f,0,0,0,0);
             var score=Text("Score","SCORE  12,430",27,TextAnchor.UpperRight,scorePanel.transform);score.fontStyle=FontStyle.Bold;Stretch(score.rectTransform,0);
             var tier=Text("Tier","TIER 1",17,TextAnchor.LowerRight,scorePanel.transform);tier.color=new Color(.58f,.68f,.78f);Set(tier.rectTransform,0,0,1,.42f,0,0,0,0);
 
-            var targetPanel=UI("TargetPanel");targetPanel.transform.SetParent(root.transform,false);Set(targetPanel.GetComponent<RectTransform>(),.24f,.25f,.76f,.76f,0,0,0,0);
+            var targetPanel=UI("TargetPanel");targetPanel.transform.SetParent(root.transform,false);Set(targetPanel.GetComponent<RectTransform>(),.24f,.23f,.76f,.68f,0,0,0,0);
             var targetLabel=Text("Label","TARGET",21,TextAnchor.UpperCenter,targetPanel.transform);targetLabel.color=new Color(.35f,.82f,1f);Set(targetLabel.rectTransform,0,.70f,1,1,8,0,-8,0);
             var targetValue=Text("Value","8",92,TextAnchor.MiddleCenter,targetPanel.transform);targetValue.fontStyle=FontStyle.Bold;targetValue.color=new Color(.92f,.99f,1f);Set(targetValue.rectTransform,0,0,1,.82f,8,0,-8,0);
 
-            var secondary=UI("SecondaryStats");secondary.transform.SetParent(root.transform,false);Set(secondary.GetComponent<RectTransform>(),.02f,.02f,.38f,.24f,0,0,0,0);
+            var secondary=UI("SecondaryStats");secondary.transform.SetParent(root.transform,false);Set(secondary.GetComponent<RectTransform>(),.03f,.03f,.40f,.20f,0,0,0,0);
             var combo=Text("Combo","COMBO  x0",30,TextAnchor.MiddleLeft,secondary.transform);combo.fontStyle=FontStyle.Bold;Stretch(combo.rectTransform,4);
 
-            var feverPanel=UI("FeverPanel");feverPanel.transform.SetParent(root.transform,false);Set(feverPanel.GetComponent<RectTransform>(),.52f,.02f,.98f,.24f,0,0,0,0);
+            var feverPanel=UI("FeverPanel");feverPanel.transform.SetParent(root.transform,false);Set(feverPanel.GetComponent<RectTransform>(),.50f,.03f,.97f,.20f,0,0,0,0);
             var fever=Text("Label","FEVER",20,TextAnchor.UpperLeft,feverPanel.transform);fever.color=new Color(1f,.72f,.18f);Set(fever.rectTransform,0,.46f,.38f,1,4,0,0,0);
             var feverTrack=Panel("Gauge",feverPanel.transform,new Color(.12f,.14f,.19f,1));Set(feverTrack.GetComponent<RectTransform>(),.36f,.25f,1,.72f,0,0,-4,0);
             var feverFill=UI("Fill",typeof(CanvasRenderer),typeof(Image));feverFill.transform.SetParent(feverTrack.transform,false);Stretch(feverFill.GetComponent<RectTransform>(),3);
@@ -743,6 +746,7 @@ namespace MathGame.Editor.SceneBuilder
             root.GetComponent<PrototypeGeneratedRoot>().Configure(ContractVersion);
             PrototypeUILayout.EnsureSerializedEventSystem(root);
             var gameplay=UI("GameplayRoot",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));gameplay.transform.SetParent(root.transform,false);
+            gameplay.transform.localScale=Vector3.one;
             var gameplayCanvas=gameplay.GetComponent<Canvas>();gameplayCanvas.renderMode=RenderMode.ScreenSpaceOverlay;gameplayCanvas.sortingOrder=10;
             var gameplayScaler=gameplay.GetComponent<CanvasScaler>();gameplayScaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;gameplayScaler.referenceResolution=new Vector2(1080,1920);gameplayScaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;gameplayScaler.matchWidthOrHeight=.5f;
             var backdrop=Panel("Backdrop",gameplay.transform,new Color(.004f,.012f,.028f,1f));Stretch(backdrop.GetComponent<RectTransform>(),0);backdrop.GetComponent<Image>().raycastTarget=false;
@@ -753,6 +757,7 @@ namespace MathGame.Editor.SceneBuilder
             var uiRoot=new GameObject("UIRoot");uiRoot.transform.SetParent(root.transform,false);
             var canvasObject=UI("PrototypeCanvas",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster),typeof(PrototypeUILayout));canvasObject.transform.SetParent(root.transform,false);
             canvasObject.transform.SetParent(uiRoot.transform,false);
+            canvasObject.transform.localScale=Vector3.one;
             var canvas=canvasObject.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=100;
             var scaler=canvasObject.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1080,1920);scaler.screenMatchMode=CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;scaler.matchWidthOrHeight=.5f;
             var safe=UI("SafeArea");safe.transform.SetParent(canvasObject.transform,false);Stretch(safe.GetComponent<RectTransform>(),0);

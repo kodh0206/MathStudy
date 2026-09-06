@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using MathGame.Board;
 using UnityEngine;
@@ -6,7 +7,8 @@ using UnityEngine.UI;
 
 namespace MathGame.Presentation.Unity
 {
-    public sealed class PrototypeCellView : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler
+    public sealed class PrototypeCellView : MonoBehaviour, IPointerEnterHandler, IPointerDownHandler, IPointerUpHandler,
+        IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         [SerializeField] int column;
         [SerializeField] int row;
@@ -29,6 +31,9 @@ namespace MathGame.Presentation.Unity
         public RectTransform RectTransform => (RectTransform)transform;
         public BlockId? DisplayedBlockId { get; private set; }
         public bool PointerIsOver { get; private set; }
+        public event Action<BoardPosition> PointerEntered;
+        public event Action<BoardPosition> PointerPressed;
+        public event Action PointerReleased;
 
         public void Apply(BoardCellSnapshot snapshot)
         {
@@ -217,8 +222,40 @@ namespace MathGame.Presentation.Unity
         }
 
         void OnDisable() => ResetVisualState();
-        public void OnPointerEnter(PointerEventData eventData)=>PointerIsOver=true;
-        public void OnPointerDown(PointerEventData eventData)=>PointerIsOver=true;
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            PointerIsOver = true;
+            PointerEntered?.Invoke(Position);
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            PointerIsOver = true;
+            PointerPressed?.Invoke(Position);
+        }
+
+        public void OnPointerUp(PointerEventData eventData) => PointerReleased?.Invoke();
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            // PointerDown normally starts the path. Keep this callback so WebGL's
+            // browser-backed pointer stream retains this object as its drag handler.
+            ForwardCurrentDragCell(eventData);
+        }
+
+        public void OnDrag(PointerEventData eventData) => ForwardCurrentDragCell(eventData);
+
+        public void OnEndDrag(PointerEventData eventData) => PointerReleased?.Invoke();
+
+        void ForwardCurrentDragCell(PointerEventData eventData)
+        {
+            if (eventData == null) return;
+            var hit = eventData.pointerCurrentRaycast.gameObject;
+            var current = hit != null ? hit.GetComponentInParent<PrototypeCellView>() : null;
+            if (current == null) return;
+            current.PointerIsOver = true;
+            current.PointerEntered?.Invoke(current.Position);
+        }
 
 #if UNITY_EDITOR
         public void Configure(int valueColumn,int valueRow,Image visualBackground,Text number,Text obstacle,GameObject numberRoot,GameObject obstacleVisualRoot)

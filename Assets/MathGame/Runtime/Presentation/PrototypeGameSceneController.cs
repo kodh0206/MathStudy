@@ -61,12 +61,15 @@ namespace MathGame.Presentation.Unity
         bool pointerDown;
         bool resolvingEnd;
         bool targetRecoveryPending;
+        bool targetRecoveryAutoRetryPending;
         bool restarting;
         string status = "Starting prototype...";
 
         IEnumerator Start()
         {
+#if !UNITY_WEBGL || UNITY_EDITOR
             yield return LocalizationSettings.InitializationOperation;
+#endif
             for (var i = 0; i < 120; i++)
             {
                 bootstrap = FindFirstObjectByType<MathGameBootstrap>();
@@ -79,6 +82,7 @@ namespace MathGame.Presentation.Unity
                 yield break;
             }
             InitializeShell();
+            yield return MathGameLocalization.PreloadRuntimeTables();
             ShowStartScreen();
         }
 
@@ -100,6 +104,11 @@ namespace MathGame.Presentation.Unity
                 status = "Required Korean/English localization assets are missing.";
                 return;
             }
+            // Persist a concrete supported locale in the in-memory snapshot. PlayerSettings.Default
+            // intentionally uses null, but JsonUtility represents that value as an empty string;
+            // the repository's read-back verification correctly rejects the empty locale. This also
+            // keeps WebGL's forced-English presentation and its saved progress internally consistent.
+            progressService.SetLocale(localeCode);
             if (loadedProgress.Status is ProgressLoadStatus.InvalidDataFallback or ProgressLoadStatus.ReadFailedFallback)
                 Debug.LogWarning("[MathGame][Progress] Local progress fallback: " + loadedProgress.Diagnostic);
 
@@ -174,6 +183,7 @@ namespace MathGame.Presentation.Unity
                 return;
             }
             boardView.PlaybackCompleted += PlaybackCompleted;
+            SubscribeBoardCellInput();
             boardView.BeginSession();
             // Prototype board visuals are authored in the scene. Reconcile them immediately
             // instead of holding input while staging per-delta animations.
@@ -277,6 +287,17 @@ namespace MathGame.Presentation.Unity
                 var tick = fever.Tick();
                 if (tick == FeverControllerTickResult.EndingBegan && !resolvingEnd) ResolveFeverEnd();
             }
+            // A committed answer can leave the coordinator in ResolvingAnswer when the
+            // first deterministic target search cannot prove a playable target. In a
+            // continuous run there is no separate recovery screen, so perform the
+            // existing retry transaction on the following frame. Without this handoff
+            // the board remains correctly locked in ResolvingAnswer forever.
+            if (targetRecoveryAutoRetryPending)
+            {
+                targetRecoveryAutoRetryPending = false;
+                RetryTarget();
+                return;
+            }
             if (!stage.AcceptsPlayerInput)
             {
                 if(Mouse.current?.leftButton.wasPressedThisFrame==true||Touchscreen.current?.primaryTouch.press.wasPressedThisFrame==true)
@@ -291,20 +312,36 @@ namespace MathGame.Presentation.Unity
             if (!TryReadPointer(out var screenPosition, out var down, out var held, out var up)) return;
             if (down)
             {
-                selected.Clear();
-                uiLayout?.SetSelectionSum(0,0);
                 if (TryPointerCell(screenPosition, out var cell))
-                {
-                    var result = commands.BeginPath(new PathCommandRequest(new PresentationCommandId(commandId++), commands.CurrentToken, cell));
-                    AcceptPathResult(result);
-                    pointerDown = result?.Status == PresentationCommandStatus.Accepted;
-                }
+                    BeginBoardPath(cell);
             }
             else if (held && pointerDown && TryPointerCell(screenPosition, out var cell) && (selected.Count == 0 || selected[selected.Count - 1] != cell))
             {
-                AcceptPathResult(commands.ExtendPath(new PathCommandRequest(new PresentationCommandId(commandId++), commands.CurrentToken, cell)));
+                ExtendBoardPath(cell);
             }
-            if (up && pointerDown)
+            if (up) ReleaseBoardPath();
+        }
+
+        void BeginBoardPath(BoardPosition cell)
+        {
+            if (pointerDown || stage?.AcceptsPlayerInput != true || commands == null) return;
+            selected.Clear();
+            uiLayout?.SetSelectionSum(0,0);
+            var result = commands.BeginPath(new PathCommandRequest(new PresentationCommandId(commandId++), commands.CurrentToken, cell));
+            AcceptPathResult(result);
+            pointerDown = result?.Status == PresentationCommandStatus.Accepted;
+        }
+
+        void ExtendBoardPath(BoardPosition cell)
+        {
+            if (!pointerDown || stage?.AcceptsPlayerInput != true || commands == null ||
+                (selected.Count > 0 && selected[selected.Count - 1] == cell)) return;
+            AcceptPathResult(commands.ExtendPath(new PathCommandRequest(new PresentationCommandId(commandId++), commands.CurrentToken, cell)));
+        }
+
+        void ReleaseBoardPath()
+        {
+            if (pointerDown)
             {
                 pointerDown = false;
                 // Apply the prospective tier only when the selected value is a correct answer.
@@ -324,6 +361,31 @@ namespace MathGame.Presentation.Unity
                 selected.Clear();
                 uiLayout?.SetSelectionSum(0,0);
                 UpdateLine();
+            }
+        }
+
+        void SubscribeBoardCellInput()
+        {
+            if (boardView == null) return;
+            foreach (var cell in boardView.GetComponentsInChildren<PrototypeCellView>(true))
+            {
+                cell.PointerPressed -= BeginBoardPath;
+                cell.PointerEntered -= ExtendBoardPath;
+                cell.PointerReleased -= ReleaseBoardPath;
+                cell.PointerPressed += BeginBoardPath;
+                cell.PointerEntered += ExtendBoardPath;
+                cell.PointerReleased += ReleaseBoardPath;
+            }
+        }
+
+        void UnsubscribeBoardCellInput()
+        {
+            if (boardView == null) return;
+            foreach (var cell in boardView.GetComponentsInChildren<PrototypeCellView>(true))
+            {
+                cell.PointerPressed -= BeginBoardPath;
+                cell.PointerEntered -= ExtendBoardPath;
+                cell.PointerReleased -= ReleaseBoardPath;
             }
         }
 
@@ -403,7 +465,12 @@ namespace MathGame.Presentation.Unity
                 return;
             }
             if (!result.AnswerFlow.IsInputReady)
-            { targetRecoveryPending = true; status = MathGameLocalization.Get("Gameplay", "gameplay.target_pending"); return; }
+            {
+                targetRecoveryPending = true;
+                targetRecoveryAutoRetryPending = true;
+                status = MathGameLocalization.Get("Gameplay", "gameplay.target_pending");
+                return;
+            }
             targetRecoveryPending = false;
             PreparePlan(ObstaclePresentationPlanBuilder.ForAnswer(Envelope(PresentationAcknowledgementKind.Answer,
                 result.AnswerFlow.GameplayToken.SourceId), Settings(), result.AnswerFlow));
@@ -478,6 +545,19 @@ namespace MathGame.Presentation.Unity
 
         static bool TryReadPointer(out Vector2 position, out bool down, out bool held, out bool up)
         {
+            // WebGL browsers may expose a finger as a generic pointer (and sometimes as
+            // an emulated mouse) instead of making Touchscreen.current available. Read
+            // Pointer.current first so the board follows the same browser pointer stream
+            // that drives the EventSystem UI.
+            if (Pointer.current != null)
+            {
+                position = Pointer.current.position.ReadValue();
+                down = Pointer.current.press.wasPressedThisFrame;
+                held = Pointer.current.press.isPressed;
+                up = Pointer.current.press.wasReleasedThisFrame;
+                if (down || held || up) return true;
+            }
+
             if (Touchscreen.current != null)
             {
                 var touch = Touchscreen.current.primaryTouch;
@@ -598,6 +678,10 @@ namespace MathGame.Presentation.Unity
 
         void ToggleLanguage()
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            status = MathGameLocalization.Get("Settings", "settings.language_changed");
+            return;
+#else
             if (progressService == null || progressRepository == null) return;
             var next = MathGameLocalization.SelectedCode == MathGameLocalization.Korean
                 ? MathGameLocalization.English : MathGameLocalization.Korean;
@@ -610,6 +694,7 @@ namespace MathGame.Presentation.Unity
             var saved = progressRepository.Save(updated);
             if (!saved.Succeeded) Debug.LogError("[MathGame][Localization] Locale preference save failed: " + saved.Diagnostic);
             status = MathGameLocalization.Get("Settings", "settings.language_changed");
+#endif
         }
 
         IEnumerator RestartCleanly()
@@ -633,6 +718,7 @@ namespace MathGame.Presentation.Unity
 
         void CleanRunPresentation()
         {
+            UnsubscribeBoardCellInput();
             if (boardView != null) boardView.PlaybackCompleted -= PlaybackCompleted;
             presentation?.Dispose();
             fever?.Dispose();
@@ -640,11 +726,13 @@ namespace MathGame.Presentation.Unity
             selected.Clear();
             pointerDown = false;
             targetRecoveryPending = false;
+            targetRecoveryAutoRetryPending = false;
             resolvingEnd = false;
         }
 
         void OnDestroy()
         {
+            UnsubscribeBoardCellInput();
             if (boardView != null) boardView.PlaybackCompleted -= PlaybackCompleted;
             presentation?.Dispose(); fever?.Dispose();
         }

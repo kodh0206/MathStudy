@@ -182,7 +182,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MathGame.Presentation::MathGame.Presentation.Unity.PresentationPrefabContract
   contractId: Board
-  version: 13
+  version: 14
 --- !u!222 &6351135155972600086
 CanvasRenderer:
   m_ObjectHideFlags: 0
