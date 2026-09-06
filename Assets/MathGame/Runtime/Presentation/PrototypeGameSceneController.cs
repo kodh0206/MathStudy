@@ -285,7 +285,11 @@ namespace MathGame.Presentation.Unity
             if (fever.State == FeverState.Active)
             {
                 var tick = fever.Tick();
-                if (tick == FeverControllerTickResult.EndingBegan && !resolvingEnd) ResolveFeverEnd();
+                if (tick == FeverControllerTickResult.EndingBegan && !resolvingEnd)
+                {
+                    CancelActivePointerPath();
+                    ResolveFeverEnd();
+                }
             }
             // A committed answer can leave the coordinator in ResolvingAnswer when the
             // first deterministic target search cannot prove a playable target. In a
@@ -362,6 +366,16 @@ namespace MathGame.Presentation.Unity
                 uiLayout?.SetSelectionSum(0,0);
                 UpdateLine();
             }
+        }
+
+        void CancelActivePointerPath()
+        {
+            if (pointerDown && commands != null)
+                commands.CancelPath(new PresentationCommandId(commandId++), commands.CurrentToken);
+            pointerDown = false;
+            selected.Clear();
+            uiLayout?.SetSelectionSum(0, 0);
+            UpdateLine();
         }
 
         void SubscribeBoardCellInput()
@@ -485,7 +499,13 @@ namespace MathGame.Presentation.Unity
                 stage.State == StageState.PresentingTarget)
                 PreparePlan(new PresentationPlan(Envelope(PresentationAcknowledgementKind.TargetReady,
                     commands.CurrentToken.SourceId), Settings()));
-            else if (stage.AcceptsPlayerInput) targetStarted = Time.unscaledTime;
+            else if (stage.AcceptsPlayerInput)
+            {
+                // Re-enter every input phase with a clean pointer latch. WebGL can omit
+                // PointerUp while the canvas is temporarily locked by Fever playback.
+                CancelActivePointerPath();
+                targetStarted = Time.unscaledTime;
+            }
         }
 
         void ResolveFeverEnd()
