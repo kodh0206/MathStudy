@@ -159,6 +159,8 @@ namespace MathGame.Stage
 
         public TransitionResult BeginDeadlockRecovery()
         {
+            // This transition only locks the interactive lifecycle. The board search and
+            // bounded shuffle are owned by TargetRecoveryCoordinator at the flow boundary.
             if (IsTerminal)
                 return TransitionResult.StageAlreadyTerminated;
             if (State != StageState.PlayerInput)

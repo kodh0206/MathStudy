@@ -32,6 +32,7 @@ namespace MathGame.Presentation.Unity
     public sealed class PrototypeGameSceneController : MonoBehaviour
     {
         [SerializeField] GamePresentationHost presentationHost;
+        [SerializeField] bool reducedMotion;
         MathGameBootstrap bootstrap;
         StageController stage;
         Session session;
@@ -62,6 +63,7 @@ namespace MathGame.Presentation.Unity
         bool resolvingEnd;
         bool targetRecoveryPending;
         bool targetRecoveryAutoRetryPending;
+        bool displayedFeverExpiryWarning;
         bool restarting;
         string status = "Starting prototype...";
 
@@ -166,6 +168,8 @@ namespace MathGame.Presentation.Unity
             targets = new TargetRecoveryCoordinator(random);
             targetConfig = new TargetRecoveryConfig(new TargetSearchConfig(5, 10, 2, 4, 250000), new TargetSelectionPolicy(1), 5);
             history = new TargetHistory(null, 0);
+            // Initial deadlock gate: never present the generated board until a legal
+            // target witness is proven (or recovered by a bounded shuffle).
             var initialTarget = targets.SelectNextTarget(built.Board, history, targetConfig);
             if (!initialTarget.Succeeded) { status = "Initial target search failed: " + initialTarget.Status; return; }
             history = initialTarget.UpdatedHistory;
@@ -273,6 +277,15 @@ namespace MathGame.Presentation.Unity
             uiLayout?.RefreshRun(currentSnapshot, target.Value, fever.Gauge, 50, status,
                 run?.RemainingTime ?? 0, maximumRunTime, run?.DifficultyTier ?? 0, currentCombo,
                 run?.Status == SurvivalRunStatus.Ended, targetRecoveryPending);
+            var feverPresentation = fever.CapturePresentationSnapshot();
+            var feverExpiryWarning = fever.State == FeverState.Active && feverPresentation.RemainingSeconds > 0 &&
+                                     feverPresentation.RemainingSeconds <= 1d;
+            if (feverExpiryWarning != displayedFeverExpiryWarning)
+            {
+                displayedFeverExpiryWarning = feverExpiryWarning;
+                uiLayout?.PresentFeverExpiryWarning(feverExpiryWarning, Settings().ReducedMotion);
+                boardView?.SetFeverExpiryWarning(feverExpiryWarning, Settings().ReducedMotion);
+            }
             /*uiLayout?.Refresh(currentSnapshot,target.Value,fever.Gauge,50,status,
                 stage.State==StageState.FailedPendingDecision,targetRecoveryPending,
                 stage.State is StageState.Success or StageState.Failure);*/
@@ -480,6 +493,8 @@ namespace MathGame.Presentation.Unity
             }
             if (!result.AnswerFlow.IsInputReady)
             {
+                // The answer may already be committed, but target proof failed or was
+                // indeterminate. Keep input locked and retry only the target recovery.
                 targetRecoveryPending = true;
                 targetRecoveryAutoRetryPending = true;
                 status = MathGameLocalization.Get("Gameplay", "gameplay.target_pending");
@@ -511,6 +526,9 @@ namespace MathGame.Presentation.Unity
         void ResolveFeverEnd()
         {
             resolvingEnd = true;
+            var earnedTier = fever.PendingEndResult?.EffectTier ?? FeverEndEffectTier.None;
+            // ResolveFeverEnd also runs the post-effect target/deadlock gate before the
+            // resulting board can return to interactive presentation.
             var result = commands.ResolveFeverEnd(new FeverEndCommandRequest(new PresentationCommandId(commandId++),
                 commands.CurrentToken, refill, history, targetConfig));
             resolvingEnd = false;
@@ -521,17 +539,19 @@ namespace MathGame.Presentation.Unity
             if(result.EndFlow?.TargetResult?.BoardChanged!=true)
                 boardView.ApplyFinalState(SnapshotPlan(PresentationAcknowledgementKind.None, 0));
             if(result.EndFlow.Status==ObstacleEndFlowStatus.StageTerminal)
-                PreparePlan(ObstaclePresentationPlanBuilder.ForTerminal(Envelope(PresentationAcknowledgementKind.Terminal,
-                    result.EndFlow.GameplayToken.SourceId),Settings(),true));
+                PreparePlan(ObstaclePresentationPlanBuilder.ForTerminalFeverEnd(Envelope(PresentationAcknowledgementKind.Terminal,
+                    result.EndFlow.GameplayToken.SourceId),Settings(),result.EndFlow,earnedTier));
             else
                 PreparePlan(ObstaclePresentationPlanBuilder.ForFeverEnd(Envelope(PresentationAcknowledgementKind.FeverEnd,
-                    result.EndFlow.GameplayToken.SourceId), Settings(),result.EndFlow));
+                    result.EndFlow.GameplayToken.SourceId), Settings(),result.EndFlow, earnedTier));
         }
 
         void RetryTarget()
         {
             if(stage.State==StageState.RecoveringBoard)
             {
+                // Continue does not trust the pre-failure target. Re-prove the current
+                // board before target presentation and player input are restored.
                 var continued=obstacleFlow.RecoverAfterContinue(history,targetConfig);
                 if(!continued.IsInputReady){status="Continue target retry failed: "+continued.Status;return;}
                 history=continued.History;target=continued.SelectedTarget.Target;targetRecoveryPending=false;
@@ -561,7 +581,7 @@ namespace MathGame.Presentation.Unity
             new PresentationPlan(new PresentationEnvelope(new PresentationSequenceId(Math.Max(1, presentationId)),
                 obstacleFlow.CaptureGameplayState(), session.CreateSnapshot(), fever.CapturePresentationSnapshot(), kind, source), Settings());
 
-        static PresentationSettings Settings() => new PresentationSettings(false, true, true);
+        PresentationSettings Settings() => new PresentationSettings(reducedMotion, true, true);
 
         static bool TryReadPointer(out Vector2 position, out bool down, out bool held, out bool up)
         {
@@ -747,6 +767,9 @@ namespace MathGame.Presentation.Unity
             pointerDown = false;
             targetRecoveryPending = false;
             targetRecoveryAutoRetryPending = false;
+            displayedFeverExpiryWarning = false;
+            uiLayout?.PresentFeverExpiryWarning(false, Settings().ReducedMotion);
+            boardView?.SetFeverExpiryWarning(false, Settings().ReducedMotion);
             resolvingEnd = false;
         }
 

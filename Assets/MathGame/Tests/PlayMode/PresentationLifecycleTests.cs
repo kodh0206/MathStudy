@@ -7,6 +7,7 @@ using UnityEngine.TestTools;
 using System.Collections.Generic;
 using MathGame.Board;
 using UnityEngine.UI;
+using MathGame.Fever;
 
 namespace MathGame.Tests
 {
@@ -202,6 +203,28 @@ namespace MathGame.Tests
             Assert.That(PresentationFeedbackCue.Perfect, Is.Not.EqualTo(PresentationFeedbackCue.Fast));
             Assert.That(PresentationFeedbackCue.TimeRecovery, Is.Not.EqualTo(PresentationFeedbackCue.Combo));
             Assert.That(PresentationFeedbackCue.RunEnd, Is.Not.EqualTo(PresentationFeedbackCue.PlayAgain));
+        }
+
+        [Test]
+        public void FeverEndAndShuffle_UseDistinctTextAndAccessibleReducedMotionMarker()
+        {
+            var board = new GameObject("Board", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Outline));
+            var content = new GameObject("Content", typeof(RectTransform), typeof(CanvasGroup));
+            content.transform.SetParent(board.transform, false);
+            var overlay = new GameObject("Overlay", typeof(RectTransform)); overlay.transform.SetParent(board.transform, false);
+            var message = new GameObject("Message", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text)).GetComponent<Text>();
+            message.transform.SetParent(overlay.transform, false);
+            var scan = new GameObject("Scan", typeof(RectTransform)).GetComponent<RectTransform>(); scan.SetParent(overlay.transform, false);
+            var view = board.AddComponent<BoardReconfigurationView>();
+#if UNITY_EDITOR
+            view.Configure(content.GetComponent<CanvasGroup>(), overlay, scan, message, board.GetComponent<Outline>());
+#endif
+            view.BeginFeverEnd(FeverEndEffectTier.LargeExplosionAndRestoration, true);
+            Assert.That(message.text, Does.Contain("FEVER FINISH!").And.Contain("LARGE BLAST"));
+            Assert.That(board.transform.localScale, Is.EqualTo(Vector3.one));
+            view.Begin(true);
+            Assert.That(message.text, Is.EqualTo("SHUFFLE"));
+            Object.DestroyImmediate(board);
         }
 
         [Test]

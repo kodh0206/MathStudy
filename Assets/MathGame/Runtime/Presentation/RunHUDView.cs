@@ -20,6 +20,8 @@ namespace MathGame.Presentation.Unity
         bool critical;
         Coroutine timePulse;
         Coroutine targetPulse;
+        bool feverExpiryWarning;
+        bool feverWarningReducedMotion;
 
         static readonly Color Cyan = new Color(.18f, .88f, 1f, 1f);
         static readonly Color Warning = new Color(1f, .62f, .20f, 1f);
@@ -139,10 +141,28 @@ namespace MathGame.Presentation.Unity
 
         void Update()
         {
-            if (timeValue == null || timePulse != null) return;
-            timeValue.rectTransform.localScale = critical
-                ? Vector3.one * (1f + .035f * (1f + Mathf.Sin(Time.unscaledTime * 10f)))
-                : Vector3.one;
+            if (timeValue != null && timePulse == null)
+                timeValue.rectTransform.localScale = critical
+                    ? Vector3.one * (1f + .035f * (1f + Mathf.Sin(Time.unscaledTime * 10f)))
+                    : Vector3.one;
+            if (feverValue != null)
+            {
+                var wave = feverExpiryWarning && !feverWarningReducedMotion
+                    ? 1f + .06f * (1f + Mathf.Sin(Time.unscaledTime * 18f)) : 1f;
+                feverValue.rectTransform.localScale = Vector3.one * wave;
+                if (feverExpiryWarning) feverValue.color = new Color(1f, .62f, .14f, 1f);
+            }
+        }
+
+        public void SetFeverExpiryWarning(bool active, bool reducedMotion)
+        {
+            feverExpiryWarning = active;
+            feverWarningReducedMotion = reducedMotion;
+            if (feverValue != null && !active)
+            {
+                feverValue.rectTransform.localScale = Vector3.one;
+                feverValue.color = Color.white;
+            }
         }
 
         IEnumerator Pulse(RectTransform value, float maximum, float duration)
@@ -165,6 +185,8 @@ namespace MathGame.Presentation.Unity
             timePulse = targetPulse = null;
             if (timeValue != null) timeValue.rectTransform.localScale = Vector3.one;
             if (targetValue != null) targetValue.rectTransform.localScale = Vector3.one;
+            feverExpiryWarning = false;
+            if (feverValue != null) { feverValue.rectTransform.localScale = Vector3.one; feverValue.color = Color.white; }
         }
 
         void OnDisable() => ResetTransientState();

@@ -41,6 +41,11 @@ namespace MathGame.Presentation.Unity
         public void PlayComboCue(bool audio = true) => feedback?.Play(PresentationFeedbackCue.Combo, audio, false);
         public void PlayRunEndCue(bool audio = true, bool haptics = true) => feedback?.Play(PresentationFeedbackCue.RunEnd, audio, haptics);
         public void PlayAgainCue(bool audio = true) => feedback?.Play(PresentationFeedbackCue.PlayAgain, audio, false);
+        public void SetFeverExpiryWarning(bool active, bool reducedMotion)
+        {
+            reconfiguration ??= GetComponent<BoardReconfigurationView>();
+            reconfiguration?.SetFeverExpiryWarning(active, reducedMotion);
+        }
         public void SetSelectedPositions(IReadOnlyCollection<BoardPosition> positions)
         {
             var selectedPositions=positions==null?new HashSet<BoardPosition>():new HashSet<BoardPosition>(positions);
@@ -254,7 +259,7 @@ namespace MathGame.Presentation.Unity
                     normal=Math.Max(normal,DurationFor(events[index].Kind));
                     index++;
                 }
-                var milliseconds=plan.Settings.ReducedMotion?Timing.ForReducedMotion(normal):normal;
+                var milliseconds=plan.Settings.ReducedMotion?ReducedDurationFor(events==null?PresentationEventKind.Reconcile:events[index-1].Kind,normal):normal;
                 var elapsed=0f;while(elapsed<milliseconds/1000f){if(!paused)elapsed+=Time.unscaledDeltaTime;yield return null;}
             }
             playback = null;
@@ -268,11 +273,31 @@ namespace MathGame.Presentation.Unity
             {
                 case PresentationEventKind.ReconfigurationStart:
                     selectionLine?.Clear();
-                    foreach (var cell in prebuiltCells.Values) if (cell != null) cell.SetSelected(false);
+                    foreach (var cell in prebuiltCells.Values) if (cell != null) { cell.SetSelected(false); cell.SetFeverTelegraph(false, true); }
                     reconfiguration ??= GetComponent<BoardReconfigurationView>();
+                    reconfiguration?.CompleteFeverEnd();
                     reconfiguration?.Begin(plan.Settings.ReducedMotion);
                     feedback?.Play(PresentationFeedbackCue.ReconfigurationStart, plan.Settings.AudioEnabled, false);
                     feedback?.Play(PresentationFeedbackCue.ReconfigurationScan, plan.Settings.AudioEnabled, false);
+                    break;
+                case PresentationEventKind.FeverEndAnnouncement:
+                    selectionLine?.Clear();
+                    foreach (var cell in prebuiltCells.Values) if (cell != null) { cell.SetSelected(false); cell.SetFeverTelegraph(false, true); }
+                    reconfiguration ??= GetComponent<BoardReconfigurationView>();
+                    reconfiguration?.BeginFeverEnd((MathGame.Fever.FeverEndEffectTier)value.Identity, plan.Settings.ReducedMotion);
+                    feedback?.Play(PresentationFeedbackCue.FeverEnd, plan.Settings.AudioEnabled, plan.Settings.HapticsEnabled);
+                    break;
+                case PresentationEventKind.FeverEndTelegraph:
+                    if (prebuiltCells.TryGetValue(value.Position, out var telegraphView))
+                        telegraphView.SetFeverTelegraph(true, plan.Settings.ReducedMotion);
+                    break;
+                case PresentationEventKind.FeverEndWave:
+                    reconfiguration ??= GetComponent<BoardReconfigurationView>();
+                    reconfiguration?.PlayFeverWave(plan.Settings.ReducedMotion);
+                    break;
+                case PresentationEventKind.FeverEndFade:
+                    reconfiguration ??= GetComponent<BoardReconfigurationView>();
+                    reconfiguration?.PlayFeverFade(plan.Settings.ReducedMotion);
                     break;
                 case PresentationEventKind.RemoveSelected:
                 case PresentationEventKind.RemoveCollateral:
@@ -340,6 +365,11 @@ namespace MathGame.Presentation.Unity
                     overlay?.ShowStatus("FEVER END");
                     feedback?.Play(PresentationFeedbackCue.FeverEnd, plan.Settings.AudioEnabled, plan.Settings.HapticsEnabled);
                     break;
+                case PresentationEventKind.Reconcile:
+                    foreach (var cell in prebuiltCells.Values) if (cell != null) cell.SetFeverTelegraph(false, true);
+                    reconfiguration ??= GetComponent<BoardReconfigurationView>();
+                    reconfiguration?.CompleteFeverEnd();
+                    break;
                 case PresentationEventKind.StageSuccess:
                     var success = plan.Envelope.Success;
                     var successDetail = success == null
@@ -377,22 +407,36 @@ namespace MathGame.Presentation.Unity
             overlay?.ShowPositions(positions, sum);
         }
         int DurationFor(PresentationEventKind kind)=>kind switch
-        {PresentationEventKind.RemoveSelected or PresentationEventKind.RemoveCollateral or PresentationEventKind.DamageObstacle or PresentationEventKind.DestroyObstacle=>Timing.RemovalMilliseconds,
+        {PresentationEventKind.FeverEndAnnouncement=>220,
+         PresentationEventKind.FeverEndTelegraph=>220,
+         PresentationEventKind.FeverEndWave=>180,
+         PresentationEventKind.FeverEndFade=>180,
+         PresentationEventKind.RemoveSelected or PresentationEventKind.RemoveCollateral or PresentationEventKind.DamageObstacle or PresentationEventKind.DestroyObstacle=>Timing.RemovalMilliseconds,
          PresentationEventKind.ReconfigurationStart=>120,
          PresentationEventKind.MoveBlock or PresentationEventKind.ShuffleBlock=>Timing.GravityMilliseconds,
          PresentationEventKind.ReconfigurationComplete=>180,
          PresentationEventKind.SpawnBlock=>Timing.RefillMilliseconds,
          PresentationEventKind.RestorationMilestone=>Timing.RestorationMilestoneMilliseconds,_=>Timing.SelectionMilliseconds};
+        int ReducedDurationFor(PresentationEventKind kind,int normal)=>kind switch
+        {
+            PresentationEventKind.FeverEndAnnouncement => 220,
+            PresentationEventKind.FeverEndTelegraph => 180,
+            PresentationEventKind.FeverEndWave or PresentationEventKind.FeverEndFade => 120,
+            _ => Timing.ForReducedMotion(normal)
+        };
         static int PhaseFor(PresentationEventKind kind)=>kind switch
         {
+            PresentationEventKind.FeverEndAnnouncement => 0,
+            PresentationEventKind.FeverEndTelegraph => 1,
+            PresentationEventKind.FeverEndWave or PresentationEventKind.FeverEndFade => 2,
             PresentationEventKind.RemoveSelected or PresentationEventKind.RemoveCollateral or
-            PresentationEventKind.DamageObstacle or PresentationEventKind.DestroyObstacle => 1,
-            PresentationEventKind.ReconfigurationStart => 2,
-            PresentationEventKind.ShuffleBlock => 3,
-            PresentationEventKind.ReconfigurationComplete => 4,
-            PresentationEventKind.MoveBlock => 2,
-            PresentationEventKind.SpawnBlock => 3,
-            _ => 5
+            PresentationEventKind.DamageObstacle or PresentationEventKind.DestroyObstacle => 3,
+            PresentationEventKind.MoveBlock => 4,
+            PresentationEventKind.SpawnBlock => 5,
+            PresentationEventKind.ReconfigurationStart => 6,
+            PresentationEventKind.ShuffleBlock => 7,
+            PresentationEventKind.ReconfigurationComplete => 8,
+            _ => 9
         };
         void ReconcileIdentityViews(MathGame.Board.Board board)
         {

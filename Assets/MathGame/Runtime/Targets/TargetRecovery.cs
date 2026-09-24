@@ -66,6 +66,9 @@ namespace MathGame.Targets
             var candidate = original;
             for (var attempts = 0; ; attempts++)
             {
+                // Deadlock is evaluated only at this stable-board boundary. A successful
+                // search proves at least one legal path; NoAvailableTarget is the only
+                // result that permits recovery by shuffle.
                 var search = searcher.Search(candidate, config.SearchConfig);
                 if (search.Status == TargetSearchStatus.SearchLimitExceeded) return Failed(TargetRecoveryStatus.SearchLimitExceeded, attempts);
                 if (search.Status is TargetSearchStatus.MissingBoard or TargetSearchStatus.UnsupportedBoardState)
@@ -73,6 +76,9 @@ namespace MathGame.Targets
                 if (search.Status == TargetSearchStatus.InvalidConfiguration) return Failed(TargetRecoveryStatus.InvalidConfiguration, attempts);
                 if (search.Status == TargetSearchStatus.Succeeded)
                 {
+                    // RecoverCurrentTarget keeps the displayed target when it still has
+                    // a witness. Otherwise selection regenerates a target from the full
+                    // set of values proven on this same board.
                     if (attempts == 0 && current.HasValue)
                     {
                         var witness = search.Solutions.FirstOrDefault(solution => solution.Target.Value == current.Value.Value);
@@ -85,6 +91,8 @@ namespace MathGame.Targets
                     var deltas = attempts == 0 ? Array.Empty<ShuffledBlockDelta>() : BuildOriginalDeltas(original, candidate);
                     return new TargetRecoveryResult(status, candidate, selection.SelectedSolution, selection.UpdatedHistory, deltas, attempts);
                 }
+                // No target value in the configured range has a legal witness. Shuffle
+                // without spending a move, then prove the shuffled board before exposing it.
                 if (attempts == config.MaxShuffleAttempts) return Failed(TargetRecoveryStatus.UnrecoverableDeadlock, attempts);
                 var shuffle = shuffler.Shuffle(candidate);
                 if (shuffle.Status == BoardShuffleStatus.UnsupportedBoardState) return Failed(TargetRecoveryStatus.InvalidBoardState, attempts);

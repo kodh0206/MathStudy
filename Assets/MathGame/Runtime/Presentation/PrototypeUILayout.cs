@@ -374,6 +374,14 @@ namespace MathGame.Presentation.Unity
             Pulse(runFever.rectTransform, entering ? 1.14f : 1.06f, entering ? .22f : .12f);
         }
 
+        public void PresentFeverExpiryWarning(bool active, bool reducedMotion)
+        {
+            runHud?.SetFeverExpiryWarning(active, reducedMotion);
+            if (runHud != null || runFever == null) return;
+            runFever.color = active ? new Color(1f, .62f, .16f, 1f) : Color.white;
+            if (active && !reducedMotion) Pulse(runFever.rectTransform, 1.08f, .16f);
+        }
+
         public void PresentRunEnd()
         {
             if (runTime != null) Pulse(runTime.rectTransform, 1.16f, .22f);

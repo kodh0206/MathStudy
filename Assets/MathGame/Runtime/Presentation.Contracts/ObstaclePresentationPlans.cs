@@ -4,6 +4,7 @@ using MathGame.Board;
 using MathGame.BoardResolution;
 using MathGame.ObstacleFlow;
 using MathGame.Restoration;
+using MathGame.Fever;
 
 namespace MathGame.Presentation
 {
@@ -11,7 +12,8 @@ namespace MathGame.Presentation
     {
         RemoveSelected, RemoveCollateral, DamageObstacle, DestroyObstacle,
         MoveBlock, SpawnBlock, ReconfigurationStart, ShuffleBlock, ReconfigurationComplete, PresentTarget, RestorationMilestone,
-        Miss, FeverEntry, FeverEnd, StageSuccess, StageFailure, Reconcile
+        Miss, FeverEntry, FeverEndAnnouncement, FeverEndTelegraph, FeverEndWave, FeverEndFade,
+        FeverEnd, StageSuccess, StageFailure, Reconcile
     }
 
     public readonly struct PresentationEvent
@@ -92,11 +94,12 @@ namespace MathGame.Presentation
             return new ObstaclePresentationPlan(envelope, settings, events, false);
         }
 
-        public static ObstaclePresentationPlan ForFeverEnd(PresentationEnvelope envelope, PresentationSettings settings, ObstacleEndFlowResult result)
+        public static ObstaclePresentationPlan ForFeverEnd(PresentationEnvelope envelope, PresentationSettings settings,
+            ObstacleEndFlowResult result, FeverEndEffectTier tier)
         {
             if(envelope==null||settings==null||result?.ResolutionResult==null||!result.ResolutionResult.Succeeded)
                 throw new ArgumentException("A committed Fever-end result is required.");
-            var events=ResolutionEvents(result.ResolutionResult);
+            var events=FeverEndEvents(result.ResolutionResult, tier);
             if(result.TargetResult?.BoardChanged==true)
             {
                 events.Add(new PresentationEvent(PresentationEventKind.ReconfigurationStart,default,result.TargetResult.ShuffleAttemptCount));
@@ -106,6 +109,39 @@ namespace MathGame.Presentation
             if(result.SelectedTarget!=null)events.Add(new PresentationEvent(PresentationEventKind.PresentTarget,default,result.SelectedTarget.Target.Value));
             events.Add(new PresentationEvent(PresentationEventKind.Reconcile,default,envelope.Gameplay.Token.Revision));
             return new ObstaclePresentationPlan(envelope,settings,events,false);
+        }
+
+        public static List<PresentationEvent> FeverEndEvents(ObstacleResolutionResult resolution, FeverEndEffectTier tier)
+        {
+            if (resolution == null || !resolution.Succeeded)
+                throw new ArgumentException("A successful committed Fever-end resolution is required.", nameof(resolution));
+            var events=new List<PresentationEvent>
+            {
+                new PresentationEvent(PresentationEventKind.FeverEndAnnouncement, default, (long)tier)
+            };
+            if (tier == FeverEndEffectTier.None)
+                events.Add(new PresentationEvent(PresentationEventKind.FeverEndFade, default, (long)tier));
+            else
+            {
+                foreach (var delta in resolution.Removed)
+                    events.Add(new PresentationEvent(PresentationEventKind.FeverEndTelegraph, delta.Position,
+                        delta.Block.Id.Value));
+                events.Add(new PresentationEvent(PresentationEventKind.FeverEndWave, default, (long)tier));
+            }
+            events.AddRange(ResolutionEvents(resolution));
+            return events;
+        }
+
+        public static ObstaclePresentationPlan ForTerminalFeverEnd(PresentationEnvelope envelope,
+            PresentationSettings settings, ObstacleEndFlowResult result, FeverEndEffectTier tier)
+        {
+            if (envelope == null || settings == null || result?.ResolutionResult == null ||
+                !result.ResolutionResult.Succeeded || envelope.AcknowledgementKind != PresentationAcknowledgementKind.Terminal)
+                throw new ArgumentException("A committed terminal Fever-end result is required.");
+            var events = FeverEndEvents(result.ResolutionResult, tier);
+            events.Add(new PresentationEvent(PresentationEventKind.StageSuccess, default, envelope.SourceId));
+            events.Add(new PresentationEvent(PresentationEventKind.Reconcile, default, envelope.Gameplay.Token.Revision));
+            return new ObstaclePresentationPlan(envelope, settings, events, false);
         }
 
         public static IReadOnlyList<PresentationEvent> ForWorldCommit(WorldRestorationCommitResult result, ExactlyOnceMilestoneTracker tracker)

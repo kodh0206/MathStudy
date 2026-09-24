@@ -103,6 +103,14 @@ namespace MathGame.Presentation.Unity
         public void PlaySpawn(bool reducedMotion) => StartResponse(SpawnBlock(reducedMotion ? .03f : .15f));
         public void PlayDamage(bool reducedMotion) => StartResponse(DamagePulse(reducedMotion ? .03f : .09f));
         public void PlayReconfigurationFlicker(bool reducedMotion) => StartResponse(FlickerNumber(reducedMotion ? .04f : .14f));
+        public void SetFeverTelegraph(bool active, bool reducedMotion)
+        {
+            if (border == null) return;
+            if (!active) { ResetVisualState(); return; }
+            border.effectColor = new Color(1f, .62f, .10f, 1f);
+            border.effectDistance = reducedMotion ? new Vector2(4f, -4f) : new Vector2(7f, -7f);
+            if (!reducedMotion) StartResponse(ScaleAndTint(1.05f, new Color(.42f,.19f,.03f,1f), .18f));
+        }
         public void ResetVisualState()
         {
             StopResponse();
@@ -115,6 +123,7 @@ namespace MathGame.Presentation.Unity
             if (background != null) background.color = authoritativeBackground;
             if (border != null) border.effectColor = authoritativeBackground == NodeColor
                 ? new Color(.12f,.48f,.64f,.85f) : new Color(.72f,.10f,.14f,.95f);
+            if (border != null) border.effectDistance = new Vector2(2f, -2f);
         }
 
         void StartResponse(IEnumerator routine)

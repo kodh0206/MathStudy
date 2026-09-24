@@ -7,6 +7,8 @@ using MathGame.Obstacles;
 using MathGame.Targets;
 using MathGame.StageSession;
 using MathGame.Answer;
+using MathGame.Fever;
+using MathGame.Presentation;
 using NUnit.Framework;
 using DomainBoard = MathGame.Board.Board;
 
@@ -42,6 +44,33 @@ namespace MathGame.Tests.Obstacles
             var result = new ObstacleBoardResolver(new ConstantRandom(0)).Resolve(ObstacleResolutionRequest.FeverEnd(built, FeverEndPattern.RandomThree, new BoardSystemEffectId(1), null, new RefillValueRange(1, 1), 5));
             Assert.That(result.Removed.Select(x => x.Block.Id).Distinct().Count(), Is.EqualTo(3));
             Assert.That(result.DestroyedObstacles.Any(x => x.Kind == ObstacleKind.Dust), Is.True);
+        }
+
+        [Test]
+        public void FeverEndPresentation_TelegraphsCommittedCellsBeforeAuthoritativeRemoval()
+        {
+            var result = new ObstacleBoardResolver(new ConstantRandom(0)).Resolve(
+                ObstacleResolutionRequest.FeverEnd(Full(2, 2), FeverEndPattern.RandomThree,
+                    new BoardSystemEffectId(1), null, new RefillValueRange(1, 1), 5));
+            var events = ObstaclePresentationPlanBuilder.FeverEndEvents(result, FeverEndEffectTier.RandomThreeBlocks);
+            Assert.That(events[0].Kind, Is.EqualTo(PresentationEventKind.FeverEndAnnouncement));
+            var telegraphs = events.Where(x => x.Kind == PresentationEventKind.FeverEndTelegraph).ToArray();
+            Assert.That(telegraphs.Select(x => x.Position), Is.EqualTo(result.Removed.Select(x => x.Position)));
+            Assert.That(events.FindIndex(x => x.Kind == PresentationEventKind.FeverEndWave),
+                Is.LessThan(events.FindIndex(x => x.Kind is PresentationEventKind.RemoveSelected or PresentationEventKind.RemoveCollateral)));
+        }
+
+        [Test]
+        public void FeverEndPresentation_NoneHasAnnouncementAndFadeButNoBoardEffectEvents()
+        {
+            var result = new ObstacleBoardResolver(new ConstantRandom(0)).Resolve(
+                ObstacleResolutionRequest.FeverEnd(Full(2, 2), FeverEndPattern.None,
+                    new BoardSystemEffectId(1), null, new RefillValueRange(1, 1), 5));
+            var events = ObstaclePresentationPlanBuilder.FeverEndEvents(result, FeverEndEffectTier.None);
+            Assert.That(events.Select(x => x.Kind), Is.EqualTo(new[]
+            {
+                PresentationEventKind.FeverEndAnnouncement, PresentationEventKind.FeverEndFade
+            }));
         }
 
         [Test]
