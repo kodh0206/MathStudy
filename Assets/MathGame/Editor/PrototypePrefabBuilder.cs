@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 
 namespace MathGame.Editor.SceneBuilder
 {
@@ -124,6 +125,7 @@ namespace MathGame.Editor.SceneBuilder
 
         public static bool EnsurePrototypePrefabsForSceneBuild()
         {
+            EnsureTextMeshProEssentials();
             MathGameLocalizationBuilder.Build();
             RepairLegacyContractSerialization();
             MigrateP10AContractsInPlace();
@@ -144,6 +146,16 @@ namespace MathGame.Editor.SceneBuilder
             return true;
         }
 
+        static void EnsureTextMeshProEssentials()
+        {
+            const string settingsPath = "Assets/TextMesh Pro/Resources/TMP Settings.asset";
+            if (AssetDatabase.LoadAssetAtPath<TMP_Settings>(settingsPath) != null) return;
+            TMP_PackageResourceImporter.ImportResources(true, false, false);
+            // ImportPackage completes through Unity's asset pipeline after this call. The next
+            // builder/validation pass will observe the imported settings and default font asset.
+            AssetDatabase.Refresh();
+        }
+
         static void BuildCurrentPrefabSet()
         {
             EnsureFolders();
@@ -151,6 +163,7 @@ namespace MathGame.Editor.SceneBuilder
             CreateIfMissing(CellPath,CreateCell);
             CreateIfMissing(BoardPath,CreateBoard);
             CreateIfMissing(RunResultPopupPath,CreateRunResultPopup);
+            EnsureLeaderboardInRunResultPopup();
             CreateIfMissing(StartViewPath,CreateStartView);
             CreateIfMissing(HudPath,CreateHud);
             EnsureRegistry();
@@ -458,8 +471,108 @@ namespace MathGame.Editor.SceneBuilder
             if (playAgain != null)
             {
                 Set(playAgain.GetComponent<RectTransform>(),.12f,.06f,.58f,.25f,0,0,0,0);
-                view.Configure(root.transform.Find("PopupPanel/Result")?.GetComponent<Text>(),playAgain,home);
+                view.Configure(root.transform.Find("PopupPanel/Result")?.GetComponent<Text>(),playAgain,home,
+                    root.GetComponentInChildren<RunResultLeaderboardView>(true));
             }
+        }
+
+        static void EnsureLeaderboardInRunResultPopup()
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(RunResultPopupPath);
+            if (prefab == null) throw new InvalidOperationException("Managed RunResultPopup prefab is missing.");
+            var contract = prefab.GetComponent<PresentationPrefabContract>();
+            if (contract == null || contract.ContractId != "RunResultPopup")
+                throw new InvalidOperationException("RunResultPopup ownership could not be proven; leaderboard UI was not added.");
+            if (prefab.GetComponentInChildren<RunResultLeaderboardView>(true) != null) return;
+
+            var contents = PrefabUtility.LoadPrefabContents(RunResultPopupPath);
+            try
+            {
+                var panel = contents.transform.Find("PopupPanel");
+                var popup = contents.GetComponent<RunResultPopupView>();
+                if (panel == null || popup == null)
+                    throw new InvalidOperationException("Managed RunResultPopup contract is incomplete.");
+                Set(panel.GetComponent<RectTransform>(), .055f, .08f, .945f, .92f, 0, 0, 0, 0);
+                var leaderboard = AddLeaderboardUI(panel);
+                var result = panel.Find("Result")?.GetComponent<Text>();
+                var playAgain = panel.Find("PlayAgainButton")?.GetComponent<Button>();
+                var home = panel.Find("HomeButton")?.GetComponent<Button>();
+                if (result != null) Set(result.rectTransform, 0, .69f, 1, 1, 28, 8, -28, -16);
+                popup.Configure(result, playAgain, home, leaderboard);
+                if (PrefabUtility.SaveAsPrefabAsset(contents, RunResultPopupPath) == null)
+                    throw new InvalidOperationException("Failed to save LootLocker leaderboard UI migration.");
+            }
+            finally { PrefabUtility.UnloadPrefabContents(contents); }
+        }
+
+        static RunResultLeaderboardView AddLeaderboardUI(Transform panel)
+        {
+            var root = UI("Leaderboard", typeof(RunResultLeaderboardView));
+            root.transform.SetParent(panel, false);
+            Set(root.GetComponent<RectTransform>(), .07f, .25f, .93f, .7f, 0, 0, 0, 0);
+
+            var title = TMPText("Title", "GLOBAL TOP 10", 24, TextAlignmentOptions.Center, root.transform);
+            title.fontStyle = FontStyles.Bold;
+            title.color = new Color(.35f, .9f, 1f);
+            Set(title.rectTransform, 0, 1, 1, 1, 0, -38, 0, 0);
+
+            var inputRoot = UI("NicknameInput", typeof(CanvasRenderer), typeof(Image), typeof(TMP_InputField));
+            inputRoot.transform.SetParent(root.transform, false);
+            inputRoot.GetComponent<Image>().color = new Color(.025f, .07f, .12f, 1f);
+            Set(inputRoot.GetComponent<RectTransform>(), 0, 1, .7f, 1, 0, -92, -8, -46);
+            var viewport = UI("Text Area", typeof(RectMask2D));
+            viewport.transform.SetParent(inputRoot.transform, false);
+            Stretch(viewport.GetComponent<RectTransform>(), 10);
+            var placeholder = TMPText("Placeholder", "Nickname", 20, TextAlignmentOptions.MidlineLeft, viewport.transform);
+            placeholder.color = new Color(.55f, .65f, .7f, .75f);
+            Stretch(placeholder.rectTransform, 2);
+            var inputText = TMPText("Text", string.Empty, 20, TextAlignmentOptions.MidlineLeft, viewport.transform);
+            Stretch(inputText.rectTransform, 2);
+            var input = inputRoot.GetComponent<TMP_InputField>();
+            input.textViewport = viewport.GetComponent<RectTransform>();
+            input.textComponent = inputText;
+            input.placeholder = placeholder;
+            input.characterLimit = 24;
+            input.lineType = TMP_InputField.LineType.SingleLine;
+
+            var submitRoot = UI("SubmitButton", typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            submitRoot.transform.SetParent(root.transform, false);
+            submitRoot.GetComponent<Image>().color = new Color(.08f, .55f, .72f, 1f);
+            Set(submitRoot.GetComponent<RectTransform>(), .7f, 1, 1, 1, 0, -92, 0, -46);
+            Stretch(TMPText("Label", "SUBMIT", 18, TextAlignmentOptions.Center, submitRoot.transform).rectTransform, 5);
+
+            var status = TMPText("Status", string.Empty, 16, TextAlignmentOptions.Center, root.transform);
+            status.color = new Color(.78f, .88f, .92f);
+            Set(status.rectTransform, 0, 1, 1, 1, 0, -120, 0, -94);
+
+            var rowsRoot = UI("Rows", typeof(VerticalLayoutGroup));
+            rowsRoot.transform.SetParent(root.transform, false);
+            Set(rowsRoot.GetComponent<RectTransform>(), 0, 0, 1, 1, 0, 0, 0, -122);
+            var rowsLayout = rowsRoot.GetComponent<VerticalLayoutGroup>();
+            rowsLayout.spacing = 2;
+            rowsLayout.childAlignment = TextAnchor.UpperCenter;
+            rowsLayout.childControlHeight = true;
+            rowsLayout.childControlWidth = true;
+            rowsLayout.childForceExpandHeight = false;
+            rowsLayout.childForceExpandWidth = true;
+
+            var rowObject = UI("RowTemplate", typeof(LayoutElement), typeof(LeaderboardRowView));
+            rowObject.transform.SetParent(rowsRoot.transform, false);
+            rowObject.GetComponent<LayoutElement>().preferredHeight = 28;
+            var rank = TMPText("Rank", "1", 16, TextAlignmentOptions.MidlineLeft, rowObject.transform);
+            Set(rank.rectTransform, 0, 0, .14f, 1, 5, 0, 0, 0);
+            var playerName = TMPText("Name", "Anonymous", 16, TextAlignmentOptions.MidlineLeft, rowObject.transform);
+            Set(playerName.rectTransform, .14f, 0, .72f, 1, 4, 0, -4, 0);
+            var score = TMPText("Score", "0", 16, TextAlignmentOptions.MidlineRight, rowObject.transform);
+            Set(score.rectTransform, .72f, 0, 1, 1, 0, 0, -5, 0);
+            var row = rowObject.GetComponent<LeaderboardRowView>();
+            row.Configure(rank, playerName, score);
+            rowObject.SetActive(false);
+
+            var view = root.GetComponent<RunResultLeaderboardView>();
+            view.Configure("100", input, submitRoot.GetComponent<Button>(), status,
+                rowsRoot.GetComponent<RectTransform>(), row);
+            return view;
         }
 
         static void EnsureEventSystemInGameRoot()
@@ -786,7 +899,10 @@ namespace MathGame.Editor.SceneBuilder
             var result=Text("Result","RUN OVER",38,TextAnchor.MiddleCenter,panel.transform);result.fontStyle=FontStyle.Bold;Set(result.rectTransform,0,.24f,1,1,32,16,-32,-20);
             var buttonRoot=UI("PlayAgainButton",typeof(CanvasRenderer),typeof(Image),typeof(Button));buttonRoot.transform.SetParent(panel.transform,false);buttonRoot.GetComponent<Image>().color=new Color(.12f,.42f,.62f,1);Set(buttonRoot.GetComponent<RectTransform>(),.12f,.06f,.58f,.25f,0,0,0,0);Stretch(Text("Label","PLAY AGAIN",26,TextAnchor.MiddleCenter,buttonRoot.transform).rectTransform,8);
             var homeRoot=UI("HomeButton",typeof(CanvasRenderer),typeof(Image),typeof(Button));homeRoot.transform.SetParent(panel.transform,false);homeRoot.GetComponent<Image>().color=new Color(.08f,.18f,.27f,1);Set(homeRoot.GetComponent<RectTransform>(),.62f,.06f,.88f,.25f,0,0,0,0);Stretch(Text("Label","HOME",24,TextAnchor.MiddleCenter,homeRoot.transform).rectTransform,8);
-            root.GetComponent<RunResultPopupView>().Configure(result,buttonRoot.GetComponent<Button>(),homeRoot.GetComponent<Button>());
+            var leaderboard=AddLeaderboardUI(panel.transform);
+            Set(panel.GetComponent<RectTransform>(),.055f,.08f,.945f,.92f,0,0,0,0);
+            Set(result.rectTransform,0,.69f,1,1,28,8,-28,-16);
+            root.GetComponent<RunResultPopupView>().Configure(result,buttonRoot.GetComponent<Button>(),homeRoot.GetComponent<Button>(),leaderboard);
             root.SetActive(false);
             return root;
         }
@@ -809,6 +925,7 @@ namespace MathGame.Editor.SceneBuilder
         }
         static GameObject UI(string name,params Type[] extra){var types=new Type[extra.Length+1];types[0]=typeof(RectTransform);Array.Copy(extra,0,types,1,extra.Length);return new GameObject(name,types);}
         static Text Text(string name,string value,int size,TextAnchor anchor,Transform parent){var text=UI(name,typeof(CanvasRenderer),typeof(Text)).GetComponent<Text>();text.transform.SetParent(parent,false);text.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");text.text=value;text.fontSize=size;text.alignment=anchor;text.color=Color.white;text.horizontalOverflow=HorizontalWrapMode.Wrap;text.verticalOverflow=VerticalWrapMode.Truncate;return text;}
+        static TextMeshProUGUI TMPText(string name,string value,float size,TextAlignmentOptions alignment,Transform parent){var text=UI(name,typeof(CanvasRenderer),typeof(TextMeshProUGUI)).GetComponent<TextMeshProUGUI>();text.transform.SetParent(parent,false);text.text=value;text.fontSize=size;text.alignment=alignment;text.color=Color.white;text.textWrappingMode=TextWrappingModes.NoWrap;text.overflowMode=TextOverflowModes.Ellipsis;return text;}
         static void Button(string name,string label,Transform parent){var root=UI(name,typeof(CanvasRenderer),typeof(Image),typeof(Button));root.transform.SetParent(parent,false);root.GetComponent<Image>().color=new Color(.12f,.42f,.62f,1);Stretch(Text("Label",label,25,TextAnchor.MiddleCenter,root.transform).rectTransform,8);}
         static void Stretch(RectTransform r,float padding){Set(r,0,0,1,1,padding,padding,-padding,-padding);}
         static void Set(RectTransform r,float xmin,float ymin,float xmax,float ymax,float left,float bottom,float right,float top){r.anchorMin=new Vector2(xmin,ymin);r.anchorMax=new Vector2(xmax,ymax);r.offsetMin=new Vector2(left,bottom);r.offsetMax=new Vector2(right,top);}

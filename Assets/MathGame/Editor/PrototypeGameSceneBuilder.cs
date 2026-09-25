@@ -123,6 +123,9 @@ namespace MathGame.Editor.SceneBuilder
                 return "Serialized BoardReconfigurationView is missing from BoardView.";
             if (host.CreateContext().OverlayRoot.GetComponentInChildren<RunResultPopupView>(true) == null)
                 return "Serialized RunResultPopup is missing from OverlaySlot.";
+            var leaderboard = host.CreateContext().OverlayRoot.GetComponentInChildren<RunResultLeaderboardView>(true);
+            if (leaderboard == null || !leaderboard.IsConfigured)
+                return "Serialized LootLocker leaderboard presentation is missing or incomplete.";
             if (host.CreateContext().OverlayRoot.GetComponentInChildren<StartScreenView>(true) == null)
                 return "Serialized StartView is missing from OverlaySlot.";
             if (gameRoot.GetComponentInChildren<EventSystem>(true) == null)

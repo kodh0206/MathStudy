@@ -126,6 +126,7 @@ namespace MathGame.Presentation.Unity
             }
             startView.Bind(StartRun, ToggleLanguage);
             runResultPopup.Bind(Restart, Home);
+            runResultPopup.InitializeOnlineServices();
             runResultPopup.Hide();
         }
 

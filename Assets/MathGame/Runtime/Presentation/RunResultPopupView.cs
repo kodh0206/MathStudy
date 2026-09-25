@@ -14,6 +14,7 @@ namespace MathGame.Presentation.Unity
         [SerializeField] Text resultText;
         [SerializeField] Button playAgainButton;
         [SerializeField] Button homeButton;
+        [SerializeField] RunResultLeaderboardView leaderboardView;
         RunResult current;
         Coroutine transition;
 
@@ -39,6 +40,7 @@ namespace MathGame.Presentation.Unity
             current = result;
             Render();
             gameObject.SetActive(true);
+            leaderboardView?.Present(result.RunId, result.Score);
             transform.SetAsLastSibling();
             if (transition != null) StopCoroutine(transition);
             transition = StartCoroutine(Enter());
@@ -60,8 +62,11 @@ namespace MathGame.Presentation.Unity
             transition = null;
             transform.localScale = Vector3.one;
             current = null;
+            leaderboardView?.ResetView();
             gameObject.SetActive(false);
         }
+
+        public void InitializeOnlineServices() => leaderboardView?.InitializeOnlineServices();
 
         IEnumerator Enter()
         {
@@ -77,8 +82,8 @@ namespace MathGame.Presentation.Unity
         }
 
 #if UNITY_EDITOR
-        public void Configure(Text value, Button playAgain, Button home = null)
-        { resultText = value; playAgainButton = playAgain; homeButton = home; }
+        public void Configure(Text value, Button playAgain, Button home = null, RunResultLeaderboardView leaderboard = null)
+        { resultText = value; playAgainButton = playAgain; homeButton = home; leaderboardView = leaderboard; }
 #endif
     }
 

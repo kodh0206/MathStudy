@@ -11,7 +11,8 @@
     "MathGame.Board",
     "MathGame.ObstacleFlow",
     "MathGame.Presentation.Contracts",
-    "MathGame.Presentation"
+    "MathGame.Presentation",
+    "Unity.TextMeshPro"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

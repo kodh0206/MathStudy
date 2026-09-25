@@ -8,7 +8,8 @@
     "MathGame.RunContent",
     "Unity.Localization",
     "Unity.Localization.Editor",
-    "Unity.UGUI"
+    "Unity.UGUI",
+    "Unity.TextMeshPro"
   ],
   "includePlatforms": ["Editor"],
   "autoReferenced": true,
