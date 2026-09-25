@@ -92,7 +92,7 @@ namespace MathGame.StageSession
     public enum StageSessionStatus { Active, Success, Failure, FailedPendingDecision }
     public enum StageAttemptApplyStatus { AppliedContinue, AppliedMiss, AppliedSuccess, AppliedFailure, MissingCommand, SessionAlreadyTerminal, InvalidAttempt, DuplicateAttempt, OutOfOrderAttempt, InvalidAnswer, UnexpectedResolution, AnswerResolutionMismatch, NoMovesRemaining, ArithmeticOverflow, MissingRestorationEvidence, UnexpectedRestorationEvidence, RestorationSourceMismatch, InvalidRestorationAward, PreparationRequired }
     public enum ConnectionLengthRewardTier { None, StandardRemoval, ExtraFeverRequested, BasicSpecialRequested, EnhancedAreaSpecialRequested }
-    public enum StageSessionEventKind { AnswerAccepted, MissRecorded, ScoreAwarded, ObjectiveProgressed, MoveConsumed, StageSucceeded, StageFailed }
+    public enum StageSessionEventKind { AnswerAccepted, MissRecorded, ScoreAwarded, FeverRemovalScoreAwarded, ObjectiveProgressed, MoveConsumed, StageSucceeded, StageFailed }
     public readonly struct StageSessionEvent
     {
         public StageSessionEvent(StageSessionEventKind kind, int objectiveIndex, long amount) { Kind = kind; ObjectiveIndex = objectiveIndex; Amount = amount; }

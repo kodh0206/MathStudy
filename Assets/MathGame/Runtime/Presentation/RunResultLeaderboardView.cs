@@ -12,7 +12,7 @@ namespace MathGame.Presentation.Unity
         const string NicknamePreferenceKey = "SumVive.Leaderboard.Nickname";
 
         [Header("LootLocker")]
-        [SerializeField] string leaderboardKey = "100";
+        [SerializeField] string leaderboardKey = "s_10001";
         [SerializeField, Min(1)] int visibleEntryCount = 10;
         [Header("Serialized UI")]
         [SerializeField] TMP_InputField nicknameInput;
@@ -36,8 +36,11 @@ namespace MathGame.Presentation.Unity
         {
             client ??= new LootLockerLeaderboardClient();
             if (!IsConfigured) return;
+            ConfigureNicknamePresentation();
             submitButton.onClick.RemoveListener(Submit);
             submitButton.onClick.AddListener(Submit);
+            nicknameInput.onValueChanged.RemoveListener(RefreshNicknameText);
+            nicknameInput.onValueChanged.AddListener(RefreshNicknameText);
             nicknameInput.text = PlayerPrefs.GetString(NicknamePreferenceKey, string.Empty);
             rowTemplate.gameObject.SetActive(false);
         }
@@ -45,6 +48,46 @@ namespace MathGame.Presentation.Unity
         void OnDestroy()
         {
             if (submitButton != null) submitButton.onClick.RemoveListener(Submit);
+            if (nicknameInput != null) nicknameInput.onValueChanged.RemoveListener(RefreshNicknameText);
+        }
+
+        void ConfigureNicknamePresentation()
+        {
+            if (nicknameInput == null) return;
+            nicknameInput.customCaretColor = true;
+            nicknameInput.caretColor = new Color(.35f, .9f, 1f, 1f);
+            nicknameInput.selectionColor = new Color(.18f, .55f, .72f, .65f);
+            if (nicknameInput.textComponent != null)
+            {
+                nicknameInput.textComponent.gameObject.SetActive(true);
+                nicknameInput.textComponent.enabled = true;
+                if (nicknameInput.textComponent.font == null)
+                    nicknameInput.textComponent.font = TMP_Settings.defaultFontAsset;
+                nicknameInput.textComponent.color = new Color(.9f, .98f, 1f, 1f);
+                nicknameInput.textComponent.alpha = 1f;
+                nicknameInput.textComponent.textWrappingMode = TextWrappingModes.NoWrap;
+                nicknameInput.textComponent.overflowMode = TextOverflowModes.Ellipsis;
+                nicknameInput.textComponent.raycastTarget = false;
+                nicknameInput.textComponent.transform.SetAsLastSibling();
+            }
+            if (nicknameInput.placeholder is TMP_Text placeholder)
+            {
+                placeholder.color = new Color(.55f, .65f, .7f, .75f);
+                placeholder.raycastTarget = false;
+            }
+            if (nicknameInput.textViewport != null &&
+                nicknameInput.textViewport.TryGetComponent<RectMask2D>(out var mask))
+                mask.enabled = false;
+        }
+
+        void RefreshNicknameText(string value)
+        {
+            if (nicknameInput?.textComponent == null) return;
+            var renderedText = nicknameInput.textComponent;
+            renderedText.text = value ?? string.Empty;
+            renderedText.color = new Color(.9f, .98f, 1f, 1f);
+            renderedText.alpha = 1f;
+            renderedText.ForceMeshUpdate(true);
         }
 
         public void InitializeOnlineServices()
@@ -187,6 +230,7 @@ namespace MathGame.Presentation.Unity
             statusText = status;
             rowsRoot = listRoot;
             rowTemplate = template;
+            ConfigureNicknamePresentation();
         }
 
         public void SetClientForTests(IRunLeaderboardClient value) => client = value;

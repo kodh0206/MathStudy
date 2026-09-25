@@ -241,8 +241,20 @@ namespace MathGame.StageSession
                 var gradeFever = isNormalAttempt ? answer.Grade == SpeedGrade.Perfect ? 25 : answer.Grade == SpeedGrade.Fast ? 15 : 5 : 0;
                 var lengthFever = isNormalAttempt ? answer.SelectedBlockCount == 3 ? 3 : answer.SelectedBlockCount == 4 ? 6 : answer.SelectedBlockCount >= 5 ? 10 : 0 : 0;
                 var streakFever = isNormalAttempt && answer.Grade == SpeedGrade.Fast && streak >= 2 ? 5 : 0;
-                var scoreAward = checked((Definition.ScoreConfig.BaseCorrectScore + GradeScore(answer.Grade) + LengthScore(answer.SelectedBlockCount)) * command.Rules.ScoreMultiplier);
-                var reward = new StageRewardBreakdown(gradeFever, lengthFever, streakFever, scoreAward, ConnectionLengthRewardClassifier.Classify(answer.SelectedBlockCount));
+                var baseScoreAward = checked((Definition.ScoreConfig.BaseCorrectScore + GradeScore(answer.Grade) + LengthScore(answer.SelectedBlockCount)) * command.Rules.ScoreMultiplier);
+                long feverRemovalScore = 0;
+                if (command.Rules.Mode == StageAttemptMode.Fever && command.ObstacleResolution != null)
+                {
+                    var feverIds = new HashSet<MathGame.Board.BlockId>();
+                    foreach (var delta in command.ObstacleResolution.CollateralRemoved)
+                    {
+                        if (delta.Cause != RemovedNumberCause.FeverExpanded || delta.Origin != RemovalOrigin.Fever || !feverIds.Add(delta.Block.Id))
+                            return Rejected(StageAttemptApplyStatus.AnswerResolutionMismatch, before);
+                    }
+                    feverRemovalScore = checked(checked((long)feverIds.Count * 10L) * command.Rules.ScoreMultiplier);
+                }
+                var scoreAward = checked(baseScoreAward + feverRemovalScore);
+                var reward = new StageRewardBreakdown(gradeFever, lengthFever, streakFever, scoreAward, ConnectionLengthRewardClassifier.Classify(answer.SelectedBlockCount), feverRemovalScore);
                 if (NextId == long.MaxValue) throw new OverflowException();
                 var nextId = checked(NextId + 1); var score = checked(Score + scoreAward);
                 var correct = checked(CorrectCount + 1); var totalRemoved = checked(TotalRemoved + removed);
@@ -267,6 +279,7 @@ namespace MathGame.StageSession
                 Version++;
                 var events = new List<StageSessionEvent> { new StageSessionEvent(StageSessionEventKind.AnswerAccepted, -1, 0) };
                 if (scoreAward > 0) events.Add(new StageSessionEvent(StageSessionEventKind.ScoreAwarded, -1, scoreAward));
+                if (feverRemovalScore > 0) events.Add(new StageSessionEvent(StageSessionEventKind.FeverRemovalScoreAwarded, -1, feverRemovalScore));
                 events.AddRange(objectiveEvents);
                 if (moveCost > 0) events.Add(new StageSessionEvent(StageSessionEventKind.MoveConsumed, -1, moveCost));
                 if (Status == StageSessionStatus.Success) events.Add(new StageSessionEvent(StageSessionEventKind.StageSucceeded, -1, 0));
@@ -278,9 +291,12 @@ namespace MathGame.StageSession
         }
 
         public StageSystemEffectPrepareResult PrepareSystemEffect(ObstacleResolutionResult result)
-            => PrepareSystemEffect(result, null);
+            => PrepareSystemEffect(result, null, default);
 
         public StageSystemEffectPrepareResult PrepareSystemEffect(ObstacleResolutionResult result, RestorationAwardEvidence restoration)
+            => PrepareSystemEffect(result, restoration, default);
+
+        public StageSystemEffectPrepareResult PrepareSystemEffect(ObstacleResolutionResult result, RestorationAwardEvidence restoration, FeverEndScoreEvidence scoreEvidence)
         {
             var before = Snapshot();
             if (result == null) return PreparedFailure(StageSystemEffectPrepareStatus.MissingResult, before);
@@ -291,6 +307,7 @@ namespace MathGame.StageSession
             if (result.SystemEffectId.Value < NextEffectId) return PreparedFailure(StageSystemEffectPrepareStatus.DuplicateEffect, before);
             if (result.SystemEffectId.Value > NextEffectId) return PreparedFailure(StageSystemEffectPrepareStatus.OutOfOrderEffect, before);
             if (NextEffectId == long.MaxValue) return PreparedFailure(StageSystemEffectPrepareStatus.ArithmeticOverflow, before);
+            if (!scoreEvidence.IsValid || !scoreEvidence.EffectId.Equals(result.SystemEffectId)) return PreparedFailure(StageSystemEffectPrepareStatus.InvalidEvidence, before);
             var large = result.Pattern == FeverEndPattern.Large;
             if (Definition.RestorationConfig != null && large && restoration == null) return PreparedFailure(StageSystemEffectPrepareStatus.InvalidEvidence, before);
             if ((!large || Definition.RestorationConfig == null) && restoration != null) return PreparedFailure(StageSystemEffectPrepareStatus.InvalidEvidence, before);
@@ -298,6 +315,15 @@ namespace MathGame.StageSession
             try
             {
                 var uniqueBlocks = new HashSet<MathGame.Board.BlockId>(); foreach (var removed in result.Removed) if (!uniqueBlocks.Add(removed.Block.Id)) return PreparedFailure(StageSystemEffectPrepareStatus.InvalidEvidence, before);
+                foreach (var removed in result.Removed)
+                {
+                    var validCause = result.Pattern == FeverEndPattern.RandomThree ? removed.Cause == RemovedNumberCause.FeverEndRandom :
+                        result.Pattern == FeverEndPattern.Small ? removed.Cause == RemovedNumberCause.FeverEndSmall :
+                        result.Pattern == FeverEndPattern.Center ? removed.Cause == RemovedNumberCause.FeverEndCenter :
+                        result.Pattern == FeverEndPattern.Large ? removed.Cause == RemovedNumberCause.FeverEndLarge : false;
+                    if (!validCause || removed.Origin != RemovalOrigin.Fever) return PreparedFailure(StageSystemEffectPrepareStatus.InvalidEvidence, before);
+                }
+                if (result.Pattern == FeverEndPattern.None && uniqueBlocks.Count != 0) return PreparedFailure(StageSystemEffectPrepareStatus.InvalidEvidence, before);
                 var uniqueObstacles = new HashSet<MathGame.Board.ObstacleId>(); foreach (var destroyed in result.DestroyedObstacles) if (!uniqueObstacles.Add(destroyed.Id)) return PreparedFailure(StageSystemEffectPrepareStatus.InvalidEvidence, before);
                 var nextProgress = (long[])progress.Clone(); var events = new List<StageSessionEvent>();
                 var restorationGross = restoration?.GrossAward ?? 0;
@@ -316,12 +342,15 @@ namespace MathGame.StageSession
                     if (applied > 0) events.Add(new StageSessionEvent(StageSessionEventKind.ObjectiveProgressed, i, applied));
                 }
                 var totalRemoved = checked(TotalRemoved + uniqueBlocks.Count);
+                var feverRemovalScore = checked(checked((long)uniqueBlocks.Count * 10L) * scoreEvidence.FinalMultiplier);
+                var prospectiveScore = checked(Score + feverRemovalScore);
+                if (feverRemovalScore > 0) { events.Add(new StageSessionEvent(StageSessionEventKind.ScoreAwarded, -1, feverRemovalScore)); events.Add(new StageSessionEvent(StageSessionEventKind.FeverRemovalScoreAwarded, -1, feverRemovalScore)); }
                 var totalDust = checked(TotalDestroyedDust + result.DestroyedObstacles.Count(e => e.Kind == MathGame.Board.ObstacleKind.Dust));
                 var totalBoxes = checked(TotalDestroyedBoxes + result.DestroyedObstacles.Count(e => e.Kind == MathGame.Board.ObstacleKind.Box));
                 var success = Definition.Mode == StageSessionMode.LegacyStage && nextProgress.Select((value, index) => value >= Definition.Objectives[index].RequiredCount).All(value => value);
                 if (success) events.Add(new StageSessionEvent(StageSessionEventKind.StageSucceeded, -1, 0));
                 var prospectiveStatus = success ? StageSessionStatus.Success : StageSessionStatus.Active;
-                var plan = new StageSystemEffectPlan(this, Version, result.SystemEffectId, before, SnapshotProspective(nextProgress, totalRemoved, totalDust, totalBoxes, prospectiveGrossRestoration, prospectiveRestoration, prospectiveDiscardedRestoration, prospectiveStatus), nextProgress, totalRemoved, totalDust, totalBoxes, prospectiveGrossRestoration, prospectiveRestoration, prospectiveDiscardedRestoration, prospectiveStatus, events.ToArray());
+                var plan = new StageSystemEffectPlan(this, Version, result.SystemEffectId, before, SnapshotProspective(nextProgress, prospectiveScore, totalRemoved, totalDust, totalBoxes, prospectiveGrossRestoration, prospectiveRestoration, prospectiveDiscardedRestoration, prospectiveStatus), nextProgress, prospectiveScore, feverRemovalScore, totalRemoved, totalDust, totalBoxes, prospectiveGrossRestoration, prospectiveRestoration, prospectiveDiscardedRestoration, prospectiveStatus, events.ToArray());
                 return new StageSystemEffectPrepareResult(success ? StageSystemEffectPrepareStatus.PreparedSuccess : StageSystemEffectPrepareStatus.PreparedContinue, plan, before);
             }
             catch (OverflowException) { return PreparedFailure(StageSystemEffectPrepareStatus.ArithmeticOverflow, before); }
@@ -334,7 +363,7 @@ namespace MathGame.StageSession
             if (Status != StageSessionStatus.Active) return CommitFailure(StageSystemEffectCommitStatus.SessionAlreadyTerminal, before);
             if (!ReferenceEquals(plan.Owner, this) || plan.PreparedSessionVersion != Version || plan.EffectId.Value != NextEffectId) return CommitFailure(StageSystemEffectCommitStatus.StalePlan, before);
             if (plan.WouldSucceed && Definition.RestorationConfig != null && !plan.IsWorldBound) return CommitFailure(StageSystemEffectCommitStatus.StalePlan, before);
-            Array.Copy(plan.ProspectiveProgress, progress, progress.Length); TotalRemoved = plan.ProspectiveTotalRemoved; TotalDestroyedDust = plan.ProspectiveDestroyedDust; TotalDestroyedBoxes = plan.ProspectiveDestroyedBoxes; GrossRestoration = plan.ProspectiveGrossRestoration; ProvisionalRestoration = plan.ProspectiveRestoration; DiscardedRestoration = plan.ProspectiveDiscardedRestoration; Status = plan.ProspectiveStatus; RestorationLifecycle = Status == StageSessionStatus.Success ? RestorationLifecycle.CommittedSuccess : RestorationLifecycle.Provisional; NextEffectId = checked(NextEffectId + 1); Version++;
+            Array.Copy(plan.ProspectiveProgress, progress, progress.Length); Score = plan.ProspectiveScore; TotalRemoved = plan.ProspectiveTotalRemoved; TotalDestroyedDust = plan.ProspectiveDestroyedDust; TotalDestroyedBoxes = plan.ProspectiveDestroyedBoxes; GrossRestoration = plan.ProspectiveGrossRestoration; ProvisionalRestoration = plan.ProspectiveRestoration; DiscardedRestoration = plan.ProspectiveDiscardedRestoration; Status = plan.ProspectiveStatus; RestorationLifecycle = Status == StageSessionStatus.Success ? RestorationLifecycle.CommittedSuccess : RestorationLifecycle.Provisional; NextEffectId = checked(NextEffectId + 1); Version++;
             return new StageSystemEffectCommitResult(Status == StageSessionStatus.Success ? StageSystemEffectCommitStatus.CommittedSuccess : StageSystemEffectCommitStatus.CommittedContinue, plan.EffectId, before, Snapshot(), plan.Events);
         }
 
@@ -345,15 +374,15 @@ namespace MathGame.StageSession
                 return PreparedFailure(StageSystemEffectPrepareStatus.InvalidEvidence, before);
             if (!RunId.IsValid || worldPlan.CommitId.Value != RunId.Value || Definition.RestorationConfig == null || !worldPlan.WorldId.Equals(Definition.RestorationConfig.WorldId))
                 return PreparedFailure(StageSystemEffectPrepareStatus.InvalidEvidence, before);
-            var bound = new StageSystemEffectPlan(this, Version, plan.EffectId, plan.Before, plan.ProspectiveAfter, plan.ProspectiveProgress, plan.ProspectiveTotalRemoved, plan.ProspectiveDestroyedDust, plan.ProspectiveDestroyedBoxes, plan.ProspectiveGrossRestoration, plan.ProspectiveRestoration, plan.ProspectiveDiscardedRestoration, plan.ProspectiveStatus, plan.Events.ToArray(), worldPlan);
+            var bound = new StageSystemEffectPlan(this, Version, plan.EffectId, plan.Before, plan.ProspectiveAfter, plan.ProspectiveProgress, plan.ProspectiveScore, plan.FeverRemovalScoreAwarded, plan.ProspectiveTotalRemoved, plan.ProspectiveDestroyedDust, plan.ProspectiveDestroyedBoxes, plan.ProspectiveGrossRestoration, plan.ProspectiveRestoration, plan.ProspectiveDiscardedRestoration, plan.ProspectiveStatus, plan.Events.ToArray(), worldPlan);
             return new StageSystemEffectPrepareResult(StageSystemEffectPrepareStatus.PreparedSuccess, bound, before);
         }
 
         private StageSystemEffectPrepareResult PreparedFailure(StageSystemEffectPrepareStatus status, StageSessionSnapshot before) => new StageSystemEffectPrepareResult(status, null, before);
         private StageSystemEffectCommitResult CommitFailure(StageSystemEffectCommitStatus status, StageSessionSnapshot before) => new StageSystemEffectCommitResult(status, default, before, before, null);
-        private StageSessionSnapshot SnapshotProspective(long[] prospectiveProgress, long totalRemoved, long totalDust, long totalBoxes, long grossRestoration, long provisionalRestoration, long discardedRestoration, StageSessionStatus status)
+        private StageSessionSnapshot SnapshotProspective(long[] prospectiveProgress, long prospectiveScore, long totalRemoved, long totalDust, long totalBoxes, long grossRestoration, long provisionalRestoration, long discardedRestoration, StageSessionStatus status)
         {
-            var copy = new StageSession(Definition, RunId) { NextId = NextId, NextEffectId = NextEffectId + 1, Version = Version + 1, RemainingMoves = RemainingMoves, SpentMoves = SpentMoves, Score = Score, CorrectCount = CorrectCount, MissCount = MissCount, PerfectCount = PerfectCount, FastCount = FastCount, NormalCount = NormalCount, CurrentFastStreak = CurrentFastStreak, MaximumFastStreak = MaximumFastStreak, TotalRemoved = totalRemoved, TotalLong = TotalLong, TotalFever = TotalFever, TotalDestroyedDust = totalDust, TotalDestroyedBoxes = totalBoxes, ProvisionalRestoration = provisionalRestoration, GrossRestoration = grossRestoration, DiscardedRestoration = discardedRestoration, RestorationLifecycle = status == StageSessionStatus.Success ? RestorationLifecycle.CommittedSuccess : RestorationLifecycle.Provisional, Status = status };
+            var copy = new StageSession(Definition, RunId) { NextId = NextId, NextEffectId = NextEffectId + 1, Version = Version + 1, RemainingMoves = RemainingMoves, SpentMoves = SpentMoves, Score = prospectiveScore, CorrectCount = CorrectCount, MissCount = MissCount, PerfectCount = PerfectCount, FastCount = FastCount, NormalCount = NormalCount, CurrentFastStreak = CurrentFastStreak, MaximumFastStreak = MaximumFastStreak, TotalRemoved = totalRemoved, TotalLong = TotalLong, TotalFever = TotalFever, TotalDestroyedDust = totalDust, TotalDestroyedBoxes = totalBoxes, ProvisionalRestoration = provisionalRestoration, GrossRestoration = grossRestoration, DiscardedRestoration = discardedRestoration, RestorationLifecycle = status == StageSessionStatus.Success ? RestorationLifecycle.CommittedSuccess : RestorationLifecycle.Provisional, Status = status };
             Array.Copy(prospectiveProgress, copy.progress, prospectiveProgress.Length);
             return copy.Snapshot();
         }

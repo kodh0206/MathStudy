@@ -116,6 +116,44 @@ namespace MathGame.Tests.Obstacles
             }
         }
 
+        [Test]
+        public void FeverEndTargetProofFailure_DiscardsPreparedScore()
+        {
+            var session = CreateSession(99);
+            var stage = new StageController(); stage.Start(); stage.FinishInitialization(); stage.BeginTargetPresentation();
+            var time = new FakeTime();
+            Assert.That(FeverController.TryCreate(new FeverConfig(25, 8), stage, session, time, out var fever),
+                Is.EqualTo(FeverControllerCreateResult.Succeeded));
+            using (fever)
+            {
+                var charge = session.ApplyAttempt(CreateAttempt(Full(2), 1));
+                Assert.That(fever.ApplyNormalAttempt(charge), Is.EqualTo(FeverChargeApplyResult.ReachedMaximum));
+                Assert.That(fever.BeginEntry(true, true), Is.EqualTo(FeverControllerCommandResult.Succeeded));
+                Assert.That(fever.CompleteEntry(), Is.EqualTo(FeverControllerCommandResult.Succeeded));
+                Assert.That(stage.BeginAnswerResolution(), Is.EqualTo(TransitionResult.Succeeded));
+                var feverAttempt = CreateAttempt(Full(2), 2);
+                Assert.That(fever.ApplyFeverAttempt(feverAttempt.Id, feverAttempt.Answer, feverAttempt.Resolution).Status,
+                    Is.EqualTo(FeverAttemptApplyStatus.AppliedContinue));
+                Assert.That(stage.BeginTargetPresentation(), Is.EqualTo(TransitionResult.Succeeded));
+                Assert.That(stage.EnableFeverInput(), Is.EqualTo(TransitionResult.Succeeded));
+                time.Value = 8;
+                Assert.That(fever.Tick(), Is.EqualTo(FeverControllerTickResult.EndingBegan));
+
+                var coordinator = CreateCoordinator(Full(4), stage, session, fever, new CountingRandom());
+                var before = session.CreateSnapshot();
+                var impossibleTargets = new TargetRecoveryConfig(
+                    new TargetSearchConfig(99, 99, 2, 3, 1), new TargetSelectionPolicy(1), 1);
+                var result = coordinator.ResolveAndCommitEnd(new ObstacleEndFlowRequest(
+                    fever.PendingEndResult, null, new RefillValueRange(1, 1), new TargetHistory(null, 0), impossibleTargets));
+
+                Assert.That(result.EffectCommitted, Is.False);
+                Assert.That(result.PrepareResult.FeverRemovalScoreAwarded, Is.GreaterThan(0));
+                Assert.That(session.CreateSnapshot().Score, Is.EqualTo(before.Score));
+                Assert.That(session.CreateSnapshot().NextExpectedSystemEffectId,
+                    Is.EqualTo(before.NextExpectedSystemEffectId));
+            }
+        }
+
         private static ObstacleResolutionCoordinator CreateCoordinator(
             DomainBoard board, StageController stage, Session session, FeverController fever, IRandomSource random)
             => new ObstacleResolutionCoordinator(
@@ -196,7 +234,8 @@ namespace MathGame.Tests.Obstacles
 
         private sealed class FakeTime : MathGame.Core.Time.ITimeProvider
         {
-            public double RealtimeSeconds => 0;
+            public double Value { get; set; }
+            public double RealtimeSeconds => Value;
         }
     }
 }

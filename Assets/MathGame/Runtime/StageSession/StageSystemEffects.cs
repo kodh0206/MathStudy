@@ -10,10 +10,11 @@ namespace MathGame.StageSession
 
     public sealed class StageSystemEffectPlan
     {
-        internal StageSystemEffectPlan(StageSession owner, long version, BoardSystemEffectId id, StageSessionSnapshot before, StageSessionSnapshot after, long[] progress, long totalRemoved, long totalDust, long totalBoxes, long grossRestoration, long provisionalRestoration, long discardedRestoration, StageSessionStatus status, StageSessionEvent[] events, IWorldCommitPlan worldPlan = null)
-        { Owner = owner; PreparedSessionVersion = version; EffectId = id; Before = before; ProspectiveAfter = after; ProspectiveProgress = progress; ProspectiveTotalRemoved = totalRemoved; ProspectiveDestroyedDust = totalDust; ProspectiveDestroyedBoxes = totalBoxes; ProspectiveGrossRestoration = grossRestoration; ProspectiveRestoration = provisionalRestoration; ProspectiveDiscardedRestoration = discardedRestoration; ProspectiveStatus = status; Events = Array.AsReadOnly(events); WorldPlan = worldPlan; }
+        internal StageSystemEffectPlan(StageSession owner, long version, BoardSystemEffectId id, StageSessionSnapshot before, StageSessionSnapshot after, long[] progress, long score, long feverRemovalScore, long totalRemoved, long totalDust, long totalBoxes, long grossRestoration, long provisionalRestoration, long discardedRestoration, StageSessionStatus status, StageSessionEvent[] events, IWorldCommitPlan worldPlan = null)
+        { Owner = owner; PreparedSessionVersion = version; EffectId = id; Before = before; ProspectiveAfter = after; ProspectiveProgress = progress; ProspectiveScore = score; FeverRemovalScoreAwarded = feverRemovalScore; ProspectiveTotalRemoved = totalRemoved; ProspectiveDestroyedDust = totalDust; ProspectiveDestroyedBoxes = totalBoxes; ProspectiveGrossRestoration = grossRestoration; ProspectiveRestoration = provisionalRestoration; ProspectiveDiscardedRestoration = discardedRestoration; ProspectiveStatus = status; Events = Array.AsReadOnly(events); WorldPlan = worldPlan; }
         internal StageSession Owner { get; }
         internal long[] ProspectiveProgress { get; }
+        internal long ProspectiveScore { get; }
         internal long ProspectiveTotalRemoved { get; }
         internal long ProspectiveDestroyedDust { get; }
         internal long ProspectiveDestroyedBoxes { get; }
@@ -27,6 +28,7 @@ namespace MathGame.StageSession
         public StageSessionSnapshot Before { get; }
         public StageSessionSnapshot ProspectiveAfter { get; }
         public IReadOnlyList<StageSessionEvent> Events { get; }
+        public long FeverRemovalScoreAwarded { get; }
         public bool WouldSucceed => ProspectiveStatus == StageSessionStatus.Success;
         public bool IsWorldBound => WorldPlan != null;
     }
@@ -40,6 +42,7 @@ namespace MathGame.StageSession
         public StageSessionSnapshot Before { get; }
         public StageSessionSnapshot ProspectiveAfter => Plan?.ProspectiveAfter ?? Before;
         public IReadOnlyList<StageSessionEvent> Events { get; }
+        public long FeverRemovalScoreAwarded => Plan?.FeverRemovalScoreAwarded ?? 0;
     }
 
     public sealed class StageSystemEffectCommitResult
@@ -51,5 +54,14 @@ namespace MathGame.StageSession
         public StageSessionSnapshot Before { get; }
         public StageSessionSnapshot After { get; }
         public IReadOnlyList<StageSessionEvent> Events { get; }
+        public long FeverRemovalScoreAwarded
+        {
+            get
+            {
+                foreach (var value in Events)
+                    if (value.Kind == StageSessionEventKind.FeverRemovalScoreAwarded) return value.Amount;
+                return 0;
+            }
+        }
     }
 }

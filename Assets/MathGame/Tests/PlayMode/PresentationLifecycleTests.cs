@@ -221,6 +221,11 @@ namespace MathGame.Tests
 #endif
             view.BeginFeverEnd(FeverEndEffectTier.LargeExplosionAndRestoration, true);
             Assert.That(message.text, Does.Contain("FEVER FINISH!").And.Contain("LARGE BLAST"));
+            view.ShowFeverClearScore(250);
+            Assert.That(message.text, Does.Contain("FEVER CLEAR +250"));
+            view.BeginFeverEnd(FeverEndEffectTier.None, true);
+            view.ShowFeverClearScore(0);
+            Assert.That(message.text, Does.Not.Contain("FEVER CLEAR"));
             Assert.That(board.transform.localScale, Is.EqualTo(Vector3.one));
             view.PlayFeverEntry(true);
             Assert.That(message.text, Is.EqualTo("FEVER!"));

@@ -281,6 +281,14 @@ All coroutines are unscaled, pause-aware where presentation playback owns the de
 
 **Rationale:** P10A improves clarity and response without introducing a second gameplay authority, theme dependency, permanent runtime hierarchy, or animation delay proportional to the number of affected blocks.
 
+### ADR-039: Fever-caused removals award transactional score from committed evidence
+
+**Status:** Implemented; Unity Play verification required
+
+**Decision:** Each unique number block actually removed by a Fever-caused effect awards 10 points before the applicable Fever multiplier. Fever answers count only `FeverExpanded` collateral and multiply by the current combo multiplier. Fever-end effects count every committed RandomThree/Small/Center/Large removal and multiply by `FeverEndResult.FinalMultiplier`. Selected blocks, normal collateral, obstacles, movement, spawning, refill, and shuffle are excluded.
+
+StageSession performs checked `long` arithmetic and commits the bonus with the same attempt/system-effect transaction. A stale, duplicate, invalid, or overflowing operation changes neither score nor effect identity. Results and events expose the bonus separately from total awarded score. Presentation may display `FEVER CLEAR +N` only for a positive committed bonus and must not recalculate eligibility.
+
 ## Deferred decisions
 
 - Path rules, gravity, and obstacle layering remain deferred to their owning STEP designs.

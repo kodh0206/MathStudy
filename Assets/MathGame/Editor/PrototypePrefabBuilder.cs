@@ -483,8 +483,6 @@ namespace MathGame.Editor.SceneBuilder
             var contract = prefab.GetComponent<PresentationPrefabContract>();
             if (contract == null || contract.ContractId != "RunResultPopup")
                 throw new InvalidOperationException("RunResultPopup ownership could not be proven; leaderboard UI was not added.");
-            if (prefab.GetComponentInChildren<RunResultLeaderboardView>(true) != null) return;
-
             var contents = PrefabUtility.LoadPrefabContents(RunResultPopupPath);
             try
             {
@@ -493,7 +491,20 @@ namespace MathGame.Editor.SceneBuilder
                 if (panel == null || popup == null)
                     throw new InvalidOperationException("Managed RunResultPopup contract is incomplete.");
                 Set(panel.GetComponent<RectTransform>(), .055f, .08f, .945f, .92f, 0, 0, 0, 0);
-                var leaderboard = AddLeaderboardUI(panel);
+                var leaderboard = contents.GetComponentInChildren<RunResultLeaderboardView>(true);
+                if (leaderboard == null)
+                    leaderboard = AddLeaderboardUI(panel);
+                else
+                {
+                    var input = leaderboard.GetComponentInChildren<TMP_InputField>(true);
+                    if (input != null && input.textComponent != null)
+                    {
+                        input.SetTextWithoutNotify(string.Empty);
+                        input.textComponent.text = string.Empty;
+                        EditorUtility.SetDirty(input.textComponent);
+                        EditorUtility.SetDirty(input);
+                    }
+                }
                 var result = panel.Find("Result")?.GetComponent<Text>();
                 var playAgain = panel.Find("PlayAgainButton")?.GetComponent<Button>();
                 var home = panel.Find("HomeButton")?.GetComponent<Button>();
@@ -520,13 +531,15 @@ namespace MathGame.Editor.SceneBuilder
             inputRoot.transform.SetParent(root.transform, false);
             inputRoot.GetComponent<Image>().color = new Color(.025f, .07f, .12f, 1f);
             Set(inputRoot.GetComponent<RectTransform>(), 0, 1, .7f, 1, 0, -92, -8, -46);
-            var viewport = UI("Text Area", typeof(RectMask2D));
+            var viewport = UI("Text Area");
             viewport.transform.SetParent(inputRoot.transform, false);
             Stretch(viewport.GetComponent<RectTransform>(), 10);
             var placeholder = TMPText("Placeholder", "Nickname", 20, TextAlignmentOptions.MidlineLeft, viewport.transform);
             placeholder.color = new Color(.55f, .65f, .7f, .75f);
             Stretch(placeholder.rectTransform, 2);
             var inputText = TMPText("Text", string.Empty, 20, TextAlignmentOptions.MidlineLeft, viewport.transform);
+            inputText.color = new Color(.9f, .98f, 1f, 1f);
+            inputText.raycastTarget = false;
             Stretch(inputText.rectTransform, 2);
             var input = inputRoot.GetComponent<TMP_InputField>();
             input.textViewport = viewport.GetComponent<RectTransform>();
@@ -534,6 +547,9 @@ namespace MathGame.Editor.SceneBuilder
             input.placeholder = placeholder;
             input.characterLimit = 24;
             input.lineType = TMP_InputField.LineType.SingleLine;
+            input.customCaretColor = true;
+            input.caretColor = new Color(.35f, .9f, 1f, 1f);
+            input.selectionColor = new Color(.18f, .55f, .72f, .65f);
 
             var submitRoot = UI("SubmitButton", typeof(CanvasRenderer), typeof(Image), typeof(Button));
             submitRoot.transform.SetParent(root.transform, false);
@@ -570,7 +586,7 @@ namespace MathGame.Editor.SceneBuilder
             rowObject.SetActive(false);
 
             var view = root.GetComponent<RunResultLeaderboardView>();
-            view.Configure("100", input, submitRoot.GetComponent<Button>(), status,
+            view.Configure("s_10001", input, submitRoot.GetComponent<Button>(), status,
                 rowsRoot.GetComponent<RectTransform>(), row);
             return view;
         }

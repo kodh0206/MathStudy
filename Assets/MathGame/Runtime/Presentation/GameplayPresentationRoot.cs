@@ -305,6 +305,11 @@ namespace MathGame.Presentation.Unity
                     reconfiguration ??= GetComponent<BoardReconfigurationView>();
                     reconfiguration?.PlayFeverFade(plan.Settings.ReducedMotion);
                     break;
+                case PresentationEventKind.FeverClearScore:
+                    reconfiguration ??= GetComponent<BoardReconfigurationView>();
+                    reconfiguration?.ShowFeverClearScore(value.Identity);
+                    overlay?.ShowStatus("FEVER CLEAR +" + value.Identity);
+                    break;
                 case PresentationEventKind.RemoveSelected:
                 case PresentationEventKind.RemoveCollateral:
                     var blockId = new BlockId((int)value.Identity);
@@ -417,6 +422,7 @@ namespace MathGame.Presentation.Unity
          PresentationEventKind.FeverEndTelegraph=>220,
          PresentationEventKind.FeverEndWave=>180,
          PresentationEventKind.FeverEndFade=>180,
+         PresentationEventKind.FeverClearScore=>180,
          PresentationEventKind.RemoveSelected or PresentationEventKind.RemoveCollateral or PresentationEventKind.DamageObstacle or PresentationEventKind.DestroyObstacle=>Timing.RemovalMilliseconds,
          PresentationEventKind.ReconfigurationStart=>120,
          PresentationEventKind.MoveBlock or PresentationEventKind.ShuffleBlock=>Timing.GravityMilliseconds,
@@ -434,7 +440,7 @@ namespace MathGame.Presentation.Unity
         {
             PresentationEventKind.FeverEndAnnouncement => 0,
             PresentationEventKind.FeverEndTelegraph => 1,
-            PresentationEventKind.FeverEndWave or PresentationEventKind.FeverEndFade => 2,
+            PresentationEventKind.FeverEndWave or PresentationEventKind.FeverEndFade or PresentationEventKind.FeverClearScore => 2,
             PresentationEventKind.RemoveSelected or PresentationEventKind.RemoveCollateral or
             PresentationEventKind.DamageObstacle or PresentationEventKind.DestroyObstacle => 3,
             PresentationEventKind.MoveBlock => 4,

@@ -154,10 +154,11 @@ The domain feature assemblies and test assemblies are not auto-referenced. Unity
 - `FeverChargeTracker` consumes applied normal StageSession attempts exactly once, permits global attempt-ID gaps across Fever attempts, caps the live gauge at configured maximum, and does not bank excess charge.
 - `FeverController` owns the cross-domain Fever attempt command. It prospectively derives combo/rules, applies the owned StageSession attempt, and commits Fever state only after StageSession accepts, preventing split accounting.
 - Fever-aware StageSession rules form a closed Normal/Fever policy. Fever Correct costs zero moves and multiplies checked configured score by the approved 1/2/3/5 combo multiplier; normal accounting remains unchanged.
+- Fever-caused removal scoring consumes committed typed removal evidence rather than recomputing board geometry. Fever answers count only unique `FeverExpanded` collateral; Fever-end system effects count their unique committed removal set and require effect-ID-correlated final-multiplier evidence. Checked score, semantic score events, and the session snapshot commit atomically; stale/duplicate/overflow paths do not mutate score.
 - `InteractiveFeverClock` counts only exact `FeverInput` intervals using injected monotonic time. Resolution, target presentation, entry/end phases, nested pause reasons, focus/background loss, and ads are excluded. Faults force the controller into a safe noninteractive state.
 - Stage exposes explicit EnteringFever, FeverInput, Fever-origin resolution/miss return, and EndingFever transitions while retaining resolution origin across pause.
 - Natural expiry emits immutable end-effect tiers based on total Fever Correct answers and resets only after effect acknowledgement. Terminal Stage outcomes abort Fever and suppress gameplay end effects.
-- Expanded removal, obstacle damage execution, restoration calculation, random/area end effects, and spectacle remain semantic requests for STEPs 10-12.
+- Expanded removal, obstacle damage, restoration, random/area end effects, and their presentation are implemented by their owning downstream assemblies; Fever core remains geometry- and presentation-free.
 
 ### Restoration progress
 
@@ -167,6 +168,7 @@ The domain feature assemblies and test assemblies are not auto-referenced. Unity
 - A prospective Success binds a versioned world plan before StageSession mutation. The composition coordinator in `MathGame.ObstacleFlow` then performs the already-validated StageSession and world assignments without callbacks between them; `MathGame.Restoration` has no Fever, Stage, or ObstacleFlow dependency.
 - Move exhaustion in restoration-enabled runs enters noninteractive `FailedPendingDecision`. Continue preserves the same run and provisional energy while adding the approved five moves through a two-phase grant reservation; Abandon discards provisional energy and terminates the run.
 - Obstacle answer/Fever/end orchestration supplies restoration evidence without changing STEP 10 board adoption or target-recovery ordering. Concrete restoration visuals and asset bindings remain STEP 12.
+- The same orchestration boundary supplies `FeverEndResult.FinalMultiplier` as explicit scoring evidence. Presentation consumes the separately exposed committed bonus and may show `FEVER CLEAR +N`; it never derives removal eligibility or score.
 
 ## Current runtime flow
 

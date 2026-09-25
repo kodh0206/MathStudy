@@ -10,10 +10,10 @@ namespace MathGame.StageSession
     }
     public readonly struct StageRewardBreakdown
     {
-        public StageRewardBreakdown(int grade, int length, int streak, long score, ConnectionLengthRewardTier tier)
-        { GradeFeverContribution = grade; LengthFeverContribution = length; FastStreakFeverContribution = streak; TotalFeverContribution = checked(grade + length + streak); ScoreAwarded = score; LengthRewardTier = tier; }
+        public StageRewardBreakdown(int grade, int length, int streak, long score, ConnectionLengthRewardTier tier, long feverRemovalScore = 0)
+        { GradeFeverContribution = grade; LengthFeverContribution = length; FastStreakFeverContribution = streak; TotalFeverContribution = checked(grade + length + streak); ScoreAwarded = score; FeverRemovalScoreAwarded = feverRemovalScore; LengthRewardTier = tier; }
         public int GradeFeverContribution { get; } public int LengthFeverContribution { get; } public int FastStreakFeverContribution { get; }
-        public int TotalFeverContribution { get; } public long ScoreAwarded { get; } public ConnectionLengthRewardTier LengthRewardTier { get; }
+        public int TotalFeverContribution { get; } public long ScoreAwarded { get; } public long FeverRemovalScoreAwarded { get; } public ConnectionLengthRewardTier LengthRewardTier { get; }
         public static StageRewardBreakdown None => default;
     }
     public sealed class ObjectiveProgressSnapshot

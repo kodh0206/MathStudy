@@ -12,7 +12,7 @@ namespace MathGame.Presentation
     {
         RemoveSelected, RemoveCollateral, DamageObstacle, DestroyObstacle,
         MoveBlock, SpawnBlock, ReconfigurationStart, ShuffleBlock, ReconfigurationComplete, PresentTarget, RestorationMilestone,
-        Miss, FeverEntry, FeverEndAnnouncement, FeverEndTelegraph, FeverEndWave, FeverEndFade,
+        Miss, FeverEntry, FeverClearScore, FeverEndAnnouncement, FeverEndTelegraph, FeverEndWave, FeverEndFade,
         FeverEnd, StageSuccess, StageFailure, Reconcile
     }
 
@@ -65,6 +65,9 @@ namespace MathGame.Presentation
             if (envelope == null || settings == null || result?.ResolutionResult == null || !result.ResolutionResult.Succeeded)
                 throw new ArgumentException("A committed obstacle result is required.");
             var events = ResolutionEvents(result.ResolutionResult);
+            var feverRemovalScore = result.StageResult?.Reward.FeverRemovalScoreAwarded ?? 0;
+            if (feverRemovalScore > 0)
+                events.Add(new PresentationEvent(PresentationEventKind.FeverClearScore, default, feverRemovalScore));
             if (result.TargetResult?.BoardChanged == true)
             {
                 events.Add(new PresentationEvent(PresentationEventKind.ReconfigurationStart, default, result.TargetResult.ShuffleAttemptCount));
@@ -99,7 +102,7 @@ namespace MathGame.Presentation
         {
             if(envelope==null||settings==null||result?.ResolutionResult==null||!result.ResolutionResult.Succeeded)
                 throw new ArgumentException("A committed Fever-end result is required.");
-            var events=FeverEndEvents(result.ResolutionResult, tier);
+            var events=FeverEndEvents(result.ResolutionResult, tier, result.SystemEffectResult?.FeverRemovalScoreAwarded ?? 0);
             if(result.TargetResult?.BoardChanged==true)
             {
                 events.Add(new PresentationEvent(PresentationEventKind.ReconfigurationStart,default,result.TargetResult.ShuffleAttemptCount));
@@ -111,7 +114,7 @@ namespace MathGame.Presentation
             return new ObstaclePresentationPlan(envelope,settings,events,false);
         }
 
-        public static List<PresentationEvent> FeverEndEvents(ObstacleResolutionResult resolution, FeverEndEffectTier tier)
+        public static List<PresentationEvent> FeverEndEvents(ObstacleResolutionResult resolution, FeverEndEffectTier tier, long feverRemovalScore = 0)
         {
             if (resolution == null || !resolution.Succeeded)
                 throw new ArgumentException("A successful committed Fever-end resolution is required.", nameof(resolution));
@@ -128,6 +131,8 @@ namespace MathGame.Presentation
                         delta.Block.Id.Value));
                 events.Add(new PresentationEvent(PresentationEventKind.FeverEndWave, default, (long)tier));
             }
+            if (feverRemovalScore > 0)
+                events.Add(new PresentationEvent(PresentationEventKind.FeverClearScore, default, feverRemovalScore));
             events.AddRange(ResolutionEvents(resolution));
             return events;
         }
@@ -138,7 +143,7 @@ namespace MathGame.Presentation
             if (envelope == null || settings == null || result?.ResolutionResult == null ||
                 !result.ResolutionResult.Succeeded || envelope.AcknowledgementKind != PresentationAcknowledgementKind.Terminal)
                 throw new ArgumentException("A committed terminal Fever-end result is required.");
-            var events = FeverEndEvents(result.ResolutionResult, tier);
+            var events = FeverEndEvents(result.ResolutionResult, tier, result.SystemEffectResult?.FeverRemovalScoreAwarded ?? 0);
             events.Add(new PresentationEvent(PresentationEventKind.StageSuccess, default, envelope.SourceId));
             events.Add(new PresentationEvent(PresentationEventKind.Reconcile, default, envelope.Gameplay.Token.Revision));
             return new ObstaclePresentationPlan(envelope, settings, events, false);

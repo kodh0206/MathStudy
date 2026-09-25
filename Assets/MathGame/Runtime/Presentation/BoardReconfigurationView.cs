@@ -81,6 +81,12 @@ namespace MathGame.Presentation.Unity
             if (boardContent != null) boardContent.alpha = reducedMotion ? .92f : .82f;
         }
 
+        public void ShowFeverClearScore(long score)
+        {
+            if (score <= 0 || message == null || !feverSequence) return;
+            message.text += "\nFEVER CLEAR +" + score;
+        }
+
         public void CompleteFeverEnd()
         {
             if (!feverSequence) return;
