@@ -53,6 +53,22 @@ namespace MathGame.Presentation.Unity
             if (boardOutline != null) boardOutline.effectColor = new Color(1f,.48f,.08f,1f);
         }
 
+        public void PlayFeverEntry(bool reducedMotion)
+        {
+            ResetImmediate();
+            feverSequence = true;
+            if (message != null)
+            {
+                message.text = "FEVER!";
+                message.color = new Color(1f,.76f,.18f,1f);
+            }
+            if (overlay != null) overlay.SetActive(true);
+            if (boardContent != null) boardContent.alpha = reducedMotion ? .92f : .80f;
+            if (boardOutline != null) boardOutline.effectColor = new Color(1f,.55f,.08f,1f);
+            if (isActiveAndEnabled) playback = StartCoroutine(FeverEntryFlash(reducedMotion ? .18f : .34f, reducedMotion));
+            else ResetImmediate();
+        }
+
         public void PlayFeverWave(bool reducedMotion)
         {
             if (reducedMotion || !isActiveAndEnabled) return;
@@ -93,6 +109,22 @@ namespace MathGame.Presentation.Unity
                 yield return null;
             }
             playback=null;
+        }
+
+        IEnumerator FeverEntryFlash(float duration, bool reducedMotion)
+        {
+            for(var elapsed=0f;elapsed<duration;elapsed+=Time.unscaledDeltaTime)
+            {
+                if (!reducedMotion && boardOutline != null)
+                {
+                    var wave=Mathf.Sin(Mathf.Clamp01(elapsed/duration)*Mathf.PI);
+                    boardOutline.effectColor=Color.Lerp(new Color(1f,.42f,.04f,1f),new Color(1f,.94f,.34f,1f),wave);
+                    boardOutline.effectDistance=new Vector2(3f+5f*wave,-3f-5f*wave);
+                }
+                yield return null;
+            }
+            playback=null;
+            ResetImmediate();
         }
 
         void Update()

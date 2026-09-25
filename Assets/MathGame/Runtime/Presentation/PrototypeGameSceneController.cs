@@ -293,7 +293,12 @@ namespace MathGame.Presentation.Unity
             if (stage.State == StageState.EnteringFever)
             {
                 if (fever.CompleteEntry() == FeverControllerCommandResult.Succeeded)
-                { status = MathGameLocalization.Get("Gameplay", "gameplay.fever_active"); uiLayout?.PresentFever(true); targetStarted = Time.unscaledTime; }
+                {
+                    status = MathGameLocalization.Get("Gameplay", "gameplay.fever_active");
+                    uiLayout?.PresentFever(true);
+                    boardView?.PlayFeverEntryCue(Settings().ReducedMotion);
+                    targetStarted = Time.unscaledTime;
+                }
             }
             if (fever.State == FeverState.Active)
             {

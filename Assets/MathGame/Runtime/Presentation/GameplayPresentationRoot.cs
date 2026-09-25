@@ -41,6 +41,12 @@ namespace MathGame.Presentation.Unity
         public void PlayComboCue(bool audio = true) => feedback?.Play(PresentationFeedbackCue.Combo, audio, false);
         public void PlayRunEndCue(bool audio = true, bool haptics = true) => feedback?.Play(PresentationFeedbackCue.RunEnd, audio, haptics);
         public void PlayAgainCue(bool audio = true) => feedback?.Play(PresentationFeedbackCue.PlayAgain, audio, false);
+        public void PlayFeverEntryCue(bool reducedMotion, bool audio = true, bool haptics = true)
+        {
+            reconfiguration ??= GetComponent<BoardReconfigurationView>();
+            reconfiguration?.PlayFeverEntry(reducedMotion);
+            feedback?.Play(PresentationFeedbackCue.FeverEntry, audio, haptics);
+        }
         public void SetFeverExpiryWarning(bool active, bool reducedMotion)
         {
             reconfiguration ??= GetComponent<BoardReconfigurationView>();
